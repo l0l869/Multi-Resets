@@ -140,7 +140,7 @@ ExitInstance()
 
     threadsMask := (2 ** Ceil(threadCount * threadsUsage)) - 1
     SetAffinity(instance.pid, threadsMask)
-    ResetInstance()
+    ResetInstances()
     return 1
 }
 
