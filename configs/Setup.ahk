@@ -4,6 +4,7 @@ SetWorkingDir %A_ScriptDir%
 CoordMode, Mouse, Screen
 CoordMode, Pixel, Screen
 
+global scaleBy := A_ScreenDPI / 96
 global currentButton := 1
 global BUTTON_NAMES := ["Heart","SaveAndQuit","CreateNew","CreateNewWorld","World"]
 global clickData := []
@@ -22,7 +23,7 @@ WinWait, Minecraft
 hwnd := WinExist("Minecraft")
 IniRead, layoutDimensions, configs.ini, Settings, layoutDimensions
 dim := StrSplit(layoutDimensions, ",")
-height := (A_ScreenHeight-40*A_ScreenDPI/96)/dim[2]
+height := (A_ScreenHeight-40*scaleBy)/dim[2]
 width := A_ScreenWidth/dim[1]
 WinMove, % "ahk_id " hwnd,, (A_ScreenWidth-width-8)/2, (A_ScreenHeight-height+16)/2-40, width+16, height+8
 
@@ -112,12 +113,12 @@ GetWindowDimensions(Window)
 {
     WinGetPos, winX, winY, winWidth, winHeight, %Window%
 
-    return { x1    : winX + 8
-            ,y1    : winY + 30
-            ,x2    : winX + 8 + winWidth - 16
-            ,y2    : winY + 30 + winHeight - 38
-            ,width : winWidth - 16
-            ,height: winHeight - 38 }
+    return { x1    : winX + 8  * scaleBy
+            ,y1    : winY + 30 * scaleBy
+            ,x2    : winX + 8  * scaleBy + winWidth  - 16 * scaleBy
+            ,y2    : winY + 30 * scaleBy + winHeight - 38 * scaleBy
+            ,width : winWidth  - 16 * scaleBy
+            ,height: winHeight - 38 * scaleBy }
 }
 
 LoadButtons()

@@ -21,8 +21,11 @@ global resetThreshold
 global keyDelay
 global numInstances
 global layoutDimensions
+global threadsUsage
 global resetKey, stopresetKey, restartKey
 
+EnvGet, threadCount, NUMBER_OF_PROCESSORS
+global threadCount
 global scaleBy := A_ScreenDPI / 96
 global MCversion
 global offsetsCoords
@@ -60,6 +63,7 @@ LaunchInstances(amount)
     CloseInstances()
     lastRestart := UpdateResetAttempts(0)
     usedPIDs := []
+    threadsMask := (2 ** Ceil(threadCount * threadsUsage)) - 1
     Sleep, 500
 
     loop, %amount% {
@@ -88,6 +92,8 @@ LaunchInstances(amount)
         }
 
         usedPIDs.push(pid)
+
+        SetAffinity(pid, threadsMask)
     }
 
     ConfigureMinecraftPointers()
@@ -178,6 +184,15 @@ ConfigureMinecraftPointers()
         case "1.2.13.54": offsetsCoords := [0x01FA1888, 0x0, 0x10, 0x10, 0x20, 0x0, 0x2C]
 
         default: Msgbox, Unsupported Version: %MCversion%.
+    }
+}
+
+SetAffinity(pid, mask) 
+{
+    if (hProcess := DllCall("OpenProcess", "UInt", 0x0200, "Int", 0, "Int", pid))
+    {
+        DllCall("SetProcessAffinityMask", "Ptr", hProcess, "Ptr", mask)
+        DllCall("CloseHandle", "Ptr", hProcess)
     }
 }
 

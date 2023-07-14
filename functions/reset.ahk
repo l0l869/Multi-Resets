@@ -6,12 +6,10 @@
         if (instance.isResetting == 0)
             instance.isResetting := 1
 
-    SetTimer, ResetInstances, -0
+    ResetInstances()
 return
 
 StopReset:
-    SetTimer, ResetInstances, Off
-
     for k, instance in MCInstances
         instance.isResetting := 0
 return
@@ -25,7 +23,8 @@ ResetInstances()
     CoordMode, Mouse, Screen
     CoordMode, Pixel, Screen
     
-    ShouldRestart(UpdateResetAttempts(0))
+    if autoRestart
+        ShouldRestart(UpdateResetAttempts(0))
 
     while (IsResettingInstances())
         for k, instance in MCInstances
@@ -43,11 +42,18 @@ IterateReset(instance)
     Sleep, 10
     WinActivate, % "ahk_id " instance.hwnd
 
+    ; faster but isnt
+    ; if WinActive("Minecraft")
+    ;     WinActivate, ahk_class Shell_TrayWnd
+    ; MouseMove, % instance.x1+instance.width/2, % instance.y1+instance.height/2
+
     for k, btn in screenClicks
     {
         PixelGetColor, pixelColour, instance.x1+btn.x, instance.y1+btn.y, RGB
         if (pixelColour != btn.colour)
             continue
+
+        ; WinActivate, % "ahk_id " instance.hwnd
 
         switch (btn.btn)
         {
@@ -113,6 +119,7 @@ RunInstance(instance)
         }
     }
 
+    SetAffinity(instance.pid, 2 ** threadCount - 1)
     WinMaximize, % "ahk_id " instance.hwnd
     exit
 }
@@ -130,7 +137,10 @@ ExitInstance()
         }
     }
     Sleep, 100
-    SetTimer, ResetInstances, -0
+
+    threadsMask := (2 ** Ceil(threadCount * threadsUsage)) - 1
+    SetAffinity(instance.pid, threadsMask)
+    ResetInstance()
     return 1
 }
 

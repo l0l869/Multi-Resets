@@ -23,6 +23,7 @@ A multi-instance macro for Minecraft Bedrock Edition Speedrunning.
 - **keyDelay**: Delay (in milliseconds) between world creation clicks. Set it to or above 50 for verification.
 - **numInstances**: Number of instances. Recommended amount: Total Logical Processors / 4.
 - **layoutDimensions**: The arrangement of instances (x, y).
+- **threadsUsage**: The precentage of CPU threads the instances will utilise.
 
 - **timerActivated**: Enable or disable the timer. Set to `true` or `false`.
 - **anchor**: The anchor point for the timer placement. Options: `TopLeft`, `TopRight`, `BottomLeft`, `BottomRight`.

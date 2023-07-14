@@ -39,6 +39,7 @@ LoadIniConfigurations()
     IniRead, keyDelay        , %iniFile%, Settings, keyDelay
     IniRead, numInstances    , %iniFile%, Settings, numInstances
     IniRead, layoutDimensions, %iniFile%, Settings, layoutDimensions
+    IniRead, threadsUsage    , %iniFile%, Settings, threadsUsage
 
     IniRead, timerActivated    , %iniFile%, Timer, timerActivated
     IniRead, timerAnchor       , %iniFile%, Timer, anchor
