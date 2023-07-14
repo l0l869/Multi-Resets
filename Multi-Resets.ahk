@@ -2,6 +2,7 @@
 #SingleInstance, Force
 #Include, functions/configurations.ahk
 #Include, functions/timer.ahk
+#Include, functions/updater.ahk
 
 SetBatchLines, -1
 SetWorkingDir, %A_ScriptDir%
@@ -9,7 +10,7 @@ SendMode, Input
 SetMouseDelay, -1
 EnvGet, A_LocalAppData, LocalAppData
 
-global SCRIPT_VERSION := 20230714.11
+global SCRIPT_VERSION := 20230714.17
 global iniFile := A_ScriptDir "\configs\configs.ini"
 global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang"
 
@@ -30,6 +31,7 @@ global screenClicks := []
 global worldcreationClicks := []
 global MCInstances := []
 
+FetchUpdates()
 LoadIniConfigurations()
 LoadClickData()
 

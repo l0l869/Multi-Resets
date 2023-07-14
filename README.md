@@ -1,4 +1,4 @@
-# Fastest-Multi v0.1
+# Multi-Resets
 
 A multi-instance macro for Minecraft Bedrock Edition Speedrunning.
 
