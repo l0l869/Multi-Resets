@@ -1,0 +1,10 @@
+Heart,394,453,0xFF1313
+SaveAndQuit,415,344,0x4C4C4C
+CreateNew,471,76,0x4C4C4C
+CreateNewWorld,476,41,0x4C4C4C
+World,157,53,0x82B3FF
+worldcreation,410,147
+worldcreation,400,157
+worldcreation,407,436
+worldcreation,400,372
+worldcreation,103,261
