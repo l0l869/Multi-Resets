@@ -32,7 +32,7 @@ LoadClickData()
 
     if !worldcreationClicks.count()
     {
-        MsgBox, % "No Click Data: Make sure to do the setup."
+        MsgBox, % "Insufficient Click Data: Make sure to do the setup."
         ExitApp
     }
 }
