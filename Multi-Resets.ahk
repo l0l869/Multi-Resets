@@ -10,7 +10,7 @@ SendMode, Input
 SetMouseDelay, -1
 EnvGet, A_LocalAppData, LocalAppData
 
-global SCRIPT_VERSION := 20230717.14
+global SCRIPT_VERSION := 20230717.16
 global iniFile := A_ScriptDir "\configs\configs.ini"
 global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang"
 
@@ -26,7 +26,7 @@ global worldcreationClicks := []
 global MCInstances := []
 
 FetchUpdates()
-LoadIniConfigurations()
+LoadIniConfigs()
 LoadClickData()
 
 if (timerActivated == "true")
@@ -77,8 +77,7 @@ LaunchInstances(amount)
         {
             MsgBox,4,, % "Error: Failed to get process ID.`nDo you want to try and relaunch instances?"
             IfMsgBox, Yes
-                return LaunchInstances(amount)
-            
+                LaunchInstances(amount)
             return
         }
 

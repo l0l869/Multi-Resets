@@ -37,7 +37,7 @@ LoadClickData()
     }
 }
 
-LoadIniConfigurations()
+LoadIniConfigs()
 {
     IniRead, resetKey    , %iniFile%, Hotkeys, Reset
     IniRead, stopresetKey, %iniFile%, Hotkeys, StopReset
