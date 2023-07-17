@@ -56,7 +56,11 @@ IterateReset(instance)
             if(instance.isResetting == 1)
                 return instance.isResetting := 2
 
-            xCoord := ReadMemoryValue(instance.proc, "Float", offsetsCoords*)
+            startTick := A_TickCount
+            while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsCoords*)
+                if (A_TickCount - startTick > 2000)
+                    return
+
             if (xCoord < minCoords || xCoord > maxCoords)
                 return instance.isResetting := (instance.isResetting ? 1 : 0) ;dumb fix for stop reset
 
@@ -151,13 +155,12 @@ GetCurrentScreen(instance)
     if (readScreenMemory == "true"){
 
         startTick := A_TickCount
-        while (!valueUI := ReadMemoryValue(instance.proc, "Int", offsetsScreen*))
+        while !valueUI := ReadMemoryValue(instance.proc, "Int", offsetsScreen*)
         {
             if (A_TickCount-startTick > 3000){
                 MsgBox, % "failed to get current screen from memory: " valueUI
                 Exit
             }
-            valueUI := ReadMemoryValue(instance.proc, "Int", offsetsScreen*)
         }
 
         if (offsetsScreen[1] == 0x036A4B00) ; 1.16.1.2
