@@ -6,7 +6,7 @@ Supported Versions: 1.16.10, 1.16.1, 1.16.0.58, 1.16.0.57, 1.16.0.51, 1.14.60, 1
 
 ### Setup
 
-- Enable the ability to multi-instance, run `configs/RegisterMulti.ahk`.
+- Enable the ability to multi-instance by running `configs/RegisterMulti.ahk`.
 - The macro needs to know where to click; go through the setup by opening `configs/Setup.ahk`.
 - If the arrangement of instances is changed, setup is to be redone.
 
