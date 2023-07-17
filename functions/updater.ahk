@@ -36,12 +36,12 @@ DownloadLatest(latestVersions)
     FileDelete, %tempFolder%\%newVersionZipName%
     newVersionFolderName := StrReplace(RTrim(newVersionZipName, ".zip"), ".", A_Space,, 1)
 
-    MergeConfigs("configs", tempFolder "\" newVersionFolderName "\" configs)
+    MergeConfigs("configs", tempFolder "\" newVersionFolderName "\configs")
     FileMoveDir, %tempFolder%\%newVersionFolderName%, %scriptMainDir%, 1
     FileRemoveDir, %A_ScriptDir%, 1
 
     MsgBox, Update Complete!
-    Run, %scriptMainDir%\%newVersionFolderName%\Multi-Resets.ahk
+    Run, %scriptMainDir%\%newVersionFolderName%
     ExitApp, 1
 }
 
