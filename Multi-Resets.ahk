@@ -14,21 +14,12 @@ global SCRIPT_VERSION := 20230714.17
 global iniFile := A_ScriptDir "\configs\configs.ini"
 global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang"
 
-global maxCoords
-global minCoords
-global autoRestart
-global resetThreshold
-global keyDelay
-global numInstances
-global layoutDimensions
-global threadsUsage
-global resetKey, stopresetKey, restartKey
-
 EnvGet, threadCount, NUMBER_OF_PROCESSORS
 global threadCount
 global scaleBy := A_ScreenDPI / 96
 global MCversion
 global offsetsCoords
+global offsetsScreen
 global lastRestart
 global screenClicks := []
 global worldcreationClicks := []
@@ -177,11 +168,13 @@ ConfigureMinecraftPointers()
     {
         case "1.16.10.2": offsetsCoords := [0x036A3C18, 0xA8, 0x10, 0x954]
         case "1.16.1.2" : offsetsCoords := [0x0369D0A8, 0xA8, 0x10, 0x954]
+                          offsetsScreen := [0x036A4B00, 0x28, 0x198, 0x10, 0x210, 0x18]
         case "1.16.0.58": offsetsCoords := [0x038464D8, 0x190, 0x20, 0x0, 0x2C]
         case "1.16.0.57": offsetsCoords := [0x03846490, 0x190, 0x20, 0x0, 0x2C]
         case "1.16.0.51": offsetsCoords := [0x035C6298, 0x190, 0x20, 0x0, 0x2C]
         case "1.14.60.5": offsetsCoords := [0x0307D3A0, 0x30, 0xF0, 0x110]
         case "1.2.13.54": offsetsCoords := [0x01FA1888, 0x0, 0x10, 0x10, 0x20, 0x0, 0x2C]
+                          offsetsScreen := [0x01F2F5F8, 0xD0, 0x58]
 
         default: Msgbox, Unsupported Version: %MCversion%.
     }

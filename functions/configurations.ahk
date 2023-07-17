@@ -1,3 +1,14 @@
+global maxCoords
+global minCoords
+global autoRestart
+global resetThreshold
+global keyDelay
+global numInstances
+global layoutDimensions
+global threadsUsage
+global readScreenMemory
+global resetKey, stopresetKey, restartKey
+
 LoadClickData()
 {
     screenClicks := []
@@ -40,6 +51,7 @@ LoadIniConfigurations()
     IniRead, numInstances    , %iniFile%, Settings, numInstances
     IniRead, layoutDimensions, %iniFile%, Settings, layoutDimensions
     IniRead, threadsUsage    , %iniFile%, Settings, threadsUsage
+    IniRead, readScreenMemory, %iniFile%, Settings, readScreenMemory
 
     IniRead, timerActivated    , %iniFile%, Timer, timerActivated
     IniRead, timerAnchor       , %iniFile%, Timer, anchor

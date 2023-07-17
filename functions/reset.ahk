@@ -42,50 +42,50 @@ IterateReset(instance)
     Sleep, 10
     WinActivate, % "ahk_id " instance.hwnd
 
-    ; faster but isnt
+    ; safer
     ; if WinActive("Minecraft")
     ;     WinActivate, ahk_class Shell_TrayWnd
     ; MouseMove, % instance.x1+instance.width/2, % instance.y1+instance.height/2
 
-    for k, btn in screenClicks
+    ; WinActivate, % "ahk_id " instance.hwnd
+
+    switch GetCurrentScreen(instance)
     {
-        PixelGetColor, pixelColour, instance.x1+btn.x, instance.y1+btn.y, RGB
-        if (pixelColour != btn.colour)
-            continue
+        case "Heart":
+            Send, {Esc}
+            if(instance.isResetting == 1)
+                return instance.isResetting := 2
 
-        ; WinActivate, % "ahk_id " instance.hwnd
+            xCoord := ReadMemoryValue(instance.proc, "Float", offsetsCoords*)
+            if (xCoord < minCoords || xCoord > maxCoords)
+                return instance.isResetting := (instance.isResetting ? 1 : 0) ;dumb fix for stop reset
 
-        switch (btn.btn)
-        {
-            case "Heart":
-                Send, {Esc}
-                if(instance.isResetting == 1)
-                    return instance.isResetting := 2
+            return RunInstance(instance)
 
-                xCoord := ReadMemoryValue(instance.proc, "Float", offsetsCoords*)
-                if (xCoord < minCoords || xCoord > maxCoords)
-                    return instance.isResetting := (instance.isResetting ? 1 : 0) ;dumb fix for stop reset
+        case "SaveAndQuit":
+            MouseClick,, instance.x1+screenClicks[2].x, instance.y1+screenClicks[2].y,,0
+            return instance.isResetting := (instance.isResetting ? 3 : 0)
 
-                return RunInstance(instance)
-    
-            case "SaveAndQuit", "CreateNew", "CreateNewWorld":
-                MouseClick,, instance.x1+btn.x, instance.y1+btn.y,,0
-                Sleep, 50
-                return instance.isResetting := (instance.isResetting ? 3 : 0)
-    
-            case "World":
-                if (instance.isResetting == 4)
-                    return
+        case "CreateNew":
+            MouseClick,, instance.x1+screenClicks[3].x, instance.y1+screenClicks[3].y,,0
+            return instance.isResetting := (instance.isResetting ? 4 : 0)
 
-                for k, click in worldcreationClicks
-                {
-                    MouseClick,, instance.x1+click.x, instance.y1+click.y,,0
-                    Sleep, %keyDelay%
-                }
-                Sleep, % 50-keyDelay ; click doesnt register with mousemove right after
-                UpdateResetAttempts()
-                return instance.isResetting := (instance.isResetting ? 4 : 0)
-        }
+        case "CreateNewWorld":
+            MouseClick,, instance.x1+screenClicks[4].x, instance.y1+screenClicks[4].y,,0
+            return instance.isResetting := (instance.isResetting ? 5 : 0)
+
+        case "World":
+            if (instance.isResetting == 6)
+                return
+
+            for k, click in worldcreationClicks
+            {
+                MouseClick,, instance.x1+click.x, instance.y1+click.y,,0
+                Sleep, %keyDelay%
+            }
+            Sleep, % 50-keyDelay ; click doesnt register with mousemove right after
+            UpdateResetAttempts()
+            return instance.isResetting := (instance.isResetting ? 6 : 0)
     }
 }
 
@@ -142,6 +142,62 @@ ExitInstance()
     SetAffinity(instance.pid, threadsMask)
     ResetInstances()
     return 1
+}
+
+GetCurrentScreen(instance)
+{
+    currentScreen := ""
+
+    if (readScreenMemory == "true"){
+
+        startTick := A_TickCount
+        while (!valueUI := ReadMemoryValue(instance.proc, "Int", offsetsScreen*))
+        {
+            if (A_TickCount-startTick > 3000){
+                MsgBox, % "failed to get current screen from memory: " valueUI
+                Exit
+            }
+            valueUI := ReadMemoryValue(instance.proc, "Int", offsetsScreen*)
+        }
+
+        if (offsetsScreen[1] == 0x036A4B00) ; 1.16.1.2
+        {
+            switch (valueUI)
+            {
+                case 3: currentScreen := "Heart"
+                case 5: currentScreen := "CreateNew"
+                case 6: currentScreen := "CreateNewWorld"
+                case 7: currentScreen := "World"
+            }
+        } else { ; 1.2.13.54
+            switch (valueUI)
+            {
+                case 4: currentScreen := "Heart"
+                case 6: currentScreen := "CreateNew"
+                case 7: currentScreen := "CreateNewWorld"
+                case 8: currentScreen := "World"
+            }
+        }
+
+        if (currentScreen == "Heart" && instance.isResetting == 2)
+            currentScreen := "SaveAndQuit"
+
+        if (currentScreen == "CreateNewWorld" && instance.isResetting == 3)
+            currentScreen := "" ; exiting world
+
+    } else { ; pixel search
+
+        for k, btn in screenClicks
+        {
+            PixelGetColor, pixelColour, instance.x1+btn.x, instance.y1+btn.y, RGB
+            if (pixelColour == btn.colour){
+                currentScreen := btn.btn
+                break
+            }
+        }
+    }
+
+    return currentScreen
 }
 
 ReadMemoryValue(process, dataType, baseOffset, offsets*)
