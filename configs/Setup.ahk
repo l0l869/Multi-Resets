@@ -145,7 +145,7 @@ LoadButtons()
 
 AssignButton()
 {
-    data := BUTTON_NAMES[currentButton] ? BUTTON_NAMES[currentButton] "," mouseX-win.x1 "," mouseY-win.y1 "," atMouseColour : "worldcreation," mouseX-win.x1 "," mouseY-win.y1
+    data := BUTTON_NAMES[currentButton] ? BUTTON_NAMES[currentButton] "," Floor(mouseX-win.x1) "," Floor(mouseY-win.y1) "," atMouseColour : "worldcreation," Floor(mouseX-win.x1) "," Floor(mouseY-win.y1)
     clickData[currentButton] := data
     currentButton += 1
     Click
