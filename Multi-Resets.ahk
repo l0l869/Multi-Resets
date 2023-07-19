@@ -1,5 +1,6 @@
 ﻿#NoEnv
 #SingleInstance, Force
+#Include, %A_ScriptDir%
 #Include, functions/configurations.ahk
 #Include, functions/timer.ahk
 #Include, functions/updater.ahk

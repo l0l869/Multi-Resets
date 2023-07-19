@@ -23,7 +23,7 @@ ResetInstances()
     CoordMode, Mouse, Screen
     CoordMode, Pixel, Screen
     
-    if autoRestart
+    if (autoRestart == "true")
         ShouldRestart(UpdateResetAttempts(0))
 
     while (IsResettingInstances())
