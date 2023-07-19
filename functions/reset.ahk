@@ -66,12 +66,14 @@ IterateReset(instance)
 
             return RunInstance(instance)
 
-        case "SaveAndQuit":
+        case "SaveAndQuit":       
             MouseClick,, instance.x1+screenClicks[2].x, instance.y1+screenClicks[2].y,,0
             return instance.isResetting := (instance.isResetting ? 3 : 0)
 
         case "CreateNew":
             MouseClick,, instance.x1+screenClicks[3].x, instance.y1+screenClicks[3].y,,0
+            ; sleep, 100
+            ; MouseClick,, instance.x1+screenClicks[4].x, instance.y1+screenClicks[4].y,,0
             return instance.isResetting := (instance.isResetting ? 4 : 0)
 
         case "CreateNewWorld":
@@ -199,6 +201,9 @@ GetCurrentScreen(instance)
             }
         }
     }
+
+    if (currentScreen == "SaveAndQuit" && instance.isResetting == 6) ; if it skips checking coords
+        currentScreen := "Heart"
 
     return currentScreen
 }
