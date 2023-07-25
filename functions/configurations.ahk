@@ -43,24 +43,47 @@ LoadIniConfigs()
     IniRead, stopresetKey, %iniFile%, Hotkeys, StopReset
     IniRead, restartKey  , %iniFile%, Hotkeys, Restart
 
-    IniRead, maxCoords       , %iniFile%, Settings, maxCoords
-    IniRead, minCoords       , %iniFile%, Settings, minCoords
-    IniRead, autoRestart     , %iniFile%, Settings, autoRestart
-    IniRead, resetThreshold  , %iniFile%, Settings, resetThreshold
-    IniRead, keyDelay        , %iniFile%, Settings, keyDelay
-    IniRead, numInstances    , %iniFile%, Settings, numInstances
-    IniRead, layoutDimensions, %iniFile%, Settings, layoutDimensions
-    IniRead, threadsUsage    , %iniFile%, Settings, threadsUsage
-    IniRead, readScreenMemory, %iniFile%, Settings, readScreenMemory
+    IniRead, maxCoords       , %iniFile%, Macro, maxCoords
+    IniRead, minCoords       , %iniFile%, Macro, minCoords
+    IniRead, autoRestart     , %iniFile%, Macro, autoRestart
+    IniRead, resetThreshold  , %iniFile%, Macro, resetThreshold
+    IniRead, keyDelay        , %iniFile%, Macro, keyDelay
+    IniRead, numInstances    , %iniFile%, Macro, numInstances
+    IniRead, layoutDimensions, %iniFile%, Macro, layoutDimensions
 
-    IniRead, timerActivated    , %iniFile%, Timer, timerActivated
+    IniRead, timerActive       , %iniFile%, Timer, timerActive
     IniRead, timerAnchor       , %iniFile%, Timer, anchor
-    IniRead, timerOffset       , %iniFile%, Timer, offset
-    timerOffset := StrSplit(timerOffset, ",")
+    IniRead, timerOffsetX      , %iniFile%, Timer, offsetX
+    IniRead, timerOffsetY      , %iniFile%, Timer, offsetY
     IniRead, timerFont         , %iniFile%, Timer, font
     IniRead, timerSize         , %iniFile%, Timer, size
     IniRead, timerColour       , %iniFile%, Timer, colour
     IniRead, timerDecimalPlaces, %iniFile%, Timer, decimalPlaces
     IniRead, timerRefreshRate  , %iniFile%, Timer, refreshRate
     IniRead, timerAutoSplit    , %iniFile%, Timer, autoSplit
+
+    IniRead, threadsUsage    , %iniFile%, Other, threadsUsage
+    IniRead, readScreenMemory, %iniFile%, Other, readScreenMemory
+}
+
+UpdateGuiElements()
+{
+    WB.document.getElementById("maxCoords").value := maxCoords
+    WB.document.getElementById("minCoords").value := minCoords
+    WB.document.getElementById("autoRestart").checked := autoRestart == "true" ? 1 : 0
+    WB.document.getElementById("resetThreshold").value := resetThreshold
+    WB.document.getElementById("keyDelay").value := keyDelay
+    WB.document.getElementById("numInstances").value := numInstances
+    WB.document.getElementById("layoutDimensions").value := layoutDimensions
+    WB.document.getElementById("threadsUsage").value := threadsUsage
+    WB.document.getElementById("readScreenMemory").checked := readScreenMemory == "true" ? 1 : 0
+
+    WB.document.getElementById("timerActive").checked := timerActive == "true" ? 1 : 0
+    WB.document.getElementById("timerAnchor").value := timerAnchor
+    WB.document.getElementById("timerOffsetX").value := timerOffsetX
+    WB.document.getElementById("timerOffsetY").value := timerOffsetY
+    WB.document.getElementById("timerFont").value := timerFont
+    WB.document.getElementById("timerSize").value := timerSize
+    WB.document.getElementById("timerColour").value := timerColour
+    WB.document.getElementById("timerDecimalPlaces").value := timerDecimalPlaces
 }

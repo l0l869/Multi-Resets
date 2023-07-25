@@ -1,0 +1,322 @@
+<html>
+
+<head>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            font-family: Arial;
+        }
+        #container {
+            background-color: rgb(50, 50, 50);
+            position: fixed;
+            width: 600px;
+            height: 400px;
+        }
+
+        button {
+            background-color: rgb(75, 75, 75);
+            color: rgb(180, 180, 180);
+            border: none;
+            cursor: pointer;
+        }
+
+        select {
+            background-color: rgb(75, 75, 75);
+            color: white;
+            border: none;
+            font-size: 18px;
+        }
+
+        select::-ms-expand {
+            display: none;
+        }
+
+        option:checked,
+        option:hover {
+            background-color: rgb(75, 75, 75);
+        }
+
+        input[type=number],
+        input[type=text] {
+            background-color: rgb(75, 75, 75);
+            color: white;
+            border: none;
+            font-size: 20px;
+            text-align: center;
+            height: fit-content;
+            width: 60px;
+        }
+
+        input::-ms-clear {
+            display: none;
+        }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type=checkbox] {
+            color: white;
+            border: none;
+            font-size: 1.17em;
+            height: 20px;
+            width: 20px;
+            position: relative;
+        }
+
+        h1, h2, h3 {
+            text-align: center;
+            color: white;
+        }
+
+        hr {
+            background-color: rgb(75, 75, 75);
+            height: 3px;
+            width: 90%;
+            position: relative;
+            left: 5%;
+            border: none;
+        }
+
+        #sidebar {
+            height: 100%;
+            width: 25%;
+            background-color: rgb(34, 34, 34);
+            float: left;
+        }
+
+        .sidebar_item {
+            padding: 7px
+        }
+
+        .sidebar_button {
+            height: 40px;
+            width: 100%;
+            font-size: 30px;
+            border-radius: 10px;
+        }
+
+        .sidebar_button:hover {
+            color: white;
+            outline: 2px solid;
+            transition: 0.3s;
+        }
+
+        .tab-content {
+            height: 100%;
+            width: 75%;
+            padding: 10px 10px;
+            float: left;
+            overflow: none;
+        }
+
+        .tab-content button {
+            height: 35px;
+            font-size: 20px;
+        }
+
+        .tab-content__row {
+            width: 100%;
+            display: flex;
+            justify-content: left;
+            margin: 10px 0px;
+            flex-wrap: wrap;
+        }
+
+        .tab-content__row div {
+            display: flex;
+            margin: 5px 0px;
+        }
+
+        .tab-content__row input,
+        .tab-content__row select {
+            margin: 0px 5px;
+        }
+
+    </style>
+
+    <script>
+
+        document.onselectstart =
+        document.oncontextmenu =
+        document.ondragstart =
+        function () {
+            return window.event && event.srcElement.tagName == "INPUT" || false;
+        };
+        function openTab(event, tab) {
+            var i, tabcontent, tabbuttons;
+
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+
+            tabbuttons = document.getElementsByClassName("sidebar_button");
+            for (i = 0; i < tabbuttons.length; i++) {
+                tabbuttons[i].className = tabbuttons[i].className.replace(" active", "");
+            }
+
+            document.getElementById(tab).style.display = "block";
+            event.currentTarget.className += " active";
+        }
+        
+    </script>
+</head>
+
+<body>
+    <div id="container">
+        <div id="sidebar">
+            <div class="sidebar_item">
+                <h1>Multi-Resets</h1>
+            </div>
+            <div class="sidebar_item">
+                <button class="sidebar_button" onclick="openTab(event, 'Macro')">Macro</button>
+            </div>
+            <div class="sidebar_item">
+                <button class="sidebar_button" onclick="openTab(event, 'Timer')">Timer</button>
+            </div>
+            <div class="sidebar_item">
+                <button class="sidebar_button" onclick="openTab(event, 'Other')">Other</button>
+            </div>
+        </div>
+
+        <div id="Macro" class="tab-content" style="display: block;">
+            <h2>Macro</h2>
+            <hr>
+            <div class="tab-content__row">
+                <div>
+                    <input type="checkbox" id="autoRestart" onchange="AHK('Gui_UpdateSetting', 'Macro', 'autoRestart', this.checked ? 'true' : 'false')">
+                    <h3>Auto Restart</h3>
+                </div>
+            </div>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Reset Threshold</h3>
+                    <input type="number" id="resetThreshold" oninput="AHK('Gui_UpdateSetting', 'Macro', 'resetThreshold', this.value)">
+                </div>
+            </div>
+            <hr>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Min Coordinate</h3>
+                    <input type="number" id="minCoords" oninput="AHK('Gui_UpdateSetting', 'Macro', 'minCoords', this.value)">
+                </div>
+            </div>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Max Coordinate</h3>
+                    <input type="number" id="maxCoords" oninput="AHK('Gui_UpdateSetting', 'Macro', 'maxCoords', this.value)">
+                </div>
+            </div>
+            <hr>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Number of Instances</h3>
+                    <input type="number" id="numInstances" oninput="AHK('Gui_UpdateSetting', 'Macro', 'numInstances', this.value)">
+                </div>
+            </div>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Layout</h3>
+                    <input type="text" id="layoutDimensions" oninput="AHK('Gui_UpdateSetting', 'Macro', 'layoutDimensions', this.value)">
+                </div>
+            </div>
+            <hr>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Key Delay</h3>
+                    <input type="number" id="keyDelay" oninput="AHK('Gui_UpdateSetting', 'Macro', 'keyDelay', this.value)">
+                </div>
+            </div>
+        </div>
+
+        <div id="Timer" class="tab-content" style="display: none;">
+            <h2>Timer</h2>
+            <hr>
+            <div class="tab-content__row">
+                <div>
+                    <input type="checkbox" id="timerActive" onchange="AHK('Gui_UpdateSetting', 'Timer', 'timerActive', this.checked ? 'true' : 'false')">
+                    <h3>Timer</h3>
+                </div>
+            </div>
+            <hr>
+            <div class="tab-content__row">
+                <div class="">
+                    <h3>Anchor</h3>
+                    <select id="timerAnchor" onchange="AHK('Gui_UpdateSetting', 'Timer', 'anchor', this.value)">
+                        <option value="TopLeft">Top Left</option>
+                        <option value="TopRight">Top Right</option>
+                        <option value="BottomLeft">Bottom Left</option>
+                        <option value="BottomRight">Bottom Right</option>
+                    </select>
+                </div>
+            </div>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Offset</h3>
+                    <input type="number" id="timerOffsetX" oninput="AHK('Gui_UpdateSetting', 'Timer', 'offsetX', this.value)">
+                    <input type="number" id="timerOffsetY" oninput="AHK('Gui_UpdateSetting', 'Timer', 'offsetY', this.value)">
+                </div>
+            </div>
+            <hr>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Font</h3>
+                    <input type="text" id="timerFont" style="width: 150px;" oninput="AHK('Gui_UpdateSetting', 'Timer', 'font', this.value)">
+                </div>
+            </div>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Size</h3>
+                    <input type="number" id="timerSize" oninput="AHK('Gui_UpdateSetting', 'Timer', 'size', this.value)">
+                </div>
+            </div>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Colour</h3>
+                    <input type="text" id="timerColour" style="width: 100px;" oninput="AHK('Gui_UpdateSetting', 'Timer', 'colour', this.value)">
+                </div>
+            </div>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Decimals</h3>
+                    <select id="timerDecimalPlaces" onchange="AHK('Gui_UpdateSetting', 'Timer', 'decimalPlaces', this.value)">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                    </select>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="Other" class="tab-content" style="display: none;">
+            <h2>Other</h2>
+            <hr>
+            <div class="tab-content__row">
+                <div>
+                    <input type="checkbox" id="readScreenMemory" onchange="AHK('Gui_UpdateSetting', 'Other', 'readScreenMemory', this.checked ? 'true' : 'false')">
+                    <h3>Read Screen Memory</h3>
+                </div>
+            </div>
+            <hr>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Threads Utilisation</h3>
+                    <input type="number" id="threadsUsage" oninput="AHK('Gui_UpdateSetting', 'Other', 'threadsUsage', this.value)">
+                </div>
+            </div>
+            <hr>
+            <div class="tab-content__row">
+                <button onclick="AHK('Gui_EditHotkeys')">Edit Hotkeys</button>
+            </div>
+        </div>
+
+
+    </div>
+</body>
+
+</html>

@@ -1,6 +1,7 @@
-global timerActivated
+global timerActive
      , timerAnchor
-     , timerOffset
+     , timerOffsetX
+     , timerOffsetY
      , timerFont
      , timerSize
      , timerColour
@@ -151,17 +152,17 @@ Class Timer
         switch (timerAnchor)
         {
             case "TopLeft":
-                anchorX := win.x1+timerOffset[1]
-                anchorY := win.y1+timerOffset[2]
+                anchorX := win.x1+timerOffsetX
+                anchorY := win.y1+timerOffsetY
             case "TopRight": 
-                anchorX := win.x2-textSize.W-timerOffset[1]
-                anchorY := win.y1+timerOffset[2]
+                anchorX := win.x2-textSize.W-timerOffsetX
+                anchorY := win.y1+timerOffsetY
             case "BottomLeft":
-                anchorX := win.x1+timerOffset[1]
-                anchorY := win.y2-textSize.H-timerOffset[2]
+                anchorX := win.x1+timerOffsetX
+                anchorY := win.y2-textSize.H-timerOffsetY
             case "BottomRight":
-                anchorX := win.x2-textSize.W-timerOffset[1]
-                anchorY := win.y2-textSize.H-timerOffset[2]
+                anchorX := win.x2-textSize.W-timerOffsetX
+                anchorY := win.y2-textSize.H-timerOffsetY
         }
 
         GuiControl, Timer:Move, textTimer, % "x" . anchorX " y" . anchorY
