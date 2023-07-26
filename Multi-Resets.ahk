@@ -33,8 +33,7 @@ LoadClickData()
 
 Menu, Tray, Icon, assets/_Icon.ico
 Menu, Tray, Add, MC Directory, OpenMinecraftDir
-FuncLaunchInstances := Func("LaunchInstances").Bind(numInstances)
-Menu, Tray, Add, Launch Instances, %FuncLaunchInstances%
+Menu, Tray, Add, Launch Instances, LaunchInstances
 Menu, Tray, Add, Close Instances, CloseInstances
 
 global WB

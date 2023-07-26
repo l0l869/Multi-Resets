@@ -1,4 +1,4 @@
-﻿LaunchInstances(amount)
+﻿LaunchInstances()
 {
     SetTitleMatchMode, 3
     CloseInstances()
@@ -7,7 +7,7 @@
     threadsMask := (2 ** Ceil(threadCount * threadsUsage)) - 1
     Sleep, 500
 
-    loop, %amount% {
+    loop, %numInstances% {
         Run, shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App
         Sleep, 500
 
@@ -27,7 +27,7 @@
         {
             MsgBox,4,, % "Error: Failed to get process ID.`nDo you want to try and relaunch instances?"
             IfMsgBox, Yes
-                LaunchInstances(amount)
+                LaunchInstances()
             return
         }
 
