@@ -76,6 +76,10 @@ LoadIniConfigs()
         timer1.__Delete()
         timer1 := ""
     }
+
+    ; checks invalid value. Mainly because i messed merging configs from older versions to newer
+    if (resetKey == "" || restartKey == "" || stopresetKey == "")
+        return SetDefaultConfigs(), LoadIniConfigs()
 }
 
 UpdateGuiElements()
@@ -98,4 +102,34 @@ UpdateGuiElements()
     WB.document.getElementById("timerSize").value := timerSize
     WB.document.getElementById("timerColour").value := timerColour
     WB.document.getElementById("timerDecimalPlaces").value := timerDecimalPlaces
+}
+
+SetDefaultConfigs()
+{
+    IniWrite, ^r  , %iniFile%, Hotkeys, Reset
+    IniWrite, ^tab, %iniFile%, Hotkeys, StopReset
+    IniWrite, ^!r , %iniFile%, Hotkeys, Restart
+
+    IniWrite, 1800 , %iniFile%, Macro, maxCoords
+    IniWrite, 700  , %iniFile%, Macro, minCoords
+    IniWrite, false, %iniFile%, Macro, autoRestart
+    IniWrite, 120  , %iniFile%, Macro, resetThreshold
+    IniWrite, 50   , %iniFile%, Macro, keyDelay
+    IniWrite, 4    , %iniFile%, Macro, numInstances
+    layout := "2,2"
+    IniWrite, %layout%, %iniFile%, Macro, layoutDimensions
+
+    IniWrite, true     , %iniFile%, Timer, timerActive
+    IniWrite, TopRight , %iniFile%, Timer, anchor
+    IniWrite, 25       , %iniFile%, Timer, offsetX
+    IniWrite, 25       , %iniFile%, Timer, offsetY
+    IniWrite, Mojangles, %iniFile%, Timer, font
+    IniWrite, 35       , %iniFile%, Timer, size
+    IniWrite, FFFFFF   , %iniFile%, Timer, colour
+    IniWrite, 3        , %iniFile%, Timer, decimalPlaces
+    IniWrite, 0        , %iniFile%, Timer, refreshRate
+    IniWrite, 1        , %iniFile%, Timer, autoSplit
+
+    IniWrite, 0.8  , %iniFile%, Other, threadsUsage
+    IniWrite, false, %iniFile%, Other, readScreenMemory
 }

@@ -27,9 +27,9 @@ global screenClicks := []
 global worldcreationClicks := []
 global MCInstances := []
 
-FetchUpdates()
 LoadIniConfigs()
 LoadClickData()
+FetchUpdates()
 
 Menu, Tray, Icon, assets/_Icon.ico
 Menu, Tray, Add, MC Directory, OpenMinecraftDir

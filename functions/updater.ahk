@@ -64,8 +64,8 @@ MergeConfigs(source, destination)
 
     IniWrite, %timerActivated%    , %newIniFile%, Timer, timerActive
     IniWrite, %timerAnchor%       , %newIniFile%, Timer, anchor
-    IniWrite, %timerOffset%       , %newIniFile%, Timer, offsetX
-    IniWrite, %timerOffset%       , %newIniFile%, Timer, offsetY
+    IniWrite, %timerOffsetX%      , %newIniFile%, Timer, offsetX
+    IniWrite, %timerOffsetY%      , %newIniFile%, Timer, offsetY
     IniWrite, %timerFont%         , %newIniFile%, Timer, font
     IniWrite, %timerSize%         , %newIniFile%, Timer, size
     IniWrite, %timerColour%       , %newIniFile%, Timer, colour
