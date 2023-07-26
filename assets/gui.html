@@ -1,6 +1,8 @@
+<!DOCTYPE HTML>
 <html>
 
 <head>
+    <meta http-equiv='x-ua-compatible' content='IE=Edge'>
     <style>
         * {
             box-sizing: border-box;
@@ -75,8 +77,6 @@
             background-color: rgb(75, 75, 75);
             height: 3px;
             width: 90%;
-            position: relative;
-            left: 5%;
             border: none;
         }
 
@@ -109,7 +109,8 @@
             width: 75%;
             padding: 10px 10px;
             float: left;
-            overflow: none;
+            overflow-y: scroll;
+            -ms-overflow-style: none;
         }
 
         .tab-content button {
@@ -313,6 +314,14 @@
             <div class="tab-content__row">
                 <button onclick="AHK('Gui_EditHotkeys')">Edit Hotkeys</button>
             </div>
+            <div class="tab-content__row">
+                <button onclick="AHK('Gui_RegisterMulti')">Register Multi</button>
+            </div>
+            <div class="tab-content__row">
+                <button onclick="AHK('Gui_Setup')">Setup</button>
+            </div>
+            <hr>
+
         </div>
 
 

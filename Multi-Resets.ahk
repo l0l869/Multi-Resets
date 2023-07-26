@@ -22,6 +22,7 @@ global MCversion
 global offsetsCoords
 global offsetsScreen
 global lastRestart
+global timer
 global screenClicks := []
 global worldcreationClicks := []
 global MCInstances := []
@@ -39,6 +40,10 @@ Menu, Tray, Add, Close Instances, CloseInstances
 global WB
 Gui, Main:Add, ActiveX, vWB x0 y0 w600 h400, shell.explorer
 WB.Silent := true
+; slow but if you ever want to utilise directory within html
+; WB.Navigate("file:///" A_ScriptDir "\assets\gui.html") 
+; while (WB.readystate != 4 || WB.busy)
+; 	Sleep, 10
 WB.Navigate("about:<!DOCTYPE HTML><meta http-equiv='x-ua-compatible' content='IE=Edge'>")
 FileRead, html, assets/gui.html
 WB.Document.write(html)
@@ -58,9 +63,6 @@ DllCall(FlushMenuThemes)
 
 Gui, Main:Show, w600 h400, Multi-Resets
 UpdateGuiElements()
-
-if (timerActive == "true")
-    timer := new Timer()
 
 #If WinActive("Minecraft")
     Hotkey, %resetKey%, Reset
@@ -112,6 +114,14 @@ Gui_EditHotkeys(){
 
         Run, Multi-Resets.ahk
     return
+}
+
+Gui_RegisterMulti(){
+    Run, configs\RegisterMulti.ahk
+}
+
+Gui_Setup(){
+    Run, configs\Setup.ahk
 }
 
 JS_AHK(func, prms*) {

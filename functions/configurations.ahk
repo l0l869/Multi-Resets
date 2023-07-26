@@ -64,6 +64,13 @@ LoadIniConfigs()
 
     IniRead, threadsUsage    , %iniFile%, Other, threadsUsage
     IniRead, readScreenMemory, %iniFile%, Other, readScreenMemory
+
+    if (!timer.timeDisplayed && timerActive == "true") {
+        timer := new Timer()
+    } else if (timer && timerActive == "false") { ; not working yet
+        timer.reset()
+        timer := ""
+    }
 }
 
 UpdateGuiElements()
