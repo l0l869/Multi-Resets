@@ -65,11 +65,16 @@ LoadIniConfigs()
     IniRead, threadsUsage    , %iniFile%, Other, threadsUsage
     IniRead, readScreenMemory, %iniFile%, Other, readScreenMemory
 
-    if (!timer.timeDisplayed && timerActive == "true") {
-        timer := new Timer()
-    } else if (timer && timerActive == "false") { ; not working yet
-        timer.reset()
-        timer := ""
+    if (!timer1 && timerActive == "true")
+    {
+        timer1 := new Timer()
+    } else if (timer1 && timerActive == "false") {
+        updateFunction := timer1.updateFunction
+        SetTimer, % updateFunction, off
+        timer1.updateFunction := ""
+        timer1.reset()
+        timer1.__Delete()
+        timer1 := ""
     }
 }
 

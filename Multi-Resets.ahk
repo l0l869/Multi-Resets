@@ -22,7 +22,7 @@ global MCversion
 global offsetsCoords
 global offsetsScreen
 global lastRestart
-global timer
+global timer1
 global screenClicks := []
 global worldcreationClicks := []
 global MCInstances := []
