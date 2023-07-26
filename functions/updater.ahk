@@ -54,25 +54,27 @@ MergeConfigs(source, destination)
     IniWrite, %stopresetKey%, %newIniFile%, Hotkeys, StopReset
     IniWrite, %restartKey%  , %newIniFile%, Hotkeys, Restart
     
-    IniWrite, %maxCoords%       , %newIniFile%, Settings, maxCoords
-    IniWrite, %minCoords%       , %newIniFile%, Settings, minCoords
-    IniWrite, %autoRestart%     , %newIniFile%, Settings, autoRestart
-    IniWrite, %resetThreshold%  , %newIniFile%, Settings, resetThreshold
-    IniWrite, %keyDelay%        , %newIniFile%, Settings, keyDelay
-    IniWrite, %numInstances%    , %newIniFile%, Settings, numInstances
-    IniWrite, %layoutDimensions%, %newIniFile%, Settings, layoutDimensions
-    IniWrite, %threadsUsage%    , %newIniFile%, Settings, threadsUsage
-    IniWrite, %readScreenMemory%, %newIniFile%, Settings, readScreenMemory
+    IniWrite, %maxCoords%       , %newIniFile%, Macro, maxCoords
+    IniWrite, %minCoords%       , %newIniFile%, Macro, minCoords
+    IniWrite, %autoRestart%     , %newIniFile%, Macro, autoRestart
+    IniWrite, %resetThreshold%  , %newIniFile%, Macro, resetThreshold
+    IniWrite, %keyDelay%        , %newIniFile%, Macro, keyDelay
+    IniWrite, %numInstances%    , %newIniFile%, Macro, numInstances
+    IniWrite, %layoutDimensions%, %newIniFile%, Macro, layoutDimensions
 
-    IniWrite, %timerActivated%    , %newIniFile%, Timer, timerActivated
+    IniWrite, %timerActivated%    , %newIniFile%, Timer, timerActive
     IniWrite, %timerAnchor%       , %newIniFile%, Timer, anchor
-    IniWrite, %timerOffset%       , %newIniFile%, Timer, offset
+    IniWrite, %timerOffset%       , %newIniFile%, Timer, offsetX
+    IniWrite, %timerOffset%       , %newIniFile%, Timer, offsetY
     IniWrite, %timerFont%         , %newIniFile%, Timer, font
     IniWrite, %timerSize%         , %newIniFile%, Timer, size
     IniWrite, %timerColour%       , %newIniFile%, Timer, colour
     IniWrite, %timerDecimalPlaces%, %newIniFile%, Timer, decimalPlaces
     IniWrite, %timerRefreshRate%  , %newIniFile%, Timer, refreshRate
     IniWrite, %timerAutoSplit%    , %newIniFile%, Timer, autoSplit
+
+    IniWrite, %threadsUsage%    , %newIniFile%, Other, threadsUsage
+    IniWrite, %readScreenMemory%, %newIniFile%, Other, readScreenMemory
 
     FileCopy, %source%\attempts.txt, %destination%, 1
     FileCopy, %source%\clicks.txt, %destination%, 1
