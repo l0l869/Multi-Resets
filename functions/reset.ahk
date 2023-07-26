@@ -15,7 +15,7 @@ StopReset:
 return
 
 Restart:
-    LaunchInstances(numInstances)
+    LaunchInstances()
 return
 
 ResetInstances()
