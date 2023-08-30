@@ -1,4 +1,4 @@
-﻿Reset:
+Reset:
     if ExitIfRunning()
         return
 
@@ -137,6 +137,8 @@ ExitInstance()
         if (instance.isResetting == -1) {
             WinRestore, % "ahk_id " instance.hwnd
             instance.isResetting := 1
+            threadsMask := (2 ** Ceil(threadCount * threadsUsage)) - 1
+            SetAffinity(instance.pid, threadsMask)
         } else if (instance.isResetting < -10) {
             ResumeProcess(instance.pid)
             instance.isResetting += 100
@@ -144,8 +146,6 @@ ExitInstance()
     }
     Sleep, 100
 
-    threadsMask := (2 ** Ceil(threadCount * threadsUsage)) - 1
-    SetAffinity(instance.pid, threadsMask)
     ResetInstances()
     return 1
 }
