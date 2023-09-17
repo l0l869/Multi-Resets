@@ -11,7 +11,7 @@ SendMode, Input
 SetMouseDelay, -1
 EnvGet, A_LocalAppData, LocalAppData
 
-global SCRIPT_VERSION := 20230917.22
+global SCRIPT_VERSION := 20230918.00
 global iniFile := A_ScriptDir "\configs\configs.ini"
 global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang"
 
@@ -19,7 +19,8 @@ EnvGet, threadCount, NUMBER_OF_PROCESSORS
 global threadCount
 global scaleBy := A_ScreenDPI / 96
 global MCversion
-global offsetsCoords
+global offsetsX
+global offsetsZ
 global offsetsScreen
 global lastRestart
 global timer1

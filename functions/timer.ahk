@@ -67,12 +67,12 @@ Class Timer
             return
 
         waiting := true
-        xCoord := ReadMemoryValue(instance.proc, "Float", offsetsCoords*)
+        xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
 
         while (waiting && this.currentInstance)
         {
-            newCoord := ReadMemoryValue(instance.proc, "Float", offsetsCoords*)
-            hasInputted := (GetKeyState("W") || GetKeyState("A") || GetKeyState("S") || GetKeyState("D") || GetKeyState("Space"))
+            newCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
+            hasInputted := (GetKeyState("W") || GetKeyState("A") || GetKeyState("S") || GetKeyState("D") || GetKeyState("Space")) && WinActive("Minecraft")
             if (xCoord != newCoord || hasInputted)
             {
                 this.start()
@@ -171,11 +171,10 @@ Class Timer
     checkAutoSplit()
     {
         baseOffset := ""
-        if (offsetsCoords[1] == 0x036A3C18)
-            baseOffset := 0x036AB670 ;1.16.10
-
-        if (offsetsCoords[1] == 0x0369D0A8)
-            baseOffset := 0x036A4B00 ;1.16.1
+        if (MCversion == "1.16.10.2")
+            baseOffset := 0x036AB670
+        else if (MCversion == "1.16.1.2")
+            baseOffset := 0x036A4B00
 
         instanceProc := MCInstances[this.currentInstance].proc
         if (baseOffset && instanceProc.read(instanceProc.baseAddress + baseOffset, "Char", 0x28, 0x198, 0x10, 0x150, 0x798) == 2)

@@ -103,11 +103,17 @@ GetMinecraftProcesses()
 
 GetMinecraftVersion()
 {
-    if !WinExist("Minecraft")
-        return -1
+    if WinExist("Minecraft")
+        exeDir := new _ClassMemory("ahk_exe Minecraft.Windows.exe", "PROCESS_VM_READ").GetModuleFileNameEx()
+    else {
+        cmd := "(Get-AppxPackage -Name Microsoft.MinecraftUWP).InstallLocation > '" A_ScriptDir "\configs\installdir.txt'"
+        RunWait, PowerShell.exe -Command &{%cmd%},, Hide
+        FileRead, exeDir, configs\installdir.txt
+        FileDelete, configs\installdir.txt
+        exeDir := Trim(exeDir, "`r`n") . "\Minecraft.Windows.exe"
+    }
 
-    FileGetVersion, MCversion, % new _ClassMemory("ahk_exe Minecraft.Windows.exe", "PROCESS_VM_READ").GetModuleFileNameEx()
-
+    FileGetVersion, MCversion, %exeDir%
     return MCversion
 }
 
@@ -115,17 +121,19 @@ ConfigureMinecraftPointers()
 {
     switch GetMinecraftVersion()
     {
-        case "1.16.10.2": offsetsCoords := [0x036A3C18, 0xA8, 0x10, 0x954]
-        case "1.16.1.2" : offsetsCoords := [0x0369D0A8, 0xA8, 0x10, 0x954]
+        case "1.19.50.2": offsetsX      := [0x048E3910, 0x10, 0x128, 0x0, 0xF8, 0x398, 0x18, 0x0, 0x8] 
+                          offsetsZ      := [0x048E3910, 0x10, 0x128, 0x0, 0xF8, 0x398, 0x18, 0x0, 0x10]
+        case "1.16.10.2": offsetsX      := [0x036A3C18, 0xA8, 0x10, 0x954]
+        case "1.16.1.2" : offsetsX      := [0x0369D0A8, 0xA8, 0x10, 0x954]
                           offsetsScreen := [0x036A4B00, 0x28, 0x198, 0x10, 0x210, 0x18]
-        case "1.16.0.58": offsetsCoords := [0x038464D8, 0x190, 0x20, 0x0, 0x2C]
-        case "1.16.0.57": offsetsCoords := [0x03846490, 0x190, 0x20, 0x0, 0x2C]
-        case "1.16.0.51": offsetsCoords := [0x035C6298, 0x190, 0x20, 0x0, 0x2C]
-        case "1.14.60.5": offsetsCoords := [0x0307D3A0, 0x30, 0xF0, 0x110]
-        case "1.2.13.54": offsetsCoords := [0x01FA1888, 0x0, 0x10, 0x10, 0x20, 0x0, 0x2C]
+        case "1.16.0.58": offsetsX      := [0x038464D8, 0x190, 0x20, 0x0, 0x2C]
+        case "1.16.0.57": offsetsX      := [0x03846490, 0x190, 0x20, 0x0, 0x2C]
+        case "1.16.0.51": offsetsX      := [0x035C6298, 0x190, 0x20, 0x0, 0x2C]
+        case "1.14.60.5": offsetsX      := [0x0307D3A0, 0x30, 0xF0, 0x110]
+        case "1.2.13.54": offsetsX      := [0x01FA1888, 0x0, 0x10, 0x10, 0x20, 0x0, 0x2C]
                           offsetsScreen := [0x01F2F5F8, 0xD0, 0x58]
 
-        default: Msgbox, Unsupported Version: %MCversion%.
+        default: Msgbox, Auto-reset is not supported for this version: %MCversion%.
     }
 }
 

@@ -1,6 +1,7 @@
 global resetMode
 global maxCoords
 global minCoords
+global originDistance
 global autoRestart
 global resetThreshold
 global keyDelay
@@ -51,6 +52,7 @@ LoadIniConfigs()
     IniRead, resetMode       , %iniFile%, Macro, resetMode
     IniRead, maxCoords       , %iniFile%, Macro, maxCoords
     IniRead, minCoords       , %iniFile%, Macro, minCoords
+    IniRead, originDistance  , %iniFile%, Macro, originDistance
     IniRead, autoRestart     , %iniFile%, Macro, autoRestart
     IniRead, resetThreshold  , %iniFile%, Macro, resetThreshold
     IniRead, keyDelay        , %iniFile%, Macro, keyDelay
@@ -93,6 +95,7 @@ UpdateGuiElements()
     WB.document.getElementById("resetMode").value := resetMode
     WB.document.getElementById("maxCoords").value := maxCoords
     WB.document.getElementById("minCoords").value := minCoords
+    WB.document.getElementById("originDistance").value := originDistance
     WB.document.getElementById("autoRestart").checked := autoRestart == "true" ? 1 : 0
     WB.document.getElementById("resetThreshold").value := resetThreshold
     WB.document.getElementById("keyDelay").value := keyDelay
@@ -124,6 +127,7 @@ SetDefaultConfigs()
     IniWrite, resetMode, %iniFile%, Macro, resetMode
     IniWrite, 1800 , %iniFile%, Macro, maxCoords
     IniWrite, 700  , %iniFile%, Macro, minCoords
+    IniWrite, 400  , %iniFile%, Macro, originDistance
     IniWrite, false, %iniFile%, Macro, autoRestart
     IniWrite, 120  , %iniFile%, Macro, resetThreshold
     IniWrite, 50   , %iniFile%, Macro, keyDelay

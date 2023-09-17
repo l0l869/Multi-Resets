@@ -89,14 +89,8 @@ IterateReset(instance)
 
             if(resetMode == "manual")
                 return instance.isResetting := (instance.isResetting ? -2 : 0)
-
-            startTick := A_TickCount
-            while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsCoords*)
-                if (A_TickCount - startTick > 2000)
-                    return
-
-            if (xCoord < minCoords || xCoord > maxCoords)
-                return instance.isResetting := (instance.isResetting ? 1 : 0) ;dumb fix for stop reset
+            else if (shouldAutoReset(instance))
+                return instance.isResetting := (instance.isResetting ? 1 : 0)
 
             return RunInstance(instance)
 
@@ -129,7 +123,36 @@ IterateReset(instance)
     }
 }
 
-IsResettingInstances(){
+shouldAutoReset(instance)
+{
+    if (MCversion == "1.19.50.2") ; or: if (offsetsZ)
+    {
+        startTick := A_TickCount
+        while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
+            if (A_TickCount - startTick > 2000)
+                return true
+
+        startTick := A_TickCount
+        while !zCoord := ReadMemoryValue(instance.proc, "Float", offsetsZ*)
+            if (A_TickCount - startTick > 2000)
+                return true
+
+        if (Sqrt(xCoord**2 + zCoord**2) < originDistance)
+            return true
+    }
+    else {
+        startTick := A_TickCount
+        while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
+            if (A_TickCount - startTick > 2000)
+                return true
+
+        if (xCoord < minCoords || xCoord > maxCoords)
+            return true
+    }
+}
+
+
+IsResettingInstances() {
     for k, instance in MCInstances
         if (instance.isResetting > 0)
             return true
