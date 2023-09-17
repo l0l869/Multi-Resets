@@ -1,21 +1,52 @@
-Reset:
-    if ExitIfRunning()
-        return
+﻿Reset:
+    hasExited := ExitIfRunning()
 
-    for k, instance in MCInstances
-        if (instance.isResetting == 0)
-            instance.isResetting := 1
+    if (resetMode == "manual")
+    {
+        if !hasExited
+            for k, instance in MCInstances
+                if (instance.isResetting <= 0)
+                    instance.isResetting := 1
 
-    ResetInstances()
+        ResetInstances()
+    }
+    else if (resetMode == "auto")
+    {
+        for k, instance in MCInstances
+            if (instance.isResetting == 0)
+                instance.isResetting := 1
+
+        ResetInstances()
+    }
 return
 
 StopReset:
+    if (resetMode == "manual" && !IsResettingInstances()) {
+        EnterHoveredInstance()
+        return
+    }
+
     for k, instance in MCInstances
         instance.isResetting := 0
 return
 
 Restart:
     LaunchInstances()
+return
+
+StartTimer:
+    if timer1
+        timer1.start()
+return
+
+StopTimer:
+    if timer1
+        timer1.stop()
+Return
+
+ResetTimer:
+    if timer1
+        timer1.reset()
 return
 
 ResetInstances()
@@ -29,7 +60,7 @@ ResetInstances()
     while (IsResettingInstances())
         for k, instance in MCInstances
         {
-            if (!instance.isResetting)
+            if (instance.isResetting <= 0)
                 Continue
 
             IterateReset(instance)
@@ -55,6 +86,9 @@ IterateReset(instance)
             Send, {Esc}
             if(instance.isResetting == 1)
                 return instance.isResetting := 2
+
+            if(resetMode == "manual")
+                return instance.isResetting := (instance.isResetting ? -2 : 0)
 
             startTick := A_TickCount
             while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsCoords*)
@@ -118,7 +152,7 @@ RunInstance(instance)
 
     for k, inst in MCInstances
     {
-        if (inst.isResetting >= 0)
+        if (inst.isResetting >= 0 || inst.isResetting == -2)
         {
             inst.isResetting -= 100
             SuspendProcess(inst.pid)
@@ -146,8 +180,18 @@ ExitInstance()
     }
     Sleep, 100
 
-    ResetInstances()
     return 1
+}
+
+EnterHoveredInstance()
+{
+    CoordMode, Mouse, Screen
+    MouseGetPos, mX, mY
+    for k, instance in MCInstances
+    {
+        if ((mX > instance.x1 && mX < instance.x2) && (mY > instance.y1 && mY < instance.y2))
+            return RunInstance(instance)
+    }
 }
 
 GetCurrentScreen(instance)

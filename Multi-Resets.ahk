@@ -1,4 +1,4 @@
-﻿#NoEnv
+#NoEnv
 #SingleInstance, Force
 #Include, %A_ScriptDir%
 #Include, functions/configurations.ahk
@@ -11,7 +11,7 @@ SendMode, Input
 SetMouseDelay, -1
 EnvGet, A_LocalAppData, LocalAppData
 
-global SCRIPT_VERSION := 20230717.16
+global SCRIPT_VERSION := 20230917.22
 global iniFile := A_ScriptDir "\configs\configs.ini"
 global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang"
 
@@ -66,6 +66,12 @@ UpdateGuiElements()
 #If WinActive("Minecraft")
     Hotkey, %resetKey%, Reset
     Hotkey, %stopresetKey%, StopReset
+    if starttimerKey
+        Hotkey, %starttimerKey%, StartTimer
+    if stoptimerKey
+        Hotkey, %stoptimerKey%, StopTimer
+    if resettimerKey
+        Hotkey, %resettimerKey%, ResetTimer
 #If
 Hotkey, %restartKey%, Restart
 RCtrl::ExitApp
@@ -81,16 +87,24 @@ Gui_UpdateSetting(section, key, value){
 
 Gui_EditHotkeys(){
     global hotkeyboxReset, hotkeyboxStopReset, hotkeyboxRestart
+    global hotkeyboxStartTimer, hotkeyboxStopTimer, hotkeyboxResetTimer
     Gui, hotkeysWin:Color, 0x323232
     Gui, hotkeysWin:Font, cWhite
-    Gui, hotkeysWin:Show, w170 h180
+    WinGetPos, X, Y, W, H, Multi-Resets
+    Gui, hotkeysWin:Show, % "w330 " "h180 " "x" X+W/2-330/2 " y" Y+H/2-180/2
     Gui, hotkeysWin:add, Hotkey, x10 y20 w150 vhotkeyboxReset
     Gui, hotkeysWin:add, Hotkey, x10 y65 w150 vhotkeyboxStopReset
     Gui, hotkeysWin:add, Hotkey, x10 y110 w150 vhotkeyboxRestart
     Gui, hotkeysWin:add, Text  , x10 y5,Reset
     Gui, hotkeysWin:add, Text  , x10 y50,Stop Reset
     Gui, hotkeysWin:add, Text  , x10 y95,Restart MC
-    Gui, hotkeysWin:add, Button, x10 y140 w150 h30 gSaveHotkeys,Save
+    Gui, hotkeysWin:add, Hotkey, x170 y20 w150 vhotkeyboxStartTimer
+    Gui, hotkeysWin:add, Hotkey, x170 y65 w150 vhotkeyboxStopTimer
+    Gui, hotkeysWin:add, Hotkey, x170 y110 w150 vhotkeyboxResetTimer
+    Gui, hotkeysWin:add, Text  , x170 y5,Start Timer
+    Gui, hotkeysWin:add, Text  , x170 y50,Stop Timer
+    Gui, hotkeysWin:add, Text  , x170 y95,Reset Timer
+    Gui, hotkeysWin:add, Button, x10 y140 w310 h30 gSaveHotkeys,Save
 
     IniRead, iniKey, %iniFile%, Hotkeys, Reset
         GuiControl, hotkeysWin:, hotkeyboxReset, %iniKey%
@@ -101,6 +115,15 @@ Gui_EditHotkeys(){
     IniRead, iniKey, %iniFile%, Hotkeys, Restart
         GuiControl, hotkeysWin:, hotkeyboxRestart, %iniKey%
 
+    IniRead, iniKey, %iniFile%, Hotkeys, StartTimer
+        GuiControl, hotkeysWin:, hotkeyboxStartTimer, %iniKey%
+        
+    IniRead, iniKey, %iniFile%, Hotkeys, StopTimer
+        GuiControl, hotkeysWin:, hotkeyboxStopTimer, %iniKey%
+
+    IniRead, iniKey, %iniFile%, Hotkeys, ResetTimer
+        GuiControl, hotkeysWin:, hotkeyboxResetTimer, %iniKey%
+
     return
 
     SaveHotkeys:
@@ -110,6 +133,10 @@ Gui_EditHotkeys(){
         IniWrite, %hotkeyboxReset%, %iniFile%, Hotkeys, Reset
         IniWrite, %hotkeyboxStopReset%, %iniFile%, Hotkeys, StopReset
         IniWrite, %hotkeyboxRestart%, %iniFile%, Hotkeys, Restart
+
+        IniWrite, %hotkeyboxStartTimer%, %iniFile%, Hotkeys, StartTimer
+        IniWrite, %hotkeyboxStopTimer%, %iniFile%, Hotkeys, StopTimer
+        IniWrite, %hotkeyboxResetTimer%, %iniFile%, Hotkeys, ResetTimer
 
         Run, Multi-Resets.ahk
     return

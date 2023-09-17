@@ -1,3 +1,4 @@
+global resetMode
 global maxCoords
 global minCoords
 global autoRestart
@@ -8,6 +9,7 @@ global layoutDimensions
 global threadsUsage
 global readScreenMemory
 global resetKey, stopresetKey, restartKey
+global starttimerKey, stoptimerKey, resettimerKey
 
 LoadClickData()
 {
@@ -42,7 +44,11 @@ LoadIniConfigs()
     IniRead, resetKey    , %iniFile%, Hotkeys, Reset
     IniRead, stopresetKey, %iniFile%, Hotkeys, StopReset
     IniRead, restartKey  , %iniFile%, Hotkeys, Restart
+    IniRead, starttimerKey , %iniFile%, Hotkeys, StartTimer
+    IniRead, stoptimerKey  , %iniFile%, Hotkeys, StopTimer
+    IniRead, resettimerKey, %iniFile%, Hotkeys, ResetTimer
 
+    IniRead, resetMode       , %iniFile%, Macro, resetMode
     IniRead, maxCoords       , %iniFile%, Macro, maxCoords
     IniRead, minCoords       , %iniFile%, Macro, minCoords
     IniRead, autoRestart     , %iniFile%, Macro, autoRestart
@@ -84,6 +90,7 @@ LoadIniConfigs()
 
 UpdateGuiElements()
 {
+    WB.document.getElementById("resetMode").value := resetMode
     WB.document.getElementById("maxCoords").value := maxCoords
     WB.document.getElementById("minCoords").value := minCoords
     WB.document.getElementById("autoRestart").checked := autoRestart == "true" ? 1 : 0
@@ -109,7 +116,12 @@ SetDefaultConfigs()
     IniWrite, ^r  , %iniFile%, Hotkeys, Reset
     IniWrite, ^tab, %iniFile%, Hotkeys, StopReset
     IniWrite, ^!r , %iniFile%, Hotkeys, Restart
+    IniWrite, "", %iniFile%, Hotkeys, StartTimer
+    IniWrite, "", %iniFile%, Hotkeys, StopTimer
+    IniWrite, "", %iniFile%, Hotkeys, ResetTimer
 
+    resetMode := "auto"
+    IniWrite, resetMode, %iniFile%, Macro, resetMode
     IniWrite, 1800 , %iniFile%, Macro, maxCoords
     IniWrite, 700  , %iniFile%, Macro, minCoords
     IniWrite, false, %iniFile%, Macro, autoRestart

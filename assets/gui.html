@@ -136,6 +136,10 @@
             margin: 0px 5px;
         }
 
+        .tab-content__row button {
+            width: 100%;
+        }
+
     </style>
 
     <script>
@@ -199,6 +203,15 @@
                 </div>
             </div>
             <hr>
+            <div class="tab-content__row">
+                <div class="">
+                    <h3>Reset Mode</h3>
+                    <select id="resetMode" onchange="AHK('Gui_UpdateSetting', 'Macro', 'resetMode', this.value)">
+                        <option value="auto">Auto</option>
+                        <option value="manual">Manual</option>
+                    </select>
+                </div>
+            </div>
             <div class="tab-content__row">
                 <div>
                     <h3>Min Coordinate</h3>
