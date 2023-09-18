@@ -165,6 +165,9 @@ FinishSetup()
     txt := FileOpen("clicks.txt", "w")
     txt.write(clickDataString)
     txt.close()
+
+    if WinExist("Multi-Resets")
+        Run, %A_ScriptDir%/../Multi-Resets.ahk
     ExitApp
 }
 
