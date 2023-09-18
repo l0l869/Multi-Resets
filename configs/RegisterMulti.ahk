@@ -10,15 +10,11 @@ IfMsgBox, No
 
 
 PackageName := "Microsoft.MinecraftUWP"
-getPackageCommand := "powershell.exe Get-AppxPackage -Name " PackageName
+getPackageCommand := "powershell.exe (Get-AppxPackage -Name " PackageName ").'PackageFullName'"
 
 shell := ComObjCreate("WScript.Shell")
 exec := shell.Exec(ComSpec " /C " getPackageCommand)
-output := exec.StdOut.ReadAll()
-
-fullPackageName := ""
-RegExMatch(output, "PackageFullName\s*:\s*(\S+)", returnMatches)
-fullPackageName := returnMatches1
+fullPackageName := Trim(exec.StdOut.ReadAll(), "`r`n")
 
 if !fullPackageName {
     MsgBox, % "Couldn't get package name."
