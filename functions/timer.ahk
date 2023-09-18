@@ -115,7 +115,7 @@ Class Timer
 
     tick()
     {
-        if timerAutoSplit
+        if (timerAutoSplit == "true")
             this.checkAutoSplit()
         this.elapsedTick := A_TickCount-this.startTick
         GuiControl, Timer:, textTimer, % this.FormatTime(this.elapsedTick)

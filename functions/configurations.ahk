@@ -45,8 +45,8 @@ LoadIniConfigs()
     IniRead, resetKey    , %iniFile%, Hotkeys, Reset
     IniRead, stopresetKey, %iniFile%, Hotkeys, StopReset
     IniRead, restartKey  , %iniFile%, Hotkeys, Restart
-    IniRead, starttimerKey , %iniFile%, Hotkeys, StartTimer
-    IniRead, stoptimerKey  , %iniFile%, Hotkeys, StopTimer
+    IniRead, starttimerKey, %iniFile%, Hotkeys, StartTimer
+    IniRead, stoptimerKey , %iniFile%, Hotkeys, StopTimer
     IniRead, resettimerKey, %iniFile%, Hotkeys, ResetTimer
 
     IniRead, resetMode       , %iniFile%, Macro, resetMode
@@ -112,6 +112,7 @@ UpdateGuiElements()
     WB.document.getElementById("timerSize").value := timerSize
     WB.document.getElementById("timerColour").value := timerColour
     WB.document.getElementById("timerDecimalPlaces").value := timerDecimalPlaces
+    WB.document.getElementById("timerAutoSplit").checked := timerAutoSplit == "true" ? 1 : 0
 }
 
 SetDefaultConfigs()

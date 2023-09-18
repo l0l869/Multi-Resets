@@ -191,19 +191,6 @@
             <h2>Macro</h2>
             <hr>
             <div class="tab-content__row">
-                <div>
-                    <input type="checkbox" id="autoRestart" onchange="AHK('Gui_UpdateSetting', 'Macro', 'autoRestart', this.checked ? 'true' : 'false')">
-                    <h3>Auto Restart</h3>
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Reset Threshold</h3>
-                    <input type="number" id="resetThreshold" oninput="AHK('Gui_UpdateSetting', 'Macro', 'resetThreshold', this.value)">
-                </div>
-            </div>
-            <hr>
-            <div class="tab-content__row">
                 <div class="">
                     <h3>Reset Mode</h3>
                     <select id="resetMode" onchange="AHK('Gui_UpdateSetting', 'Macro', 'resetMode', this.value)">
@@ -228,6 +215,19 @@
                 <div>
                     <h3>Distance from 0,0 (1.19.50)</h3>
                     <input type="number" id="originDistance" oninput="AHK('Gui_UpdateSetting', 'Macro', 'originDistance', this.value)">
+                </div>
+            </div>
+            <hr>
+            <div class="tab-content__row">
+                <div>
+                    <input type="checkbox" id="autoRestart" onchange="AHK('Gui_UpdateSetting', 'Macro', 'autoRestart', this.checked ? 'true' : 'false')">
+                    <h3>Auto Restart</h3>
+                </div>
+            </div>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Reset Threshold</h3>
+                    <input type="number" id="resetThreshold" oninput="AHK('Gui_UpdateSetting', 'Macro', 'resetThreshold', this.value)">
                 </div>
             </div>
             <hr>
@@ -308,6 +308,13 @@
                         <option value="2">2</option>
                         <option value="3">3</option>
                     </select>
+                </div>
+            </div>
+            <hr>
+            <div class="tab-content__row">
+                <div>
+                    <input type="checkbox" id="timerAutoSplit" onchange="AHK('Gui_UpdateSetting', 'Timer', 'autoSplit', this.checked ? 'true' : 'false')">
+                    <h3>Auto Split</h3>
                 </div>
             </div>
 
