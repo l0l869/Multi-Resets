@@ -26,7 +26,7 @@ If the arrangement of instances is changed, setup is to be redone.
 - `Min/Max Coordinate`: Automatically resets if the spawn is not within the range of the minimum and maximum coordinates.
 - `Auto Restart`: Automatically restarts Minecraft after a certain number of resets (resetThreshold).
 - `Reset Threshold`: Number of resets accumulated between instances to restart Minecraft.
-- `Number of Instances`: Number of instances. Recommended amount: Total Logical Processors / 4.
+- `Number of Instances`: Recommended amount: Total Logical Processors / 4.
 - `Layout`: The arrangement of instances (x, y).
 - `Key Delay`: Delay (in milliseconds) between world creation clicks. Set it to or above 50 for verification.
 ### Timer
@@ -43,6 +43,6 @@ If the arrangement of instances is changed, setup is to be redone.
 
 ## Known Issues
 
-- For some, the macro retrieves the wrong pixel colour; enable `readScreenMemory`, if this is the case.
+- For some, the macro retrieves the wrong pixel colour; enable `Read Screen Memory`, if this is the case.
 
 - Something to know: clicking/tabbing to other windows when instances are launching will mess up the macro.
