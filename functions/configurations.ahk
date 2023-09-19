@@ -35,8 +35,11 @@ LoadClickData()
 
     if !worldcreationClicks.count()
     {
-        MsgBox, % "Insufficient Click Data: Make sure to do the setup."
-        ExitApp
+        MsgBox,4,, % "Insufficient Click Data. Do you want to do the setup?"
+        IfMsgBox, Yes
+            Run, configs\Setup.ahk
+        
+        return
     }
 }
 
