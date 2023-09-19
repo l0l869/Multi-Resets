@@ -1,6 +1,6 @@
 FetchUpdates()
 {
-    if(!DllCall("Wininet.dll\InternetGetConnectedState", "Str", 0x40, "Int", 0))
+    if (!DllCall("Wininet.dll\InternetGetConnectedState", "Str", 0x40, "Int", 0))
         return 0
 
     req := ComObjCreate("WinHttp.WinHttpRequest.5.1")
@@ -10,10 +10,10 @@ FetchUpdates()
     latestVersions := StrSplit(req.ResponseText, ",")
 
     if (SCRIPT_VERSION < latestVersions[1])
-        MsgBox 4, Update?, % "New Update Available!`n" SCRIPT_VERSION " => " latestVersions[1] "`n`nDo you want to update?"
+        MsgBox, 4, Update?, % "New Update Available!`n" SCRIPT_VERSION " => " latestVersions[1] "`n`nDo you want to update?"
 
     IfMsgBox, Yes
-        downloadLatest(latestVersions)
+        DownloadLatest(latestVersions)
 
     return latestVersions
 }
@@ -24,15 +24,15 @@ DownloadLatest(latestVersions)
     tempFolder := A_ScriptDir "\temp"
     RegExMatch(latestVersions[2], "Multi\-Resets\.v[0-9]+\.[0-9]+\.zip", newVersionZipName)
     FileCreateDir, %tempFolder%
-    UrlDownloadToFile % latestVersions[2], %tempFolder%\%newVersionZipName%
-    if(ErrorLevel || !FileExist(tempFolder "\" newVersionZipName))
+    UrlDownloadToFile, % latestVersions[2], %tempFolder%\%newVersionZipName%
+    if (ErrorLevel || !FileExist(tempFolder "\" newVersionZipName))
     {
         FileRemoveDir, %tempFolder%, 1
         MsgBox, Update Failed!
         return
     }
     sh := ComObjCreate("Shell.Application")
-    sh.Namespace( tempFolder ).CopyHere( sh.Namespace( tempFolder "\" newVersionZipName ).items, 4|16 )
+    sh.Namespace(tempFolder).CopyHere(sh.Namespace(tempFolder "\" newVersionZipName).items, 4|16 )
     FileDelete, %tempFolder%\%newVersionZipName%
     newVersionFolderName := StrReplace(RTrim(newVersionZipName, ".zip"), ".", A_Space,, 1)
 
@@ -42,13 +42,11 @@ DownloadLatest(latestVersions)
 
     MsgBox, Update Complete!
     Run, %scriptMainDir%\%newVersionFolderName%
-    ExitApp, 1
+    ExitApp
 }
 
 MergeConfigs(source, destination)
 {
-    ; may result in unexpected consequences when new options are implemented
-    ; FileCopy, %source%\configs.ini, %destination%, 1
     newIniFile := destination "\configs.ini"
     IniWrite, %resetKey%    , %newIniFile%, Hotkeys, Reset
     IniWrite, %stopresetKey%, %newIniFile%, Hotkeys, StopReset

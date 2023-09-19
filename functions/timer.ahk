@@ -39,12 +39,13 @@ Class Timer
     {
         this.currentInstance := this.FindCurrentInstance()
 
-        if (!this.isShown && this.currentInstance){
+        if (!this.isShown && this.currentInstance) {
             Gui, Timer:Maximize
             this.isShown := true
             this.reset()
             this.WaitForMovement(MCInstances[this.currentInstance])
-        } else if (this.isShown && !this.currentInstance){
+        }
+        else if (this.isShown && !this.currentInstance) {
             Gui, Timer:Hide
             this.isShown := false
             this.reset()
@@ -73,8 +74,7 @@ Class Timer
         {
             newCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
             hasInputted := (GetKeyState("W") || GetKeyState("A") || GetKeyState("S") || GetKeyState("D") || GetKeyState("Space")) && WinActive("Minecraft")
-            if (xCoord != newCoord || hasInputted)
-            {
+            if (xCoord != newCoord || hasInputted) {
                 this.start()
                 return waiting := false
             }
@@ -98,7 +98,7 @@ Class Timer
 
         if this.tickFunction
             return
-        this.tickFunction := this.tick.bind(this)
+        this.tickFunction := this.Tick.bind(this)
         tickFunction := this.tickFunction
         SetTimer, % tickFunction, % timerRefreshRate
     }
@@ -108,24 +108,24 @@ Class Timer
         if !this.tickFunction
             return 1
         tickFunction := this.tickFunction
-        SetTimer, % tickFunction, Off
+        SetTimer, % tickFunction, off
 
         this.tickFunction:=""
     }
 
-    tick()
+    Tick()
     {
         if (timerAutoSplit == "true")
-            this.checkAutoSplit()
-        this.elapsedTick := A_TickCount-this.startTick
+            this.CheckAutoSplit()
+        this.elapsedTick := A_TickCount - this.startTick
         GuiControl, Timer:, textTimer, % this.FormatTime(this.elapsedTick)
     }
 
     FormatTime(ms)
     {
         milliseconds := Mod(ms,1000)
-        seconds := Mod(ms//1000,60)
-        minutes := ms//60000
+        seconds := Mod(ms // 1000,60)
+        minutes := ms // 60000
 
         if (milliseconds == 0)
             milliseconds := "000"
@@ -141,34 +141,34 @@ Class Timer
         if seconds < 10
             seconds := "0" . seconds
 
-        return this.timeDisplayed := minutes ":" seconds . milliseconds, this.anchorTo()
+        return this.timeDisplayed := minutes ":" seconds . milliseconds, this.AnchorTo()
     }
 
-    anchorTo()
+    AnchorTo()
     {
         win := GetWindowDimensions("ahk_id " MCInstances[this.currentInstance].hwnd)
 
-        textSize := this.getTextSize()
+        textSize := this.GetTextSize()
         switch (timerAnchor)
         {
             case "TopLeft":
-                anchorX := win.x1+timerOffsetX
-                anchorY := win.y1+timerOffsetY
+                anchorX := win.x1 + timerOffsetX
+                anchorY := win.y1 + timerOffsetY
             case "TopRight": 
-                anchorX := win.x2-textSize.W-timerOffsetX
-                anchorY := win.y1+timerOffsetY
+                anchorX := win.x2 - textSize.W - timerOffsetX
+                anchorY := win.y1 + timerOffsetY
             case "BottomLeft":
-                anchorX := win.x1+timerOffsetX
-                anchorY := win.y2-textSize.H-timerOffsetY
+                anchorX := win.x1 + timerOffsetX
+                anchorY := win.y2 - textSize.H - timerOffsetY
             case "BottomRight":
-                anchorX := win.x2-textSize.W-timerOffsetX
-                anchorY := win.y2-textSize.H-timerOffsetY
+                anchorX := win.x2 - textSize.W - timerOffsetX
+                anchorY := win.y2 - textSize.H - timerOffsetY
         }
 
-        GuiControl, Timer:Move, textTimer, % "x" . anchorX " y" . anchorY
+        GuiControl, Timer:Move, textTimer, % "x" anchorX " y" anchorY
     }
 
-    checkAutoSplit()
+    CheckAutoSplit()
     {
         baseOffset := ""
         if (MCversion == "1.16.10.2")
@@ -181,13 +181,14 @@ Class Timer
             this.stop()
     }
 
-    getTextSize(){
-        ; GuiControlGet textSize, Timer:Pos, textTimer
-        Gui, textSizeGUI:Font, % "s"timerSize, % timerFont
+    GetTextSize()
+    {
+        ; GuiControlGet, textSize, Timer:Pos, textTimer
+        Gui, textSizeGUI:Font, s%timerSize%, % timerFont
         Gui, textSizeGUI:Add, Text,, % this.timeDisplayed
-        GuiControlGet textSize, textSizeGUI:Pos, Static1
+        GuiControlGet, textSize, textSizeGUI:Pos, Static1
         Gui, textSizeGUI:Destroy
 
-        return {W: textSizeW, H:textSizeH}
+        return { W: textSizeW, H:textSizeH }
     }
 }

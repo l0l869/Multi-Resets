@@ -1,4 +1,4 @@
-﻿LaunchInstances()
+LaunchInstances()
 {
     SetTitleMatchMode, 3
     CloseInstances()
@@ -16,16 +16,16 @@
         hwnd := WinActive("Minecraft")
         proc := new _ClassMemory("ahk_pid " pid, "PROCESS_VM_READ")
         MCInstances.push({ hwnd: hwnd
-                          ,pid: pid
-                          ,proc: proc
-                          ,isResetting: 0
-                          ,x1: 0, y1: 0
-                          ,x2: 0, y2: 0
-                          ,width: 0, height: 0 })
+                         , pid: pid
+                         , proc: proc
+                         , isResetting: 0
+                         , x1: 0, y1: 0
+                         , x2: 0, y2: 0
+                         , width: 0, height: 0 })
 
         if (PIDs.count() > 1 || !pid)
         {
-            MsgBox,4,, % "Error: Failed to get process ID.`nDo you want to try and relaunch instances?"
+            MsgBox, 4,, % "Error: Failed to get process ID.`nDo you want to try and relaunch instances?"
             IfMsgBox, Yes
                 LaunchInstances()
             return
@@ -73,11 +73,11 @@ GetWindowDimensions(Window)
     WinGetPos, winX, winY, winWidth, winHeight, %Window%
 
     return { x1    : winX + 8  * scaleBy
-            ,y1    : winY + 30 * scaleBy
-            ,x2    : winX + 8  * scaleBy + winWidth  - 16 * scaleBy
-            ,y2    : winY + 30 * scaleBy + winHeight - 38 * scaleBy
-            ,width : winWidth  - 16 * scaleBy
-            ,height: winHeight - 38 * scaleBy }
+           , y1    : winY + 30 * scaleBy
+           , x2    : winX + 8  * scaleBy + winWidth  - 16 * scaleBy
+           , y2    : winY + 30 * scaleBy + winHeight - 38 * scaleBy
+           , width : winWidth  - 16 * scaleBy
+           , height: winHeight - 38 * scaleBy }
 }
 
 GetMinecraftProcesses()
@@ -88,10 +88,10 @@ GetMinecraftProcesses()
       return "", DllCall("SetLastError", "Int", -1)        
     
     tPtr := pPtr
-    loop % nTTL {
+    loop, % nTTL {
         processName := StrGet(NumGet(tPtr + 8))
         processID   := NumGet(tPtr + 4, "UInt")
-        if(processName == "Minecraft.Windows.exe")
+        if (processName == "Minecraft.Windows.exe")
             list.push(processID)
 
         tPtr += (A_PtrSize = 4 ? 16 : 24) 
@@ -164,8 +164,7 @@ UpdateResetAttempts(amount := 1)
 {
     txt := FileOpen("configs/attempts.txt", "r") ; open/reads txt
     attempts := txt.read() + amount
-    if amount != 0
-    {
+    if amount {
         txt := FileOpen("configs/attempts.txt", "w") ; overwrites txt
         txt.write(attempts)
     }
@@ -176,16 +175,14 @@ UpdateResetAttempts(amount := 1)
 
 ShouldRestart(resetCounter)
 {
-    if !lastRestart
-    {
+    if !lastRestart {
         lastRestart := resetCounter
         return false
     }
 
-    if (lastRestart + resetThreshold <= resetCounter)
-    {
+    if (lastRestart + resetThreshold <= resetCounter) {
         Gosub, Restart
-        exit
+        Exit
     }
 }
 

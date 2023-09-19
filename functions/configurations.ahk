@@ -38,7 +38,7 @@ LoadClickData()
         MsgBox,4,, % "Insufficient Click Data. Do you want to do the setup?"
         IfMsgBox, Yes
             Run, configs\Setup.ahk
-        
+
         return
     }
 }
@@ -76,10 +76,10 @@ LoadIniConfigs()
     IniRead, threadsUsage    , %iniFile%, Other, threadsUsage
     IniRead, readScreenMemory, %iniFile%, Other, readScreenMemory
 
-    if (!timer1 && timerActive == "true")
-    {
+    if (!timer1 && timerActive == "true") {
         timer1 := new Timer()
-    } else if (timer1 && timerActive == "false") {
+    }
+    else if (timer1 && timerActive == "false") {
         updateFunction := timer1.updateFunction
         SetTimer, % updateFunction, off
         timer1.updateFunction := ""

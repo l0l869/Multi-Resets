@@ -52,14 +52,14 @@ WB.Document.parentWindow.AHK := Func("JS_AHK")
 Gui, Main:+HwndGuiHwnd
 
 ; dark mode title bar
-DllCall("dwmapi\DwmSetWindowAttribute", "ptr", GuiHwnd, "int", 20, "int*", true, "int", 4)
+DllCall("dwmapi\DwmSetWindowAttribute", "Ptr", GuiHwnd, "Int", 20, "Int*", true, "Int", 4)
 
 ; dark mode menu
-uxtheme := DllCall("GetModuleHandle", "str", "uxtheme", "ptr")
-SetPreferredAppMode := DllCall("GetProcAddress", "ptr", uxtheme, "ptr", 135, "ptr")
-FlushMenuThemes := DllCall("GetProcAddress", "ptr", uxtheme, "ptr", 136, "ptr")
-DllCall(SetPreferredAppMode, "int", 1)
-DllCall(FlushMenuThemes)
+uxTheme := DllCall("GetModuleHandle", "Str", "uxTheme", "Ptr")
+setPreferredAppMode := DllCall("GetProcAddress", "Ptr", uxTheme, "Ptr", 135, "Ptr")
+flushMenuThemes := DllCall("GetProcAddress", "Ptr", uxTheme, "Ptr", 136, "Ptr")
+DllCall(setPreferredAppMode, "Int", 1)
+DllCall(flushMenuThemes)
 
 Gui, Main:Show, w600 h400, Multi-Resets
 UpdateGuiElements()
@@ -81,31 +81,31 @@ return
 #Include functions/memory.ahk
 #Include functions/functions.ahk
 
-Gui_UpdateSetting(section, key, value){
+Gui_UpdateSetting(section, key, value) {
     IniWrite, %value%, %iniFile%, %section%, %key%
     LoadIniConfigs()
 }
 
-Gui_EditHotkeys(){
+Gui_EditHotkeys() {
     global hotkeyboxReset, hotkeyboxStopReset, hotkeyboxRestart
     global hotkeyboxStartTimer, hotkeyboxStopTimer, hotkeyboxResetTimer
     Gui, hotkeysWin:Color, 0x323232
     Gui, hotkeysWin:Font, cWhite
     WinGetPos, X, Y, W, H, Multi-Resets
-    Gui, hotkeysWin:Show, % "w330 " "h180 " "x" X+W/2-330/2 " y" Y+H/2-180/2
+    Gui, hotkeysWin:Show, % "w330 h180 x" X + W/2 - 330/2 " y" Y + H/2 - 180/2
     Gui, hotkeysWin:add, Hotkey, x10 y20 w150 vhotkeyboxReset
     Gui, hotkeysWin:add, Hotkey, x10 y65 w150 vhotkeyboxStopReset
     Gui, hotkeysWin:add, Hotkey, x10 y110 w150 vhotkeyboxRestart
-    Gui, hotkeysWin:add, Text  , x10 y5,Reset
-    Gui, hotkeysWin:add, Text  , x10 y50,Stop Reset
-    Gui, hotkeysWin:add, Text  , x10 y95,Restart MC
+    Gui, hotkeysWin:add, Text  , x10 y5, Reset
+    Gui, hotkeysWin:add, Text  , x10 y50, Stop Reset
+    Gui, hotkeysWin:add, Text  , x10 y95, Restart MC
     Gui, hotkeysWin:add, Hotkey, x170 y20 w150 vhotkeyboxStartTimer
     Gui, hotkeysWin:add, Hotkey, x170 y65 w150 vhotkeyboxStopTimer
     Gui, hotkeysWin:add, Hotkey, x170 y110 w150 vhotkeyboxResetTimer
-    Gui, hotkeysWin:add, Text  , x170 y5,Start Timer
-    Gui, hotkeysWin:add, Text  , x170 y50,Stop Timer
-    Gui, hotkeysWin:add, Text  , x170 y95,Reset Timer
-    Gui, hotkeysWin:add, Button, x10 y140 w310 h30 gSaveHotkeys,Save
+    Gui, hotkeysWin:add, Text  , x170 y5, Start Timer
+    Gui, hotkeysWin:add, Text  , x170 y50, Stop Timer
+    Gui, hotkeysWin:add, Text  , x170 y95, Reset Timer
+    Gui, hotkeysWin:add, Button, x10 y140 w310 h30 gSaveHotkeys, Save
 
     IniRead, iniKey, %iniFile%, Hotkeys, Reset
         GuiControl, hotkeysWin:, hotkeyboxReset, %iniKey%
@@ -143,11 +143,11 @@ Gui_EditHotkeys(){
     return
 }
 
-Gui_RegisterMulti(){
+Gui_RegisterMulti() {
     Run, configs\RegisterMulti.ahk
 }
 
-Gui_Setup(){
+Gui_Setup() {
     Run, configs\Setup.ahk
 }
 
