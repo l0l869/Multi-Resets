@@ -61,7 +61,7 @@ flushMenuThemes := DllCall("GetProcAddress", "Ptr", uxTheme, "Ptr", 136, "Ptr")
 DllCall(setPreferredAppMode, "Int", 1)
 DllCall(flushMenuThemes)
 
-Gui, Main:Show, w600 h400, Multi-Resets
+Gui, Main:Show, % "w" 600/scaleBy " h" 400/scaleBy, Multi-Resets
 UpdateGuiElements()
 
 #If WinActive("Minecraft")
