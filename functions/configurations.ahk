@@ -1,16 +1,16 @@
 global resetMode
-global maxCoords
-global minCoords
-global originDistance
-global autoRestart
-global resetThreshold
-global keyDelay
-global numInstances
-global layoutDimensions
-global threadsUsage
-global readScreenMemory
-global resetKey, stopresetKey, restartKey
-global starttimerKey, stoptimerKey, resettimerKey
+     , maxCoords
+     , minCoords
+     , originDistance
+     , autoRestart
+     , resetThreshold
+     , keyDelay
+     , numInstances
+     , layoutDimensions
+     , threadsUsage
+     , readScreenMemory
+     , resetKey, stopresetKey, restartKey
+     , starttimerKey, stoptimerKey, resettimerKey
 
 LoadClickData()
 {

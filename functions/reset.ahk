@@ -96,19 +96,14 @@ IterateReset(instance)
 
         case "SaveAndQuit":       
             MouseClick,, instance.x1 + screenClicks[2].x, instance.y1 + screenClicks[2].y,, 0
-            sleep, 80
             return instance.isResetting := (instance.isResetting ? 3 : 0)
 
         case "CreateNew":
             MouseClick,, instance.x1 + screenClicks[3].x, instance.y1 + screenClicks[3].y,, 0
-            ; sleep, 80
-            sleep, 100
-            MouseClick,, instance.x1 + screenClicks[4].x, instance.y1 + screenClicks[4].y,, 0
             return instance.isResetting := (instance.isResetting ? 4 : 0)
 
         case "CreateNewWorld":
             MouseClick,, instance.x1 + screenClicks[4].x, instance.y1 + screenClicks[4].y,, 0
-            sleep, 80
             return instance.isResetting := (instance.isResetting ? 5 : 0)
 
         case "World":
@@ -117,7 +112,7 @@ IterateReset(instance)
 
             for k, click in worldcreationClicks 
             {
-                MouseClick,, instance.x1+click.x, instance.y1+click.y,,0
+                MouseClick,, instance.x1 + click.x, instance.y1 + click.y,,0
                 Sleep, %keyDelay%
             }
             Sleep, % 50 - keyDelay ; click doesnt register with mousemove right after
