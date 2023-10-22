@@ -6,6 +6,7 @@
 #Include, functions/updater.ahk
 
 SetBatchLines, -1
+SetWinDelay, -1
 SetWorkingDir, %A_ScriptDir%
 SendMode, Input
 SetMouseDelay, -1

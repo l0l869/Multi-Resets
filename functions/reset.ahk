@@ -73,17 +73,11 @@ IterateReset(instance)
     Sleep, 10
     WinActivate, % "ahk_id " instance.hwnd
 
-    ; safer
-    ; if WinActive("Minecraft")
-    ;     WinActivate, ahk_class Shell_TrayWnd
-    ; MouseMove, % instance.x1+instance.width/2, % instance.y1+instance.height/2
-    ; ; sleep, 10
-    ; WinActivate, % "ahk_id " instance.hwnd
-
-    switch GetCurrentScreen(instance)
+    switch (GetCurrentScreen(instance))
     {
         case "Heart":
             Send, {Esc}
+            Sleep, 100
             if (instance.isResetting == 1)
                 return instance.isResetting := 2
 
@@ -94,12 +88,13 @@ IterateReset(instance)
 
             return RunInstance(instance)
 
-        case "SaveAndQuit":       
+        case "SaveAndQuit":
             MouseClick,, instance.x1 + screenClicks[2].x, instance.y1 + screenClicks[2].y,, 0
             return instance.isResetting := (instance.isResetting ? 3 : 0)
 
         case "CreateNew":
             MouseClick,, instance.x1 + screenClicks[3].x, instance.y1 + screenClicks[3].y,, 0
+            Sleep, 100
             return instance.isResetting := (instance.isResetting ? 4 : 0)
 
         case "CreateNewWorld":
@@ -112,8 +107,8 @@ IterateReset(instance)
 
             for k, click in worldcreationClicks 
             {
-                MouseClick,, instance.x1 + click.x, instance.y1 + click.y,,0
                 Sleep, %keyDelay%
+                MouseClick,, instance.x1 + click.x, instance.y1 + click.y,,0
             }
             Sleep, % 50 - keyDelay ; click doesnt register with mousemove right after
             UpdateResetAttempts()
@@ -167,7 +162,10 @@ RunInstance(instance)
 {
     if (instance.isResetting == -1)
         return
-    
+
+    SetAffinity(instance.pid, 2**threadCount - 1)
+    Sleep, 100
+    WinMaximize, % "ahk_id " instance.hwnd
     instance.isResetting := -1
 
     for k, inst in MCInstances
@@ -178,9 +176,6 @@ RunInstance(instance)
             SuspendProcess(inst.pid)
         }
     }
-
-    SetAffinity(instance.pid, 2**threadCount - 1)
-    WinMaximize, % "ahk_id " instance.hwnd
     exit
 }
 
@@ -190,6 +185,7 @@ ExitInstance()
     {
         if (instance.isResetting == -1) {
             WinRestore, % "ahk_id " instance.hwnd
+            Sleep, 100
             instance.isResetting := 1
             threadsMask := (2 ** Ceil(threadCount * threadsUsage)) - 1
             SetAffinity(instance.pid, threadsMask)
