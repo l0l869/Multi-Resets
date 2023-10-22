@@ -10,10 +10,11 @@ FetchUpdates()
     latestVersions := StrSplit(req.ResponseText, ",")
 
     if (SCRIPT_VERSION < latestVersions[1])
+    {
         MsgBox, 4, Update?, % "New Update Available!`n" SCRIPT_VERSION " => " latestVersions[1] "`n`nDo you want to update?"
-
-    IfMsgBox, Yes
-        DownloadLatest(latestVersions)
+        IfMsgBox, Yes
+            DownloadLatest(latestVersions)
+    }
 
     return latestVersions
 }
@@ -22,7 +23,7 @@ DownloadLatest(latestVersions)
 {
     scriptMainDir := RegExReplace(A_ScriptDir, "\\[^\\]*$", "")
     tempFolder := A_ScriptDir "\temp"
-    RegExMatch(latestVersions[2], "Multi\-Resets\.v[0-9]+\.[0-9]+\.zip", newVersionZipName)
+    RegExMatch(latestVersions[2], "Multi-Resets\.v[0-9]+\.[0-9]+(\.[0-9]+)?\.zip", newVersionZipName)
     FileCreateDir, %tempFolder%
     UrlDownloadToFile, % latestVersions[2], %tempFolder%\%newVersionZipName%
     if (ErrorLevel || !FileExist(tempFolder "\" newVersionZipName))

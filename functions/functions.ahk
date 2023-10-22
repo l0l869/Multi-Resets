@@ -5,7 +5,7 @@ LaunchInstances()
     lastRestart := UpdateResetAttempts(0)
     usedPIDs := []
     threadsMask := (2 ** Ceil(threadCount * threadsUsage)) - 1
-    Sleep, 500
+    WinActivate, ahk_class Shell_TrayWnd
 
     loop, %numInstances% {
         Run, shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App
