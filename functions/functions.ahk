@@ -1,4 +1,4 @@
-LaunchInstances()
+﻿LaunchInstances()
 {
     SetTitleMatchMode, 3
     CloseInstances()
@@ -191,6 +191,49 @@ ShouldRestart(resetCounter)
     if (lastRestart + resetThreshold <= resetCounter) {
         Gosub, Restart
         Exit
+    }
+}
+
+WorldBopper(action := "r", targetWorldName := "My World", daysBefore := 512)
+{
+    daysBefore := daysBefore == "" ? 512 : daysBefore
+    Worlds := []
+    Loop, Files, % minecraftDir "\minecraftWorlds\*", D
+    {
+        FileRead, worldName, % A_LoopFileFullPath "\levelname.txt"
+        FileGetTime, lastPlayed, % A_LoopFileFullPath "\level.dat"
+
+        Worlds.push({ folder: A_LoopFileName, lastPlayed: lastPlayed, worldName: worldName })
+    }
+    
+    selectedWorlds := []
+    For k, world in Worlds
+        if ((world.worldName == targetWorldName || targetWorldName == "") && A_NOW-world.lastPlayed < daysBefore*86400)
+            selectedWorlds.push(world)
+
+    if (action == "r") {
+        WB.document.getElementById("bopToBeDeleted").textContent := "Worlds to be deleted: " selectedWorlds.count() " out of " Worlds.count()
+        return selectedWorlds
+    }
+    else if (action == "d") {
+        WB.document.getElementById("progress-container").style.display := "block"
+        progresstext := WB.document.getElementById("progress-text")
+        progressbar := WB.document.getElementById("progress-bar")
+        total := selectedWorlds.count()
+
+        For k, world in selectedWorlds
+        {
+            FileRemoveDir, % minecraftDir "\minecraftWorlds\" world.folder, 1
+            precentageDone := Floor(k / total * 100)
+            progresstext.textContent := precentageDone "% (" k "/" total ")"
+            progressbar.value := precentageDone
+        }
+
+        WB.document.getElementById("progress-container").style.display := "none"
+        progresstext.textContent := "0%"
+        progressbar.value := 0
+        
+        return WorldBopper("r", WB.document.getElementById("bopName").value, WB.document.getElementById("bopDays").value)
     }
 }
 

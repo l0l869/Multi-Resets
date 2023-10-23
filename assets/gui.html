@@ -140,6 +140,38 @@
             width: 100%;
         }
 
+        #progress-container {
+            display: none;
+            position: absolute;
+            z-index: 10;
+            background-color: rgb(50, 50, 50);
+            width: 50%;
+            height: 25%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            border: 3px solid;
+        }
+
+        #progress-text {
+            position: absolute;
+            z-index: 1;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+        }
+
+        #progress-bar {
+            color: limegreen;
+            background-color: rgb(75, 75, 75);
+            position: relative;
+            height: 30px;
+            width: 80%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+        }
+
     </style>
 
     <script>
@@ -346,8 +378,49 @@
             <div class="tab-content__row">
                 <button onclick="AHK('Gui_Setup')">Setup</button>
             </div>
+            <div class="tab-content__row">
+                <button onclick="openTab(event, 'WorldBopper'); AHK('WorldBopper', 'r', 'My World', 14)">World Bopper</button>
+            </div>
             <hr>
 
+        </div>
+
+        <div id="WorldBopper" class="tab-content" style="display: none;">
+            <h2>World Bopper</h2>
+            <hr>
+            <div class="tab-content__row">
+                <h3>World Bopper deletes all worlds falling under a specified world name and/or days since last played.</h3>
+            </div>
+            <hr>
+            <div class="tab-content__row">
+                <h3>Leave blank to ignore parameter.</h3>
+            </div>
+            <div class="tab-content__row">
+                <div>
+                    <h3>World Name</h3>
+                    <input type="text" id="bopName" value="My World" style="width: 150px;" oninput="AHK('WorldBopper', 'r', this.value, document.getElementById('bopDays').value)">
+                </div>
+            </div>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Days Before</h3>
+                    <input type="number" id="bopDays" value=14 oninput="AHK('WorldBopper', 'r', document.getElementById('bopName').value, this.value)">
+                </div>
+            </div>
+            <hr>
+            <div class="tab-content__row">
+                <div>
+                    <h3 id="bopToBeDeleted"></h3>
+                </div>
+            </div>
+            <div class="tab-content__row">
+                <button style="color: red;" onclick="AHK('WorldBopper', 'd', document.getElementById('bopName').value, document.getElementById('bopDays').value)">Delete Worlds</button>
+            </div>
+        </div>
+
+        <div id="progress-container">
+            <h2 id="progress-text">0%</h2>
+            <progress id="progress-bar" value=0 max=100>
         </div>
 
 
