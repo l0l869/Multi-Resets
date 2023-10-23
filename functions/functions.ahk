@@ -25,6 +25,14 @@ LaunchInstances()
 
         if (PIDs.count() > 1 || !pid)
         {
+            if (!GetMultiState())
+            {
+                MsgBox, 4,, % "Error: Multi-instance is not registered.`nDo you want to register multi?"
+                IfMsgBox, Yes
+                    Run, configs\RegisterMulti.ahk
+                return
+            }
+
             MsgBox, 4,, % "Error: Failed to get process ID.`nDo you want to try and relaunch instances?"
             IfMsgBox, Yes
                 LaunchInstances()
@@ -184,6 +192,18 @@ ShouldRestart(resetCounter)
         Gosub, Restart
         Exit
     }
+}
+
+GetMultiState()
+{
+    cmd := "(Get-AppxPackage -Name Microsoft.MinecraftUWP).'PackageFullName' > '" A_ScriptDir "\configs\mcpackage.txt'"
+    RunWait, PowerShell.exe -Command &{%cmd%},, Hide
+    FileRead, mcpackage, configs\mcpackage.txt
+    FileDelete, configs\mcpackage.txt
+    mcpackage := Trim(mcpackage, "`r`n")
+
+    RegRead, multiState, HKCU, % "SOFTWARE\Classes\Extensions\ContractId\Windows.Launch\PackageId\" mcpackage "\ActivatableClassId\App\CustomProperties", SupportsMultipleInstances
+    return multiState
 }
 
 GetExcludedFromList(list, excludeList)
