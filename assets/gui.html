@@ -156,13 +156,13 @@
         #progress-text {
             position: absolute;
             z-index: 1;
+            width: 100%;
             top: 50%;
             left: 50%;
             transform: translate(-50%,-50%);
         }
 
         #progress-bar {
-            color: limegreen;
             background-color: rgb(75, 75, 75);
             position: relative;
             height: 30px;
@@ -170,6 +170,17 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%,-50%);
+        }
+
+        #progress-slider {
+            background-color: limegreen;
+            height: 100%;
+            width: 0%;
+        }
+
+        .caution:hover {
+            transition-duration: 500ms;
+            background-color: rgb(125, 75, 75);
         }
 
     </style>
@@ -416,11 +427,16 @@
             <div class="tab-content__row">
                 <button style="color: red;" onclick="AHK('WorldBopper', 'd', document.getElementById('bopName').value, document.getElementById('bopDays').value)">Delete Worlds</button>
             </div>
+            <div class="tab-content__row">
+                <button class="caution" style="color: red;" onclick="AHK('WorldBopper', 'da', document.getElementById('bopName').value, document.getElementById('bopDays').value)">Delete ALL Worlds (Fast)</button>
+            </div>
         </div>
 
         <div id="progress-container">
             <h2 id="progress-text">0%</h2>
-            <progress id="progress-bar" value=0 max=100>
+            <div id="progress-bar">
+                <div id="progress-slider"></div>
+            </div>
         </div>
 
 

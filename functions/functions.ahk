@@ -218,7 +218,7 @@ WorldBopper(action := "r", targetWorldName := "My World", daysBefore := 512)
     else if (action == "d") {
         WB.document.getElementById("progress-container").style.display := "block"
         progresstext := WB.document.getElementById("progress-text")
-        progressbar := WB.document.getElementById("progress-bar")
+        progressslider := WB.document.getElementById("progress-slider")
         total := selectedWorlds.count()
 
         For k, world in selectedWorlds
@@ -226,13 +226,28 @@ WorldBopper(action := "r", targetWorldName := "My World", daysBefore := 512)
             FileRemoveDir, % minecraftDir "\minecraftWorlds\" world.folder, 1
             precentageDone := Floor(k / total * 100)
             progresstext.textContent := precentageDone "% (" k "/" total ")"
-            progressbar.value := precentageDone
+            progressslider.style.width := precentageDone "%"
         }
 
         WB.document.getElementById("progress-container").style.display := "none"
         progresstext.textContent := "0%"
-        progressbar.value := 0
+        progressslider.style.width := "0%"
         
+        return WorldBopper("r", WB.document.getElementById("bopName").value, WB.document.getElementById("bopDays").value)
+    }
+    else if (action == "da") {
+        MsgBox, 4, % "World Bopper", % "Are you sure you want to delete all worlds?"
+        IfMsgBox, No
+            return
+
+        FileRemoveDir, % minecraftDir "\minecraftWorlds", 1
+        
+        Loop, 15 {
+            folder := minecraftDir "\minecraftWorlds\placeholder" A_Index
+            FileCreateDir, %folder%
+            FileCopy, assets/placeholderlevel.dat, % folder "\level.dat"
+        }
+        MsgBox,, % "World Bopper", % "Done deleting all worlds."
         return WorldBopper("r", WB.document.getElementById("bopName").value, WB.document.getElementById("bopDays").value)
     }
 }
