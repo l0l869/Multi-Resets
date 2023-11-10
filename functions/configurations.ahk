@@ -9,6 +9,7 @@ global resetMode
      , layoutDimensions
      , threadsUsage
      , readScreenMemory
+     , resetMethod
      , resetKey, stopresetKey, restartKey
      , starttimerKey, stoptimerKey, resettimerKey
 
@@ -75,6 +76,7 @@ LoadIniConfigs()
 
     IniRead, threadsUsage    , %iniFile%, Other, threadsUsage
     IniRead, readScreenMemory, %iniFile%, Other, readScreenMemory
+    IniRead, resetMethod     , %iniFile%, Other, resetMethod
 
     if (!timer1 && timerActive == "true") {
         timer1 := new Timer()
@@ -106,6 +108,7 @@ UpdateGuiElements()
     WB.document.getElementById("layoutDimensions").value := layoutDimensions
     WB.document.getElementById("threadsUsage").value := threadsUsage
     WB.document.getElementById("readScreenMemory").checked := readScreenMemory == "true" ? 1 : 0
+    WB.document.getElementById("resetMethod").value := resetMethod
 
     WB.document.getElementById("timerActive").checked := timerActive == "true" ? 1 : 0
     WB.document.getElementById("timerAnchor").value := timerAnchor
@@ -152,4 +155,6 @@ SetDefaultConfigs()
 
     IniWrite, 0.8  , %iniFile%, Other, threadsUsage
     IniWrite, false, %iniFile%, Other, readScreenMemory
+    resetMethod := "setup"
+    IniWrite, resetMethod, %iniFile%, Other, resetMethod
 }

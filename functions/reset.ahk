@@ -73,7 +73,12 @@ IterateReset(instance)
     Sleep, 10
     WinActivate, % "ahk_id " instance.hwnd
 
-    switch (GetCurrentScreen(instance))
+    currentClick := GetCurrentClick(instance, resetMethod)
+    currentScreen := currentClick[1]
+    clickX := currentClick[2]
+    clickY := currentClick[3]
+
+    switch (currentScreen)
     {
         case "Heart":
             Send, {Esc}
@@ -89,28 +94,44 @@ IterateReset(instance)
             return RunInstance(instance)
 
         case "SaveAndQuit":
-            MouseClick,, instance.x1 + screenClicks[2].x, instance.y1 + screenClicks[2].y,, 0
+            MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0
             return instance.isResetting := (instance.isResetting ? 3 : 0)
 
         case "CreateNew":
-            MouseClick,, instance.x1 + screenClicks[3].x, instance.y1 + screenClicks[3].y,, 0
+            MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0
             Sleep, 100
             return instance.isResetting := (instance.isResetting ? 4 : 0)
 
         case "CreateNewWorld":
-            MouseClick,, instance.x1 + screenClicks[4].x, instance.y1 + screenClicks[4].y,, 0
+            MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0
             return instance.isResetting := (instance.isResetting ? 5 : 0)
 
         case "World":
             if (instance.isResetting == 6)
                 return
 
-            for k, click in worldcreationClicks 
+            if (resetMethod == "setupless" && 433*scale <= instance.height) {
+                scale := GetMCScale(instance.width, instance.height, true)
+                selector_area := [instance.width*.4-(3*scale), instance.height]
+                content_area := [instance.width*.6-(8*scale), instance.height]
+                create_button := [selector_area[1]/4+(2*scale), 22*scale + selector_area[1]*92/160 + 10*scale]
+                difficulty := 155*scale
+                simulation := 380*scale
+                coordinates := 433*scale
+                xContent := instance.width - content_area[1] + 10*scale
+                wcClicks := [{x: xContent, y: difficulty}, {x: xContent, y: difficulty+5*scale}
+                            ,{x: xContent, y: simulation}, {x: xContent, y: coordinates}
+                            ,{x: create_button[1], y: create_button[2]}]
+            } else {
+                wcClicks := worldcreationClicks
+            }
+
+            for k, click in wcClicks 
             {
                 Sleep, %keyDelay%
                 MouseClick,, instance.x1 + click.x, instance.y1 + click.y,,0
             }
-            Sleep, % 50 - keyDelay ; click doesnt register with mousemove right after
+            Sleep, 25 ; click doesnt register with mousemove right after
             UpdateResetAttempts()
             return instance.isResetting := (instance.isResetting ? 6 : 0)
     }
@@ -207,6 +228,40 @@ EnterHoveredInstance()
     for k, instance in MCInstances
         if ((mX > instance.x1 && mX < instance.x2) && (mY > instance.y1 && mY < instance.y2))
             return RunInstance(instance)
+}
+
+GetCurrentClick(instance, method)
+{
+    currentScreen := ""
+    clickX := -1
+    clickY := -1
+    if (method == "setupless") {
+        returnedCode := -1
+        DllCall("reset\GetCurrentClick", "UPtr", instance.hwnd, "Int", scaleBy, "Int*", returnedCode, "Int*", clickX, "Int*", clickY)
+
+        switch returnedCode 
+        {
+            case -1: return
+            case 0: currentScreen := "Heart"
+            case 1: currentScreen := "SaveAndQuit"
+            case 2: currentScreen := "CreateNew"
+            case 3: currentScreen := "CreateNewWorld"
+            case 4: currentScreen := "World"
+        }
+        if (currentScreen == "SaveAndQuit" && instance.isResetting == 6) ; if it skips checking coords
+            currentScreen := "Heart"
+    } else { 
+        currentScreen := GetCurrentScreen(instance)
+        switch currentScreen
+        {
+            case "SaveAndQuit": index := 2
+            case "CreateNew": index := 3
+            case "CreateNewWorld": index := 4
+        }
+        clickX := screenClicks[index].x
+        clickY := screenClicks[index].y
+    }
+    return [currentScreen, clickX, clickY]
 }
 
 GetCurrentScreen(instance)

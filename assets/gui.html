@@ -372,6 +372,15 @@
                     <h3>Read Screen Memory</h3>
                 </div>
             </div>
+            <div class="tab-content__row">
+                <div class="">
+                    <h3>Reset Method (Experimental)</h3>
+                    <select id="resetMethod" onchange="AHK('Gui_UpdateSetting', 'Other', 'resetMethod', this.value)">
+                        <option value="setup">Setup</option>
+                        <option value="setupless">Setup-less</option>
+                    </select>
+                </div>
+            </div>
             <hr>
             <div class="tab-content__row">
                 <div>

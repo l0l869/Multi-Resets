@@ -28,6 +28,7 @@ global timer1
 global screenClicks := []
 global worldcreationClicks := []
 global MCInstances := []
+global resetDll := DllCall("LoadLibrary", "Str", "functions/reset.dll", "Ptr")
 
 LoadIniConfigs()
 LoadClickData()
@@ -76,7 +77,7 @@ UpdateGuiElements()
         Hotkey, %resettimerKey%, ResetTimer
 #If
 Hotkey, %restartKey%, Restart
-RCtrl::ExitApp
+RCtrl::Goto, MainGuiClose
 return
 
 #Include functions/memory.ahk
@@ -157,6 +158,7 @@ JS_AHK(func, prms*) {
 }
 
 MainGuiClose:
+    DllCall("FreeLibrary", "UPtr", resetDll) 
     ExitApp
 
 #Include functions/reset.ahk

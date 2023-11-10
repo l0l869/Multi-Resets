@@ -145,6 +145,17 @@ ConfigureMinecraftPointers()
     }
 }
 
+GetMCScale(w, h, applyDPI:=false) {
+    if applyDPI {
+        w += 16*scaleBy
+        h += 38*scaleBy
+    }
+    x := Floor((w-394+0.8) / 375.3333 + 1) ; approximate
+    y := (h-290-1) // 250 + 1
+
+    return x < y ? x : y
+}
+
 SetAffinity(pid, mask) 
 {
     if (hProcess := DllCall("OpenProcess", "UInt", 0x0200, "Int", 0, "Int", pid))
