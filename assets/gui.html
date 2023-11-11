@@ -28,6 +28,7 @@
             color: white;
             border: none;
             font-size: 18px;
+            cursor: pointer;
         }
 
         select::-ms-expand {
@@ -66,11 +67,16 @@
             height: 20px;
             width: 20px;
             position: relative;
+            cursor: pointer;
         }
 
-        h1, h2, h3 {
-            text-align: center;
+        h1, h2, h3, p {
             color: white;
+            cursor: default;
+        }
+
+        h1, h2 {
+            text-align: center;
         }
 
         hr {
@@ -78,6 +84,13 @@
             height: 3px;
             width: 90%;
             border: none;
+        }
+
+        li {
+            color: white;
+            line-height: 25px;
+            list-style-type: disc;
+            cursor: default;
         }
 
         #sidebar {
@@ -92,16 +105,26 @@
         }
 
         .sidebar_button {
-            height: 40px;
+            height: 45px;
             width: 100%;
             font-size: 30px;
-            border-radius: 10px;
+            border-radius: 7px;
+            transition: 0.3s;
         }
 
         .sidebar_button:hover {
             color: white;
-            outline: 2px solid;
             transition: 0.3s;
+        }
+
+        #info-button {
+            padding: 0;
+            height: 25px;
+            width: 25px;
+            border-radius: 5px;
+            position: absolute;
+            bottom: 3px;
+            left: 122px;
         }
 
         .tab-content {
@@ -235,6 +258,9 @@
             <div class="sidebar_item">
                 <button class="sidebar_button" onclick="openTab(event, 'Other')">Other</button>
             </div>
+
+            <button id="info-button" onclick="openTab(event, 'Info')">(i)</button>
+            <p style="color: lightgrey; position: absolute; bottom: -1px; left: 2px; cursor: default;">v0.5</p>
         </div>
 
         <div id="Macro" class="tab-content" style="display: block;">
@@ -416,7 +442,7 @@
             <h2>World Bopper</h2>
             <hr>
             <div class="tab-content__row">
-                <h3>World Bopper deletes all worlds falling under a specified world name and/or days since last played.</h3>
+                <h3 style="text-align: center;">World Bopper deletes all worlds falling under a specified world name and/or days since last played.</h3>
             </div>
             <hr>
             <div class="tab-content__row">
@@ -446,6 +472,102 @@
             <div class="tab-content__row">
                 <button class="caution" style="color: red;" onclick="AHK('WorldBopper', 'da', document.getElementById('bopName').value, document.getElementById('bopDays').value)">Delete ALL Worlds (Fast)</button>
             </div>
+        </div>
+
+        <div id="Info" class="tab-content" style="display: none;">
+
+            <h1>General Info</h1>
+            <hr>
+
+            <br>
+            <p>Supported auto-reset versions: 1.19.50, 1.16.10, 1.16.1, 1.16.0.58, 1.16.0.57, 1.16.0.51, 1.14.60, 1.2.13</p>
+
+            <br>
+            <h3>Reset Methods</h3>
+            <ul>
+                <li>Setup</li>
+                <p>
+                    Pixel coordinates are set with their respected colour to determine the current screen and click.
+                </p>
+                <br>
+                <li>Setup-less (Experiemental)</li>
+                <p>
+                    Finds English text, determining the buttons to press. Make sure MC GUI scaling is at the lowest value.
+                </p>
+                <br>
+                <li>Reading Screen Memory</li>
+                <p>
+                    Reads the game memory to get the current screen, relies on setup click data for the clicks. Buggy and should only be used if nothing else works. Supported: 1.16.1, 1.2.13
+                </p>
+                <br>
+            </ul>
+
+            <br>
+            <h3>Manual Resetting</h3>
+            <ul>
+                <li>To enter an instance, press the stop reset hotkey while hovering over your desired instance</li>
+                <li>To reset all instances, press the reset hotkey while on the wall screen</li>
+            </ul>
+
+            <br>
+            <h3>Affinity</h3>
+            <ul>
+                <li>Set the threads utilistaion to the (%) amount of CPU threads during resets</li>
+                <li>All CPU threads will be utilised during runs</li>
+                <li>For efficient resetting, the recommended number of instances: Total CPU Threads / 4 </li>
+            </ul>
+
+            <br>
+            <br>
+            <br>
+            <h1>Version History</h1>
+
+            <br>
+            <h2>v0.5</h2>
+            <hr>
+            <br>
+            <ul>
+                <li>Added World Bopper</li>
+                <li>Setup-less (Experimental)</li>
+                <li>Tweaked gui</li>
+            </ul>
+
+            <br>
+            <h2>v0.4</h2>
+            <hr>
+            <br>
+            <ul>
+                <li>Implemented manual resetting</li>
+                <li>Support for 1.19.50 auto-resetting based on distance from world origin</li>
+                <li>Added timer hotkeys</li>
+                <li>Timer auto-split option</li>
+                <li>Iterates through resets faster</li>
+                <li>Fixed affinity when exiting instance</li>
+            </ul>
+
+            <br>
+            <h2>v0.3</h2>
+            <hr>
+            <br>
+            <ul>
+                <li>Added GUI</li>
+                <li>Disabling auto-restart works now</li>
+                <li>You can launch the script anywhere with no include error</li>
+                <li>Fixed the auto-resetting of good coords</li>
+            </ul>
+
+            <br>
+            <h2>v0.2</h2>
+            <hr>
+            <br>
+            <ul>
+                <li>Added option readScreenMemory to read memory instead of pixel search.</li>
+                <li>Added option threadsUsage to limit the number of threads utilised by the instances.</li>
+                <li>Script checks for any new updates now.</li>
+                <li>Fixed accidental resets of good coordinates (I think)</li>
+                <li>Fixed mismatching Process IDs.</li>
+            </ul>
+            <br>
         </div>
 
         <div id="progress-container">
