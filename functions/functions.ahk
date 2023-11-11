@@ -207,6 +207,8 @@ ShouldRestart(resetCounter)
 
 WorldBopper(action := "r", targetWorldName := "My World", daysBefore := 512)
 {
+    static isDeleting := false
+
     daysBefore := daysBefore == "" ? 512 : daysBefore
     Worlds := []
     Loop, Files, % minecraftDir "\minecraftWorlds\*", D
@@ -227,6 +229,7 @@ WorldBopper(action := "r", targetWorldName := "My World", daysBefore := 512)
         return selectedWorlds
     }
     else if (action == "d") {
+        isDeleting := true
         WB.document.getElementById("progress-container").style.display := "block"
         progresstext := WB.document.getElementById("progress-text")
         progressslider := WB.document.getElementById("progress-slider")
@@ -234,6 +237,8 @@ WorldBopper(action := "r", targetWorldName := "My World", daysBefore := 512)
 
         For k, world in selectedWorlds
         {
+            if !isDeleting
+                break
             FileRemoveDir, % minecraftDir "\minecraftWorlds\" world.folder, 1
             precentageDone := Floor(k / total * 100)
             progresstext.textContent := precentageDone "% (" k "/" total ")"
@@ -260,6 +265,9 @@ WorldBopper(action := "r", targetWorldName := "My World", daysBefore := 512)
         }
         MsgBox,, % "World Bopper", % "Done deleting all worlds."
         return WorldBopper("r", WB.document.getElementById("bopName").value, WB.document.getElementById("bopDays").value)
+    }
+    else if (action == "c") {
+        isDeleting := false
     }
 }
 

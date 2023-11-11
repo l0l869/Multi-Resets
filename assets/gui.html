@@ -178,6 +178,13 @@
             width: 0%;
         }
 
+        #progress-container button {
+            position: absolute;
+            top: 74%;
+            left: 50%;
+            transform: translate(-50%,0%);
+        }
+
         .caution:hover {
             transition-duration: 500ms;
             background-color: rgb(125, 75, 75);
@@ -446,6 +453,7 @@
             <div id="progress-bar">
                 <div id="progress-slider"></div>
             </div>
+            <button onclick="AHK('WorldBopper', 'c')">Cancel</button>
         </div>
 
 
