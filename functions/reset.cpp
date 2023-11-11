@@ -3,6 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <chrono>
+#include <memory>
 
 int GetMCScale(int w, int h, bool applyDPI = false, int dpiScale = 1) {
     if (applyDPI) {
@@ -32,7 +33,7 @@ std::pair<int, int> FindPattern(const std::vector<std::vector<bool>>& vector, co
     return {-1, -1};
 }
 
-Gdiplus::Bitmap* BitmapFromHWND(HWND hwnd, bool clientOnly) {
+std::unique_ptr<Gdiplus::Bitmap> BitmapFromHWND(HWND hwnd, bool clientOnly) {
     if (IsIconic(hwnd))
         ShowWindow(hwnd, SW_RESTORE);
 
@@ -49,7 +50,7 @@ Gdiplus::Bitmap* BitmapFromHWND(HWND hwnd, bool clientOnly) {
 
     PrintWindow(hwnd, memDC, PW_CLIENTONLY + (clientOnly ? 1 : 0));
 
-    Gdiplus::Bitmap* pBitmap = new Gdiplus::Bitmap(hBitmap, nullptr);
+    std::unique_ptr<Gdiplus::Bitmap> pBitmap = std::make_unique<Gdiplus::Bitmap>(hBitmap, nullptr);
 
     SelectObject(memDC, hOldBitmap);
     DeleteObject(hBitmap);
@@ -72,7 +73,7 @@ extern "C" __declspec(dllexport) int GetCurrentClick(HWND hwnd, int dpiScale, in
     int mcHeight = rc.bottom - rc.top;
     int mcScale = GetMCScale(mcWidth, mcHeight, true, dpiScale);
 
-    Gdiplus::Bitmap* pBitmap = BitmapFromHWND(hwnd, true);
+    std::unique_ptr<Gdiplus::Bitmap> pBitmap = BitmapFromHWND(hwnd, true);
     Gdiplus::BitmapData bitmapData;
     Gdiplus::Rect rect(0, 0, mcWidth, mcHeight);
     pBitmap->LockBits(&rect, Gdiplus::ImageLockModeRead, PixelFormat32bppARGB, &bitmapData);
@@ -98,6 +99,7 @@ extern "C" __declspec(dllexport) int GetCurrentClick(HWND hwnd, int dpiScale, in
         }
     }
     pBitmap->UnlockBits(&bitmapData);
+    Gdiplus::GdiplusShutdown(gdiplusToken);
 
     const std::vector<bool> SaveAndQuitPattern = {1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,1,0,0,1};
     const std::vector<bool> CreateNewPattern = {0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,0,1,0,1,0,1,0,0,1,1,1,0,0,1,0,0,0,1,0,0,0,0,0,0};
@@ -120,9 +122,6 @@ extern "C" __declspec(dllexport) int GetCurrentClick(HWND hwnd, int dpiScale, in
     code = pIndex;
     fx = result.first * mcScale;
     fy = foundAtIndices[result.second] - 30 * dpiScale;
-
-    delete pBitmap;
-    Gdiplus::GdiplusShutdown(gdiplusToken);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
