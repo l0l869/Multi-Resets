@@ -110,18 +110,31 @@ IterateReset(instance)
             if (instance.isResetting == 6)
                 return
 
-            if (resetMethod == "setupless" && 433*scale <= instance.height) {
+            if (resetMethod == "setupless") {
                 scale := GetMCScale(instance.width, instance.height, true)
-                selector_area := [instance.width*.4-(3*scale), instance.height]
-                content_area := [instance.width*.6-(8*scale), instance.height]
+                selector_area := [instance.width*.4-(3*scale), instance.height-26*scale]
+                content_area := [instance.width*.6-(8*scale), instance.height-26*scale]
                 create_button := [selector_area[1]/4+(2*scale), 22*scale + selector_area[1]*92/160 + 10*scale]
-                difficulty := 155*scale
-                simulation := 380*scale
-                coordinates := 433*scale
                 xContent := instance.width - content_area[1] + 10*scale
-                wcClicks := [{x: xContent, y: difficulty}, {x: xContent, y: difficulty+5*scale}
-                            ,{x: xContent, y: simulation}, {x: xContent, y: coordinates}
-                            ,{x: create_button[1], y: create_button[2]}]
+
+                difficulty := 155*scale
+                wcClicks := [{x: xContent, y: difficulty}, {x: xContent, y: difficulty+5*scale}]
+                if (content_area[2] < 407*scale) {
+                    scrollbar := [instance.width - 5*scale, instance.height-((28+2)*scale)]
+                    scrollersize := content_area[2]/(870*scale)*scrollbar[2]
+
+                    scrollend := {x: instance.width - 5*scale, y: instance.height - 5*scale}
+                    scrollto := {x: instance.width - 5*scale, y: scrollbar[2]*(420/870)-scrollersize/2 +28*scale}
+                    wcClicks.push(scrollend, scrollto)
+
+                    simulation := {x: xContent, y: instance.height-5*scale}
+                    coordinates := {x: xContent, y: instance.height-65*scale}
+                } else {
+                    simulation := {x: xContent, y: 380*scale}
+                    coordinates := {x: xContent, y: 433*scale}
+                }
+                create_button := {x: create_button[1], y: create_button[2]}
+                wcClicks.push(simulation, coordinates, create_button)
             } else {
                 wcClicks := worldcreationClicks
             }
