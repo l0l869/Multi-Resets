@@ -213,6 +213,11 @@
             background-color: rgb(125, 75, 75);
         }
 
+        #spawn-hint {
+            opacity: 0;
+            transition: 1s;
+        }
+
     </style>
 
     <script>
@@ -239,7 +244,21 @@
             document.getElementById(tab).style.display = "block";
             event.currentTarget.className += " active";
         }
-        
+        let timeoutId;
+        function getSpawnChance() {
+            min = document.getElementById("minCoords").value
+            max = document.getElementById("maxCoords").value
+
+            chance = AHK("GetSpawnChance", min, max)
+            document.getElementById("spawn-chance").innerText = "Chance of Spawn: " + chance + "%"
+
+            spawnHint = document.getElementById("spawn-hint")
+            spawnHint.style.opacity = 1
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(function() {
+                spawnHint.style.opacity = 0;
+            }, 3000);
+        }
     </script>
 </head>
 
@@ -278,13 +297,16 @@
             <div class="tab-content__row">
                 <div>
                     <h3>Min Coordinate</h3>
-                    <input type="number" id="minCoords" oninput="AHK('Gui_UpdateSetting', 'Macro', 'minCoords', this.value)">
+                    <input type="number" id="minCoords" oninput="AHK('Gui_UpdateSetting', 'Macro', 'minCoords', this.value), getSpawnChance()">
+                </div>
+                <div id="spawn-hint">
+                    <p id="spawn-chance">Chance of Spawn: </p>
                 </div>
             </div>
             <div class="tab-content__row">
                 <div>
                     <h3>Max Coordinate</h3>
-                    <input type="number" id="maxCoords" oninput="AHK('Gui_UpdateSetting', 'Macro', 'maxCoords', this.value)">
+                    <input type="number" id="maxCoords" oninput="AHK('Gui_UpdateSetting', 'Macro', 'maxCoords', this.value), getSpawnChance()">
                 </div>
             </div>
             <div class="tab-content__row">

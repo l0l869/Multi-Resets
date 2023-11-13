@@ -154,7 +154,7 @@ Gui_Setup() {
 }
 
 JS_AHK(func, prms*) {
-    %func%(prms*)
+    return %func%(prms*)
 }
 
 MainGuiClose:

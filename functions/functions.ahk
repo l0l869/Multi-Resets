@@ -283,6 +283,22 @@ GetMultiState()
     return multiState
 }
 
+GetSpawnChance(min, max) {
+    if (min > max)
+        return 0
+    FileRead, data, assets/spawn_data.txt
+    dataArray := StrSplit(data, "`n")
+    total := 9999251
+    totalInRange := 0
+    iMin := Ceil((min-44)/4)
+    iMax := (max-44)//4
+    it := (iMax-iMin)+1
+    Loop, % it {
+        totalInRange += dataArray[iMin+A_Index]
+    }
+    return Floor(totalInRange/total*100*100)/100
+}
+
 GetExcludedFromList(list, excludeList)
 {
     returnList := []
