@@ -504,6 +504,16 @@
             </div>
             <hr>
             <div class="tab-content__row">
+                <div>
+                    <input type="checkbox" id="hideOnMinimise" onchange="AHK('Gui_UpdateSetting', 'Other', 'hideOnMinimise', this.checked ? 'true' : 'false')">
+                    <h3>Hide on Minimise</h3>
+                </div>
+            </div>
+            <hr>
+            <div class="tab-content__row">
+                <button onclick="openTab(event, 'WorldBopper'); AHK('WorldBopper', 'r', 'My World', 14)">World Bopper</button>
+            </div>
+            <div class="tab-content__row">
                 <button onclick="AHK('Gui_EditHotkeys')">Edit Hotkeys</button>
             </div>
             <div class="tab-content__row">
@@ -511,9 +521,6 @@
             </div>
             <div class="tab-content__row">
                 <button onclick="AHK('Gui_Setup')">Setup</button>
-            </div>
-            <div class="tab-content__row">
-                <button onclick="openTab(event, 'WorldBopper'); AHK('WorldBopper', 'r', 'My World', 14)">World Bopper</button>
             </div>
             <hr>
 

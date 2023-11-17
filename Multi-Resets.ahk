@@ -157,7 +157,23 @@ JS_AHK(func, prms*) {
     return %func%(prms*)
 }
 
+MainGuiSize:
+if (A_EventInfo != 1 || hideOnMinimise == "false")
+    return
+
+WinHide, % "ahk_id " GuiHwnd
+Menu, Tray, Add, Open GUI, RestoreGui
+return
+
+RestoreGui:
+WinShow, % "ahk_id " GuiHwnd
+WinRestore, % "ahk_id " GuiHwnd
+Menu, Tray, Delete, Open GUI
+return
+
 MainGuiClose:
+SetTimer, %FuncUpdateMainTimer%, Off
+timer1 := ""
     DllCall("FreeLibrary", "UPtr", resetDll) 
     ExitApp
 

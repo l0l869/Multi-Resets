@@ -10,6 +10,7 @@ global resetMode
      , threadsUsage
      , readScreenMemory
      , resetMethod
+     , hideOnMinimise
      , resetKey, stopresetKey, restartKey
      , starttimerKey, stoptimerKey, resettimerKey
 
@@ -100,6 +101,7 @@ LoadIniConfigs() {
     IniRead, threadsUsage    , %iniFile%, Other, threadsUsage
     IniRead, readScreenMemory, %iniFile%, Other, readScreenMemory
     IniRead, resetMethod     , %iniFile%, Other, resetMethod
+    IniRead, hideOnMinimise  , %iniFile%, Other, hideOnMinimise
 
     timerOptions := [tAnchor, tOffsetX, tOffsetY, tFont, tFontSize, tFontColour1, tFontColour2, tGradientAngle, tAnimationSpeed, tOutlineWidth, tOutlineColour, tDecimalPlaces, tRefreshRate, tAutoSplit]
     if !timer1
@@ -136,6 +138,7 @@ UpdateGuiElements() {
     WB.document.getElementById("threadsUsage").value := threadsUsage
     WB.document.getElementById("readScreenMemory").checked := readScreenMemory == "true" ? 1 : 0
     WB.document.getElementById("resetMethod").value := resetMethod
+    WB.document.getElementById("hideOnMinimise").checked := hideOnMinimise == "true" ? 1 : 0
     WB.document.getElementById("tActive").checked := timerActive == "true" ? 1 : 0
     WB.document.getElementById("tAnchor").value := tAnchor
     WB.document.getElementById("tOffsetX").value := tOffsetX
@@ -199,4 +202,5 @@ SetDefaultConfigs() {
     IniWrite, 0.8  , %iniFile%, Other, threadsUsage
     IniWrite, false, %iniFile%, Other, readScreenMemory
     IniWrite, setup, %iniFile%, Other, resetMethod
+    IniWrite, false, %iniFile%, Other, hideOnMinimise
 }
