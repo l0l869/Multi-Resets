@@ -13,8 +13,26 @@ global resetMode
      , resetKey, stopresetKey, restartKey
      , starttimerKey, stoptimerKey, resettimerKey
 
-LoadClickData()
-{
+global timerActive
+     , tAnchor
+     , tOffsetX
+     , tOffsetY
+     , tFont
+     , tFontSize
+     , tFontColour1
+     , tFontColour2
+     , tGradientAngle
+     , tAnimationSpeed
+     , tOutlineWidth
+     , tOutlineColour
+     , tDecimalPlaces
+     , tRefreshRate
+     , tAutoSplit
+     , tPreview
+
+global timerPreview
+
+LoadClickData() {
     screenClicks := []
     worldcreationClicks := []
 
@@ -44,8 +62,7 @@ LoadClickData()
     }
 }
 
-LoadIniConfigs()
-{
+LoadIniConfigs() {
     IniRead, resetKey    , %iniFile%, Hotkeys, Reset
     IniRead, stopresetKey, %iniFile%, Hotkeys, StopReset
     IniRead, restartKey  , %iniFile%, Hotkeys, Restart
@@ -63,31 +80,42 @@ LoadIniConfigs()
     IniRead, numInstances    , %iniFile%, Macro, numInstances
     IniRead, layoutDimensions, %iniFile%, Macro, layoutDimensions
 
-    IniRead, timerActive       , %iniFile%, Timer, timerActive
-    IniRead, timerAnchor       , %iniFile%, Timer, anchor
-    IniRead, timerOffsetX      , %iniFile%, Timer, offsetX
-    IniRead, timerOffsetY      , %iniFile%, Timer, offsetY
-    IniRead, timerFont         , %iniFile%, Timer, font
-    IniRead, timerSize         , %iniFile%, Timer, size
-    IniRead, timerColour       , %iniFile%, Timer, colour
-    IniRead, timerDecimalPlaces, %iniFile%, Timer, decimalPlaces
-    IniRead, timerRefreshRate  , %iniFile%, Timer, refreshRate
-    IniRead, timerAutoSplit    , %iniFile%, Timer, autoSplit
+    IniRead, timerActive    , %iniFile%, Timer, timerActive
+    IniRead, tAnchor        , %iniFile%, Timer, anchor
+    IniRead, tOffsetX       , %iniFile%, Timer, offsetX
+    IniRead, tOffsetY       , %iniFile%, Timer, offsetY
+    IniRead, tFont          , %iniFile%, Timer, font
+    IniRead, tFontSize      , %iniFile%, Timer, fontSize
+    IniRead, tFontColour1   , %iniFile%, Timer, fontColour1
+    IniRead, tFontColour2   , %iniFile%, Timer, fontColour2
+    IniRead, tGradientAngle , %iniFile%, Timer, gradientAngle
+    IniRead, tAnimationSpeed, %iniFile%, Timer, animationSpeed
+    IniRead, tOutlineWidth  , %iniFile%, Timer, outlineWidth
+    IniRead, tOutlineColour , %iniFile%, Timer, outlineColour
+    IniRead, tDecimalPlaces , %iniFile%, Timer, decimalPlaces
+    IniRead, tRefreshRate   , %iniFile%, Timer, refreshRate
+    IniRead, tAutoSplit     , %iniFile%, Timer, autoSplit
+    IniRead, tPreview       , %iniFile%, Timer, preview
 
     IniRead, threadsUsage    , %iniFile%, Other, threadsUsage
     IniRead, readScreenMemory, %iniFile%, Other, readScreenMemory
     IniRead, resetMethod     , %iniFile%, Other, resetMethod
 
-    if (!timer1 && timerActive == "true") {
-        timer1 := new Timer()
-    }
-    else if (timer1 && timerActive == "false") {
-        updateFunction := timer1.updateFunction
-        SetTimer, % updateFunction, off
-        timer1.updateFunction := ""
-        timer1.reset()
-        timer1.__Delete()
-        timer1 := ""
+    timerOptions := [tAnchor, tOffsetX, tOffsetY, tFont, tFontSize, tFontColour1, tFontColour2, tGradientAngle, tAnimationSpeed, tOutlineWidth, tOutlineColour, tDecimalPlaces, tRefreshRate, tAutoSplit]
+    if !timer1
+        timer1 := new Timer(timerOptions*)
+    else
+        timer1.setSettings(timerOptions*)
+
+    if (tPreview == "true" && !timerPreview) {
+        timerPreview := new Timer(timerOptions*)
+        timerPreview.show()
+        timerPreview.start()
+    } else if (tPreview == "false" && timerPreview) {
+        timerPreview.__Delete()
+        timerPreview := ""
+    } else if (tPreview == "true" && timerPreview) {
+        timerPreview.setSettings(timerOptions*)
     }
 
     ; checks invalid value. Mainly because i messed merging configs from older versions to newer
@@ -95,8 +123,7 @@ LoadIniConfigs()
         return SetDefaultConfigs(), LoadIniConfigs()
 }
 
-UpdateGuiElements()
-{
+UpdateGuiElements() {
     WB.document.getElementById("resetMode").value := resetMode
     WB.document.getElementById("maxCoords").value := maxCoords
     WB.document.getElementById("minCoords").value := minCoords
@@ -109,20 +136,31 @@ UpdateGuiElements()
     WB.document.getElementById("threadsUsage").value := threadsUsage
     WB.document.getElementById("readScreenMemory").checked := readScreenMemory == "true" ? 1 : 0
     WB.document.getElementById("resetMethod").value := resetMethod
+    WB.document.getElementById("tActive").checked := timerActive == "true" ? 1 : 0
+    WB.document.getElementById("tAnchor").value := tAnchor
+    WB.document.getElementById("tOffsetX").value := tOffsetX
+    WB.document.getElementById("tOffsetY").value := tOffsetY
+    WB.document.getElementById("tFont").value := tFont
+    WB.document.getElementById("tFontSize").value := tFontSize
+    WB.document.getElementById("tFontColour1").value := tFontColour1
+    WB.document.getElementById("tFontColour2").value := tFontColour2
+    WB.document.getElementById("tGradientAngle").value := tGradientAngle
+    WB.document.getElementById("tAnimationSpeed").value := tAnimationSpeed
+    WB.document.getElementById("tOutlineWidth").value := tOutlineWidth
+    WB.document.getElementById("tOutlineColour").value := tOutlineColour
+    WB.document.getElementById("tDecimalPlaces").value := tDecimalPlaces
+    WB.document.getElementById("tAutoSplit").checked := tAutoSplit == "true" ? 1 : 0
+    WB.document.getElementById("tPreview").checked := tPreview == "true" ? 1 : 0
 
-    WB.document.getElementById("timerActive").checked := timerActive == "true" ? 1 : 0
-    WB.document.getElementById("timerAnchor").value := timerAnchor
-    WB.document.getElementById("timerOffsetX").value := timerOffsetX
-    WB.document.getElementById("timerOffsetY").value := timerOffsetY
-    WB.document.getElementById("timerFont").value := timerFont
-    WB.document.getElementById("timerSize").value := timerSize
-    WB.document.getElementById("timerColour").value := timerColour
-    WB.document.getElementById("timerDecimalPlaces").value := timerDecimalPlaces
-    WB.document.getElementById("timerAutoSplit").checked := timerAutoSplit == "true" ? 1 : 0
+    hex := "0x" SubStr(tFontColour1, StrLen(tFontColour1)-5, 6)
+    WB.document.getElementById("btn-colour1").style.color := hex+0
+    hex := "0x" SubStr(tFontColour2, StrLen(tFontColour2)-5, 6)
+    WB.document.getElementById("btn-colour2").style.color := hex+0
+    hex := "0x" SubStr(tOutlineColour, StrLen(tOutlineColour)-5, 6)
+    WB.document.getElementById("btn-colour3").style.color := hex+0
 }
 
-SetDefaultConfigs()
-{
+SetDefaultConfigs() {
     IniWrite, ^r  , %iniFile%, Hotkeys, Reset
     IniWrite, ^tab, %iniFile%, Hotkeys, StopReset
     IniWrite, ^!r , %iniFile%, Hotkeys, Restart
@@ -130,8 +168,7 @@ SetDefaultConfigs()
     IniWrite, "", %iniFile%, Hotkeys, StopTimer
     IniWrite, "", %iniFile%, Hotkeys, ResetTimer
 
-    resetMode := "auto"
-    IniWrite, resetMode, %iniFile%, Macro, resetMode
+    IniWrite, auto , %iniFile%, Macro, resetMode
     IniWrite, 1800 , %iniFile%, Macro, maxCoords
     IniWrite, 700  , %iniFile%, Macro, minCoords
     IniWrite, 400  , %iniFile%, Macro, originDistance
@@ -147,14 +184,19 @@ SetDefaultConfigs()
     IniWrite, 25       , %iniFile%, Timer, offsetX
     IniWrite, 25       , %iniFile%, Timer, offsetY
     IniWrite, Mojangles, %iniFile%, Timer, font
-    IniWrite, 35       , %iniFile%, Timer, size
-    IniWrite, FFFFFF   , %iniFile%, Timer, colour
+    IniWrite, 50       , %iniFile%, Timer, fontsize
+    IniWrite, FFFFFFFF , %iniFile%, Timer, fontColour1
+    IniWrite, FF737373 , %iniFile%, Timer, fontColour2
+    IniWrite, 60       , %iniFile%, Timer, gradientAngle
+    IniWrite, 0        , %iniFile%, Timer, animationSpeed
+    IniWrite, 10       , %iniFile%, Timer, outlineWidth
+    IniWrite, 00000000 , %iniFile%, Timer, outlineColour
     IniWrite, 3        , %iniFile%, Timer, decimalPlaces
     IniWrite, 0        , %iniFile%, Timer, refreshRate
-    IniWrite, 1        , %iniFile%, Timer, autoSplit
+    IniWrite, true     , %iniFile%, Timer, autoSplit
+    IniWrite, false    , %iniFile%, Timer, preview
 
     IniWrite, 0.8  , %iniFile%, Other, threadsUsage
     IniWrite, false, %iniFile%, Other, readScreenMemory
-    resetMethod := "setup"
-    IniWrite, resetMethod, %iniFile%, Other, resetMethod
+    IniWrite, setup, %iniFile%, Other, resetMethod
 }

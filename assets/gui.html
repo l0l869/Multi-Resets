@@ -218,6 +218,18 @@
             transition: 1s;
         }
 
+        .colour-picker {
+            width: 40px;
+            height: 10px;
+        }
+
+        .colour-picker button {
+            width: 25px;
+            height: 25px;
+            font-size: 12px;
+            padding: 0px;
+        }
+
     </style>
 
     <script>
@@ -258,6 +270,9 @@
             timeoutId = setTimeout(function() {
                 spawnHint.style.opacity = 0;
             }, 3000);
+        }
+        function decToARGB(dec) {
+            return '0xFF' + ('000000' + (dec | 0x000000).toString(16)).slice(-6).toUpperCase();
         }
     </script>
 </head>
@@ -355,7 +370,7 @@
             <hr>
             <div class="tab-content__row">
                 <div>
-                    <input type="checkbox" id="timerActive" onchange="AHK('Gui_UpdateSetting', 'Timer', 'timerActive', this.checked ? 'true' : 'false')">
+                    <input type="checkbox" id="tActive" onchange="AHK('Gui_UpdateSetting', 'Timer', 'timerActive', this.checked ? 'true' : 'false')">
                     <h3>Timer</h3>
                 </div>
             </div>
@@ -363,7 +378,7 @@
             <div class="tab-content__row">
                 <div class="">
                     <h3>Anchor</h3>
-                    <select id="timerAnchor" onchange="AHK('Gui_UpdateSetting', 'Timer', 'anchor', this.value)">
+                    <select id="tAnchor" onchange="AHK('Gui_UpdateSetting', 'Timer', 'anchor', this.value)">
                         <option value="TopLeft">Top Left</option>
                         <option value="TopRight">Top Right</option>
                         <option value="BottomLeft">Bottom Left</option>
@@ -374,33 +389,73 @@
             <div class="tab-content__row">
                 <div>
                     <h3>Offset</h3>
-                    <input type="number" id="timerOffsetX" oninput="AHK('Gui_UpdateSetting', 'Timer', 'offsetX', this.value)">
-                    <input type="number" id="timerOffsetY" oninput="AHK('Gui_UpdateSetting', 'Timer', 'offsetY', this.value)">
+                    <input type="number" id="tOffsetX" oninput="AHK('Gui_UpdateSetting', 'Timer', 'offsetX', this.value)">
+                    <input type="number" id="tOffsetY" oninput="AHK('Gui_UpdateSetting', 'Timer', 'offsetY', this.value)">
                 </div>
             </div>
             <hr>
             <div class="tab-content__row">
                 <div>
                     <h3>Font</h3>
-                    <input type="text" id="timerFont" style="width: 150px;" oninput="AHK('Gui_UpdateSetting', 'Timer', 'font', this.value)">
+                    <input type="text" id="tFont" style="width: 150px;" oninput="AHK('Gui_UpdateSetting', 'Timer', 'font', this.value)">
                 </div>
             </div>
             <div class="tab-content__row">
                 <div>
                     <h3>Size</h3>
-                    <input type="number" id="timerSize" oninput="AHK('Gui_UpdateSetting', 'Timer', 'size', this.value)">
+                    <input type="number" id="tFontSize" oninput="AHK('Gui_UpdateSetting', 'Timer', 'fontSize', this.value)">
                 </div>
             </div>
             <div class="tab-content__row">
                 <div>
-                    <h3>Colour</h3>
-                    <input type="text" id="timerColour" style="width: 100px;" oninput="AHK('Gui_UpdateSetting', 'Timer', 'colour', this.value)">
+                    <h3>Colour 1</h3>
+                    <input type="text" name="tFontColour1" id="tFontColour1" style="width: 150px;" oninput="AHK('Gui_UpdateSetting', 'Timer', 'fontColour1', this.value)">
+                </div>
+                <div class="colour-picker">
+                    <object id="Dlg" classid="CLSID:3050F819-98B5-11CF-BB82-00AA00BDCE0B" width="0" height="0"></object>
+                    <button id="btn-colour1" onclick="var c = Dlg.ChooseColorDlg(); window.event.srcElement.style.color = c; tFontColour1.value = decToARGB(c); AHK('Gui_UpdateSetting', 'Timer', 'fontColour1', tFontColour1.value)">&block;&block;</button>
+                </div>
+            </div>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Colour 2</h3>
+                    <input type="text" name="tFontColour2" id="tFontColour2" style="width: 150px;" oninput="AHK('Gui_UpdateSetting', 'Timer', 'fontColour2', this.value)">
+                </div>
+                <div class="colour-picker">
+                    <button id="btn-colour2" onclick="var c = Dlg.ChooseColorDlg(); window.event.srcElement.style.color = c; tFontColour2.value = decToARGB(c); AHK('Gui_UpdateSetting', 'Timer', 'fontColour2', tFontColour2.value)">&block;&block;</button>
+                </div>
+            </div>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Outline Width</h3>
+                    <input type="text" id="tOutlineWidth" oninput="AHK('Gui_UpdateSetting', 'Timer', 'outlineWidth', this.value)">
+                </div>
+            </div>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Outline Colour</h3>
+                    <input type="text" name="tOutlineColour" id="tOutlineColour" style="width: 150px;" oninput="AHK('Gui_UpdateSetting', 'Timer', 'outlineColour', this.value)">
+                </div>
+                <div class="colour-picker">
+                    <button id="btn-colour3" onclick="var c = Dlg.ChooseColorDlg(); window.event.srcElement.style.color = c; tOutlineColour.value = decToARGB(c); AHK('Gui_UpdateSetting', 'Timer', 'outlineColour', tOutlineColour.value)">&block;&block;</button>
+                </div>
+            </div>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Gradient Angle</h3>
+                    <input type="text" id="tGradientAngle" oninput="AHK('Gui_UpdateSetting', 'Timer', 'gradientAngle', this.value)">
+                </div>
+            </div>
+            <div class="tab-content__row">
+                <div>
+                    <h3>Animation Speed</h3>
+                    <input type="text" id="tAnimationSpeed" oninput="AHK('Gui_UpdateSetting', 'Timer', 'animationSpeed', this.value)">
                 </div>
             </div>
             <div class="tab-content__row">
                 <div>
                     <h3>Decimals</h3>
-                    <select id="timerDecimalPlaces" onchange="AHK('Gui_UpdateSetting', 'Timer', 'decimalPlaces', this.value)">
+                    <select id="tDecimalPlaces" onchange="AHK('Gui_UpdateSetting', 'Timer', 'decimalPlaces', this.value)">
                         <option value="0">0</option>
                         <option value="1">1</option>
                         <option value="2">2</option>
@@ -411,11 +466,15 @@
             <hr>
             <div class="tab-content__row">
                 <div>
-                    <input type="checkbox" id="timerAutoSplit" onchange="AHK('Gui_UpdateSetting', 'Timer', 'autoSplit', this.checked ? 'true' : 'false')">
+                    <input type="checkbox" id="tAutoSplit" onchange="AHK('Gui_UpdateSetting', 'Timer', 'autoSplit', this.checked ? 'true' : 'false')">
                     <h3>Auto Split</h3>
                 </div>
             </div>
 
+            <div style="position: absolute; right: 0px; bottom: 0px; display: flex;">
+                <input type="checkbox" id="tPreview" onchange="AHK('Gui_UpdateSetting', 'Timer', 'preview', this.checked ? 'true' : 'false')">
+                <h3>Show Preview</h3>
+            </div>
         </div>
 
         <div id="Other" class="tab-content" style="display: none;">
@@ -537,6 +596,14 @@
                 <li>Set the threads utilistaion to the (%) amount of CPU threads during resets</li>
                 <li>All CPU threads will be utilised during runs</li>
                 <li>For efficient resetting, the recommended number of instances: Total CPU Threads / 4 </li>
+            </ul>
+
+            <br>
+            <h3>Timer</h3>
+            <ul>
+                <li>Colours are inputted in the hexadecimal ARGB format</li>
+                <li>Animation Speed can be omitted, if you don't want the timer to be animated</li>
+                <li>Auto Splitting works for 1.16.1 + 1.16.10</li>
             </ul>
 
             <br>

@@ -1,110 +1,76 @@
-global timerActive
-     , timerAnchor
-     , timerOffsetX
-     , timerOffsetY
-     , timerFont
-     , timerSize
-     , timerColour
-     , timerDecimalPlaces
-     , timerRefreshRate
-     , timerAutoSplit
+#Include, functions/gdip.ahk
 
 Class Timer
 {
-    __New()
-    {
-        this.timeDisplayed := "0:00.000"
+    static tInstances := 0 
 
-        global textTimer
-        Gui, Timer:Font, % "s"timerSize " c"timerColour " q4", % timerFont
-        Gui, Timer:Add, Text, x0 y0 w%A_ScreenWidth% vtextTimer, % this.timeDisplayed
-        Gui, Timer:+AlwaysOnTop -Border -Caption +LastFound +ToolWindow
-        Gui, Timer:Color, 000001
-        WinSet, TransColor, 000001
-        Gui, Timer:Show, % "x0 y0 w" A_ScreenWidth " h" A_ScreenHeight
-        Gui, Timer:Hide
+    __New(Settings*) {
+        this.tInstance := Timer.tInstances++
 
+        tGui := "t" this.tInstance 
+        Gui, %tGui%:+AlwaysOnTop -Border -Caption +LastFound +ToolWindow +E0x80000
+        this.hide()
+
+        Gui, %tGui%:+HwndTimerHwnd
+        this.hwnd := TimerHwnd
+        this.pToken := Gdip_Startup()
+        this.hdc := CreateCompatibleDC()
+        this.hbm := CreateDIBSection(A_ScreenWidth, A_ScreenHeight)
+        this.obm := SelectObject(this.hdc, this.hbm)
+        this.G := Gdip_GraphicsFromHDC(this.hdc)
+        Gdip_SetSmoothingMode(this.G, 4)
+        Gdip_SetTextRenderingHint(this.G, 4)
+
+        this.setSettings(settings*)
         this.reset()
-        this.updateFunction := this.UpdateTimer.bind(this)
-        FuncUpdateTimer := this.updateFunction
-        SetTimer, %FuncUpdateTimer%, 500
     }
 
-    __Delete()
-    {
-        Gui, Timer:Destroy
+    __Delete() {
+        DeleteDC(this.hdc)
+        DeleteObject(this.obm)
+        Gdip_DeleteFont(this.hFont)
+        Gdip_DeleteStringFormat(this.hFormat)
+        Gdip_DeleteBrush(this.pBrush)
+        Gdip_DeleteGraphics(this.G)
+        Gdip_Shutdown(this.pToken)
+        
+        tGui := "t" this.tInstance 
+        Gui, %tGui%:Destroy
     }
 
-    UpdateTimer()
-    {
-        this.currentInstance := this.FindCurrentInstance()
-
-        if (!this.isShown && this.currentInstance) {
-            Gui, Timer:Maximize
-            this.isShown := true
-            this.reset()
-            this.WaitForMovement(MCInstances[this.currentInstance])
-        }
-        else if (this.isShown && !this.currentInstance) {
-            Gui, Timer:Hide
-            this.isShown := false
-            this.reset()
-        }
+    show() {
+        tGui := "t" this.tInstance
+        Gui, %tGui%:Show, NA
+        this.isShown := true
     }
 
-    FindCurrentInstance()
-    {
-        for k, instance in MCInstances
-            if (instance.isResetting == -1)
-                return k
-
-        if (MCInstances[this.currentInstance].isResetting != -1)
-            return 0
+    hide() {
+        tGui := "t" this.tInstance
+        Gui, %tGui%:Hide
+        this.isShown := false
     }
 
-    WaitForMovement(instance)
-    {
-        if (waiting || this.tickFunction)
-            return
-
-        waiting := true
-        xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
-
-        while (waiting && this.currentInstance)
-        {
-            newCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
-            hasInputted := (GetKeyState("W") || GetKeyState("A") || GetKeyState("S") || GetKeyState("D") || GetKeyState("Space")) && WinActive("Minecraft")
-            if (xCoord != newCoord || hasInputted) {
-                this.start()
-                return waiting := false
-            }
-        }
-    }
-
-    reset()
-    {
+    reset() {
         if this.tickFunction
             this.stop()
         Sleep, 1
         this.startTick := 0
         this.elapsedTick := 0
-        Gui, Timer:Default
-        GuiControl,, textTimer, % this.FormatTime(0)
+
+        this.UpdateTimerText(this.FormatTime(0))
     }
 
-    start()
-    {
-        this.startTick := A_TickCount
+    start() {
+        this.startTick := this.QPC()
 
         if this.tickFunction
             return
         this.tickFunction := this.Tick.bind(this)
         tickFunction := this.tickFunction
-        SetTimer, % tickFunction, % timerRefreshRate
+        SetTimer, % tickFunction, % this.refreshRate
     }
 
-    stop()
-    {
+    stop() {
         if !this.tickFunction
             return 1
         tickFunction := this.tickFunction
@@ -113,16 +79,50 @@ Class Timer
         this.tickFunction:=""
     }
 
-    Tick()
-    {
-        if (timerAutoSplit == "true")
+    Tick() {
+        if (this.autoSplit == "true")
             this.CheckAutoSplit()
-        this.elapsedTick := A_TickCount - this.startTick
-        GuiControl, Timer:, textTimer, % this.FormatTime(this.elapsedTick)
+
+        this.elapsedTick := this.QPC() - this.startTick
+        this.UpdateTimerText(this.FormatTime(this.elapsedTick))
     }
 
-    FormatTime(ms)
-    {
+    QPC() {
+        static freq, init := DllCall("QueryPerformanceFrequency", "Int64P", freq)
+        
+        DllCall("QueryPerformanceCounter", "Int64*", count)
+        return Floor((count / freq)*1000)
+    }
+
+    UpdateTimerText(text) {
+        CreateRectF(RectF, 0, 0, A_ScreenWidth, A_ScreenHeight)
+        textSize := StrSplit(Gdip_MeasureString(this.G, text, this.hFont, this.hFormat, RectF), "|")
+        textPosition := this.GetAnchorPosition(textSize[3], textSize[4])
+        CreateRectF(RectF, textPosition.x, textPosition.y, textSize[3], textSize[4])
+
+        x2 := textPosition.x + textSize[3]
+        y2 := textPosition.y + textSize[4]
+        gAngle := this.gradientAngle
+
+        if (this.animationSpeed) {
+            positionScaler := Abs(Mod(A_TickCount/this.animationSpeed,10)/10-0.5)
+            x2 -= textSize[3]*positionScaler
+            y2 -= textSize[4]*positionScaler
+
+            rotationScaler := Mod(A_TickCount/this.animationSpeed,10)/10
+            gAngle := 360*rotationScaler
+        }
+
+        this.pBrush := Gdip_CreateLinearGrBrush(textPosition.x, textPosition.y, x2, y2, this.fontColour1, this.fontColour2)
+        Gdip_RotateLinearGrBrushAtCenter(this.pBrush, gAngle)
+
+        Gdip_GraphicsClear(this.G)
+        options := "x" textPosition.x " y" textPosition.y " w100p h100p c" this.pBrush " ow" this.outlineWidth " oc" this.outlineColour " s" this.fontSize " r4"
+        Gdip_TextToGraphics(this.G, text, options, this.font, A_ScreenWidth, A_ScreenHeight)
+        UpdateLayeredWindow(this.hwnd, this.hdc, 0,0, A_ScreenWidth, A_ScreenHeight)
+    }
+
+    FormatTime(ms) {
         milliseconds := Mod(ms,1000)
         seconds := Mod(ms // 1000,60)
         minutes := ms // 60000
@@ -134,42 +134,41 @@ Class Timer
         else if (milliseconds < 100)
             milliseconds := "0" . milliseconds
         
-        milliseconds := SubStr(milliseconds, 1, timerDecimalPlaces)
+        milliseconds := SubStr(milliseconds, 1, this.decimalPlaces)
         if StrLen(milliseconds)
             milliseconds := "." milliseconds
         
         if seconds < 10
             seconds := "0" . seconds
 
-        return this.timeDisplayed := minutes ":" seconds . milliseconds, this.AnchorTo()
+        return this.timeDisplayed := minutes ":" seconds . milliseconds
     }
 
-    AnchorTo()
-    {
-        win := GetWindowDimensions("ahk_id " MCInstances[this.currentInstance].hwnd)
+    GetAnchorPosition(textWidth, textHeight) {
+        if (this.currentInstance)
+            win := GetWindowDimensions("ahk_id " MCInstances[this.currentInstance].hwnd)
+        else
+            win := {x1: 0, y1: 0, x2: A_ScreenWidth, y2: A_ScreenHeight}
 
-        textSize := this.GetTextSize()
-        switch (timerAnchor)
+        switch (this.anchor)
         {
             case "TopLeft":
-                anchorX := win.x1 + timerOffsetX
-                anchorY := win.y1 + timerOffsetY
+                anchorX := win.x1 + this.offsetX
+                anchorY := win.y1 + this.offsetY
             case "TopRight": 
-                anchorX := win.x2 - textSize.W - timerOffsetX
-                anchorY := win.y1 + timerOffsetY
+                anchorX := win.x2 - textWidth - this.offsetX
+                anchorY := win.y1 + this.offsetY
             case "BottomLeft":
-                anchorX := win.x1 + timerOffsetX
-                anchorY := win.y2 - textSize.H - timerOffsetY
+                anchorX := win.x1 + this.offsetX
+                anchorY := win.y2 - textHeight - this.offsetY
             case "BottomRight":
-                anchorX := win.x2 - textSize.W - timerOffsetX
-                anchorY := win.y2 - textSize.H - timerOffsetY
+                anchorX := win.x2 - textWidth - this.offsetX
+                anchorY := win.y2 - textHeight - this.offsetY
         }
-
-        GuiControl, Timer:Move, textTimer, % "x" anchorX " y" anchorY
+        return {x: anchorX, y: anchorY}
     }
 
-    CheckAutoSplit()
-    {
+    CheckAutoSplit() {
         baseOffset := ""
         if (MCversion == "1.16.10.2")
             baseOffset := 0x036AB670
@@ -181,14 +180,81 @@ Class Timer
             this.stop()
     }
 
-    GetTextSize()
-    {
-        ; GuiControlGet, textSize, Timer:Pos, textTimer
-        Gui, textSizeGUI:Font, s%timerSize%, % timerFont
-        Gui, textSizeGUI:Add, Text,, % this.timeDisplayed
-        GuiControlGet, textSize, textSizeGUI:Pos, Static1
-        Gui, textSizeGUI:Destroy
+    setSettings(anchor, offsetX, offsetY, font, fontSize, fontColour1, fontColour2, gradientAngle, animationSpeed
+                , outlineWidth, outlineColour, decimalPlaces, refreshRate, autoSplit) {
+        Gdip_DeleteFont(this.hFont)
+        Gdip_DeleteStringFormat(this.hFormat)
+        
+        this.anchor := anchor
+        this.offsetX := offsetX
+        this.offsetY := offsetY
+        this.font := font
+        this.fontSize := fontSize
+        this.fontColour1 := InStr(fontColour1, "0x") ? fontColour1 : "0x" fontColour1
+        this.fontColour2 := InStr(fontColour2, "0x") ? fontColour2 : "0x" fontColour2
+        this.gradientAngle := gradientAngle
+        this.animationSpeed := animationSpeed
+        this.outlineWidth := outlineWidth
+        this.outlineColour := StrReplace(outlineColour, "0x", "")
+        this.decimalPlaces := decimalPlaces
+        this.refreshRate := refreshRate
+        this.autoSplit := autoSplit
 
-        return { W: textSizeW, H:textSizeH }
+        hFamily := Gdip_FontFamilyCreate(this.font)
+        this.hFont := Gdip_FontCreate(hFamily, this.fontSize)
+        this.hFormat := Gdip_StringFormatCreate(0x4000)
+
+        if !this.tickFunction
+            this.reset()
+    }
+}
+
+global FuncUpdateMainTimer := Func("UpdateMainTimer")
+SetTimer, %FuncUpdateMainTimer%, 500
+
+UpdateMainTimer() {
+    if !timer1
+        return
+
+    timer1.currentInstance := FindCurrentInstance()
+
+    if (!timer1.isShown && timer1.currentInstance) {
+        timer1.show()
+        timer1.reset()
+        f := Func("WaitForMovement").Bind(MCInstances[timer1.currentInstance])
+        SetTimer, %f%, -0
+    }
+    else if (timer1.isShown && !timer1.currentInstance) {
+        timer1.hide()
+        timer1.reset()
+    }
+}
+
+FindCurrentInstance() {
+    for k, instance in MCInstances
+        if (instance.isResetting == -1)
+            return k
+
+    if (MCInstances[timer1.currentInstance].isResetting != -1)
+        return 0
+}
+
+WaitForMovement(instance) {
+    static waiting
+
+    if (waiting || timer1.tickFunction)
+        return
+
+    waiting := true
+    xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
+
+    while (waiting && timer1.currentInstance := FindCurrentInstance())
+    {
+        newCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
+        hasInputted := (GetKeyState("W") || GetKeyState("A") || GetKeyState("S") || GetKeyState("D") || GetKeyState("Space")) && WinActive("Minecraft")
+        if (xCoord != newCoord || hasInputted) {
+            timer1.start()
+            return waiting := false
+        }
     }
 }
