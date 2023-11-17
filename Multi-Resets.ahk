@@ -66,7 +66,7 @@ DllCall(flushMenuThemes)
 Gui, Main:Show, % "w" 600/scaleBy " h" 400/scaleBy, Multi-Resets
 UpdateGuiElements()
 
-#If WinActive("Minecraft")
+Hotkey, IfWinActive, Minecraft
     Hotkey, %resetKey%, Reset
     Hotkey, %stopresetKey%, StopReset
     if starttimerKey
@@ -75,7 +75,8 @@ UpdateGuiElements()
         Hotkey, %stoptimerKey%, StopTimer
     if resettimerKey
         Hotkey, %resettimerKey%, ResetTimer
-#If
+
+Hotkey, IfWinActive
 Hotkey, %restartKey%, Restart
 RCtrl::Goto, MainGuiClose
 return
