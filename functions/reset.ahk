@@ -98,8 +98,10 @@ IterateReset(instance)
             return instance.isResetting := (instance.isResetting ? 3 : 0)
 
         case "CreateNew":
+            if (instance.isResetting == 4 && instance.lastClick+3000 > A_TickCount)
+                return
+            instance.lastClick := A_TickCount
             MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0
-            Sleep, 100
             return instance.isResetting := (instance.isResetting ? 4 : 0)
 
         case "CreateNewWorld":
@@ -107,8 +109,9 @@ IterateReset(instance)
             return instance.isResetting := (instance.isResetting ? 5 : 0)
 
         case "World":
-            if (instance.isResetting == 6)
+            if (instance.isResetting == 6 && instance.lastClick+3000 > A_TickCount)
                 return
+            instance.lastClick := A_TickCount
 
             if (resetMethod == "setupless") {
                 scale := GetMCScale(instance.width, instance.height, true)
@@ -196,18 +199,38 @@ RunInstance(instance)
 {
     if (instance.isResetting == -1)
         return
-
     SetAffinity(instance.pid, 2**threadCount - 1)
-    Sleep, 100
-    WinMaximize, % "ahk_id " instance.hwnd
     instance.isResetting := -1
 
-    for k, inst in MCInstances
-    {
-        if (inst.isResetting >= 0 || inst.isResetting == -2)
+    if (coopMode == "true") {
+        WinActivate, % "ahk_id " instance.hwnd
+        sleep, 10
+        WinActivate, ahk_class Shell_TrayWnd
+        while (isResettingInstances()) {
+            for k, inst in MCInstances
+            {
+                if (inst.isResetting >= 4) {
+                    inst.isResetting -= 100
+                    SuspendProcess(inst.pid)
+                    Continue
+                } else if (inst.isResetting > 0)
+                    IterateReset(inst)
+            }
+        }
+        Sleep, 70
+        WinMaximize, % "ahk_id " instance.hwnd
+        WinActivate, % "ahk_id " instance.hwnd
+    } else {
+        Sleep, 70
+        WinMaximize, % "ahk_id " instance.hwnd
+        instance.isResetting := -1
+
+        for k, inst in MCInstances
         {
-            inst.isResetting -= 100
-            SuspendProcess(inst.pid)
+            if (inst.isResetting >= 0 || inst.isResetting == -2) {
+                inst.isResetting -= 100
+                SuspendProcess(inst.pid)
+            }
         }
     }
     exit

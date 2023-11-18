@@ -481,18 +481,24 @@
             <h2>Other</h2>
             <hr>
             <div class="tab-content__row">
-                <div>
-                    <input type="checkbox" id="readScreenMemory" onchange="AHK('Gui_UpdateSetting', 'Other', 'readScreenMemory', this.checked ? 'true' : 'false')">
-                    <h3>Read Screen Memory</h3>
-                </div>
-            </div>
-            <div class="tab-content__row">
                 <div class="">
                     <h3>Reset Method (Experimental)</h3>
                     <select id="resetMethod" onchange="AHK('Gui_UpdateSetting', 'Other', 'resetMethod', this.value)">
                         <option value="setup">Setup</option>
                         <option value="setupless">Setup-less</option>
                     </select>
+                </div>
+            </div>
+            <div class="tab-content__row">
+                <div>
+                    <input type="checkbox" id="readScreenMemory" onchange="AHK('Gui_UpdateSetting', 'Other', 'readScreenMemory', this.checked ? 'true' : 'false')">
+                    <h3>Read Screen Memory</h3>
+                </div>
+            </div>
+            <div class="tab-content__row">
+                <div>
+                    <input type="checkbox" id="coopMode" onchange="AHK('Gui_UpdateSetting', 'Other', 'coopMode', this.checked ? 'true' : 'false')">
+                    <h3>Coop Mode</h3>
                 </div>
             </div>
             <hr>
