@@ -49,31 +49,45 @@ DownloadLatest(latestVersions)
 MergeConfigs(source, destination)
 {
     newIniFile := destination "\configs.ini"
-    IniWrite, %resetKey%    , %newIniFile%, Hotkeys, Reset
-    IniWrite, %stopresetKey%, %newIniFile%, Hotkeys, StopReset
-    IniWrite, %restartKey%  , %newIniFile%, Hotkeys, Restart
+    IniWrite, %resetKey%     , %newIniFile%, Hotkeys, Reset
+    IniWrite, %stopresetKey% , %newIniFile%, Hotkeys, StopReset
+    IniWrite, %restartKey%   , %newIniFile%, Hotkeys, Restart
+    IniWrite, %starttimerKey%, %newIniFile%, Hotkeys, StartTimer
+    IniWrite, %stoptimerKey% , %newIniFile%, Hotkeys, StopTimer
+    IniWrite, %resettimerKey%, %newIniFile%, Hotkeys, ResetTimer
     
+    IniWrite, %resetMode%       , %newIniFile%, Macro, resetMode
     IniWrite, %maxCoords%       , %newIniFile%, Macro, maxCoords
     IniWrite, %minCoords%       , %newIniFile%, Macro, minCoords
+    IniWrite, %originDistance%  , %newIniFile%, Macro, originDistance
     IniWrite, %autoRestart%     , %newIniFile%, Macro, autoRestart
     IniWrite, %resetThreshold%  , %newIniFile%, Macro, resetThreshold
     IniWrite, %keyDelay%        , %newIniFile%, Macro, keyDelay
     IniWrite, %numInstances%    , %newIniFile%, Macro, numInstances
     IniWrite, %layoutDimensions%, %newIniFile%, Macro, layoutDimensions
 
-    IniWrite, %timerActivated%    , %newIniFile%, Timer, timerActive
-    IniWrite, %timerAnchor%       , %newIniFile%, Timer, anchor
-    IniWrite, %timerOffsetX%      , %newIniFile%, Timer, offsetX
-    IniWrite, %timerOffsetY%      , %newIniFile%, Timer, offsetY
-    IniWrite, %timerFont%         , %newIniFile%, Timer, font
-    IniWrite, %timerSize%         , %newIniFile%, Timer, size
-    IniWrite, %timerColour%       , %newIniFile%, Timer, colour
-    IniWrite, %timerDecimalPlaces%, %newIniFile%, Timer, decimalPlaces
-    IniWrite, %timerRefreshRate%  , %newIniFile%, Timer, refreshRate
-    IniWrite, %timerAutoSplit%    , %newIniFile%, Timer, autoSplit
+    IniWrite, %timerActivated%, %newIniFile%, Timer, timerActive
+    IniWrite, %tAnchor%       , %newIniFile%, Timer, anchor
+    IniWrite, %tOffsetX%      , %newIniFile%, Timer, offsetX
+    IniWrite, %tOffsetY%      , %newIniFile%, Timer, offsetY
+    IniWrite, %tFont%         , %newIniFile%, Timer, font
+    IniWrite, %tFontSize%     , %newIniFile%, Timer, fontSize
+    IniWrite, %tFontColour1%  , %newIniFile%, Timer, fontColour1
+    IniWrite, %tFontColour2%  , %newIniFile%, Timer, fontColour2
+    IniWrite, %tGradientAngle%, %newIniFile%, Timer, gradientAngle
+    IniWrite, %tAnimationType%, %newIniFile%, Timer, animationType
+    IniWrite, %tOutlineWidth% , %newIniFile%, Timer, outlineWidth
+    IniWrite, %tOutlineColour%, %newIniFile%, Timer, outlineColour
+    IniWrite, %tDecimalPlaces%, %newIniFile%, Timer, decimalPlaces
+    IniWrite, %tRefreshRate%  , %newIniFile%, Timer, refreshRate
+    IniWrite, %tAutoSplit%    , %newIniFile%, Timer, autoSplit
+    IniWrite, %tPreview%      , %newIniFile%, Timer, preview
 
     IniWrite, %threadsUsage%    , %newIniFile%, Other, threadsUsage
     IniWrite, %readScreenMemory%, %newIniFile%, Other, readScreenMemory
+    IniWrite, %resetMethod%     , %newIniFile%, Other, resetMethod
+    IniWrite, %coopMode%        , %newIniFile%, Other, coopMode
+    IniWrite, %hideOnMinimise%  , %newIniFile%, Other, hideOnMinimise
 
     FileCopy, %source%\attempts.txt, %destination%, 1
     FileCopy, %source%\clicks.txt, %destination%, 1
