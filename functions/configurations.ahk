@@ -24,6 +24,7 @@ global timerActive
      , tFontColour1
      , tFontColour2
      , tGradientAngle
+     , tAnimationType
      , tAnimationSpeed
      , tOutlineWidth
      , tOutlineColour
@@ -91,6 +92,7 @@ LoadIniConfigs() {
     IniRead, tFontColour1   , %iniFile%, Timer, fontColour1
     IniRead, tFontColour2   , %iniFile%, Timer, fontColour2
     IniRead, tGradientAngle , %iniFile%, Timer, gradientAngle
+    IniRead, tAnimationType , %iniFile%, Timer, animationType
     IniRead, tAnimationSpeed, %iniFile%, Timer, animationSpeed
     IniRead, tOutlineWidth  , %iniFile%, Timer, outlineWidth
     IniRead, tOutlineColour , %iniFile%, Timer, outlineColour
@@ -105,7 +107,7 @@ LoadIniConfigs() {
     IniRead, coopMode        , %iniFile%, Other, coopMode
     IniRead, hideOnMinimise  , %iniFile%, Other, hideOnMinimise
 
-    timerOptions := [tAnchor, tOffsetX, tOffsetY, tFont, tFontSize, tFontColour1, tFontColour2, tGradientAngle, tAnimationSpeed, tOutlineWidth, tOutlineColour, tDecimalPlaces, tRefreshRate, tAutoSplit]
+    timerOptions := [tAnchor, tOffsetX, tOffsetY, tFont, tFontSize, tFontColour1, tFontColour2, tGradientAngle, tAnimationType, tAnimationSpeed, tOutlineWidth, tOutlineColour, tDecimalPlaces, tRefreshRate, tAutoSplit]
     if !timer1
         timer1 := new Timer(timerOptions*)
     else
@@ -152,6 +154,7 @@ UpdateGuiElements() {
     WB.document.getElementById("tFontColour1").value := tFontColour1
     WB.document.getElementById("tFontColour2").value := tFontColour2
     WB.document.getElementById("tGradientAngle").value := tGradientAngle
+    WB.document.getElementById("tAnimationType").value := tAnimationType
     WB.document.getElementById("tAnimationSpeed").value := tAnimationSpeed
     WB.document.getElementById("tOutlineWidth").value := tOutlineWidth
     WB.document.getElementById("tOutlineColour").value := tOutlineColour
@@ -195,6 +198,7 @@ SetDefaultConfigs() {
     IniWrite, FFFFFFFF , %iniFile%, Timer, fontColour1
     IniWrite, FF737373 , %iniFile%, Timer, fontColour2
     IniWrite, 60       , %iniFile%, Timer, gradientAngle
+    IniWrite, rotatory , %iniFile%, Timer, animationType
     IniWrite, 0        , %iniFile%, Timer, animationSpeed
     IniWrite, 10       , %iniFile%, Timer, outlineWidth
     IniWrite, 00000000 , %iniFile%, Timer, outlineColour

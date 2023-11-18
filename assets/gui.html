@@ -448,6 +448,15 @@
             </div>
             <div class="tab-content__row">
                 <div>
+                    <h3>Animation Type</h3>
+                    <select id="tAnimationType" onchange="AHK('Gui_UpdateSetting', 'Timer', 'animationType', this.value)">
+                        <option value="rotatory">Rotatory</option>
+                        <option value="panoramic">Panoramic</option>
+                    </select>
+                </div>
+            </div>
+            <div class="tab-content__row">
+                <div>
                     <h3>Animation Speed</h3>
                     <input type="text" id="tAnimationSpeed" oninput="AHK('Gui_UpdateSetting', 'Timer', 'animationSpeed', this.value)">
                 </div>

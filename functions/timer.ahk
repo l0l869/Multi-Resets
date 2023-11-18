@@ -100,20 +100,23 @@ Class Timer
         textPosition := this.GetAnchorPosition(textSize[3], textSize[4])
         CreateRectF(RectF, textPosition.x, textPosition.y, textSize[3], textSize[4])
 
+        x1 := textPosition.x
+        y1 := textPosition.y
         x2 := textPosition.x + textSize[3]
         y2 := textPosition.y + textSize[4]
         gAngle := this.gradientAngle
+        gPan := 0
 
         if (this.animationSpeed) {
-            positionScaler := Abs(Mod(A_TickCount/this.animationSpeed,10)/10-0.5)
-            x2 -= textSize[3]*positionScaler
-            y2 -= textSize[4]*positionScaler
-
-            rotationScaler := Mod(A_TickCount/this.animationSpeed,10)/10
-            gAngle := 360*rotationScaler
+            if (this.animationType == "panoramic") {
+                gPan := Mod(A_TickCount/this.animationSpeed, textSize[3]*4)
+            } else {
+                rotationScaler := A_TickCount/(this.animationSpeed*1000)
+                gAngle := 360*rotationScaler
+            }
         }
 
-        this.pBrush := Gdip_CreateLinearGrBrush(textPosition.x, textPosition.y, x2, y2, this.fontColour1, this.fontColour2)
+        this.pBrush := Gdip_CreateLinearGrBrush(textPosition.x+gPan, textPosition.y, x2+gPan, y2, this.fontColour1, this.fontColour2)
         Gdip_RotateLinearGrBrushAtCenter(this.pBrush, gAngle)
 
         Gdip_GraphicsClear(this.G)
@@ -180,8 +183,8 @@ Class Timer
             this.stop()
     }
 
-    setSettings(anchor, offsetX, offsetY, font, fontSize, fontColour1, fontColour2, gradientAngle, animationSpeed
-                , outlineWidth, outlineColour, decimalPlaces, refreshRate, autoSplit) {
+    setSettings(anchor, offsetX, offsetY, font, fontSize, fontColour1, fontColour2, gradientAngle, animationType 
+                , animationSpeed, outlineWidth, outlineColour, decimalPlaces, refreshRate, autoSplit) {
         Gdip_DeleteFont(this.hFont)
         Gdip_DeleteStringFormat(this.hFormat)
         
@@ -193,6 +196,7 @@ Class Timer
         this.fontColour1 := InStr(fontColour1, "0x") ? fontColour1 : "0x" fontColour1
         this.fontColour2 := InStr(fontColour2, "0x") ? fontColour2 : "0x" fontColour2
         this.gradientAngle := gradientAngle
+        this.animationType := animationType
         this.animationSpeed := animationSpeed
         this.outlineWidth := outlineWidth
         this.outlineColour := StrReplace(outlineColour, "0x", "")
