@@ -1,5 +1,4 @@
-﻿LaunchInstances()
-{
+﻿LaunchInstances() {
     SetTitleMatchMode, 3
     CloseInstances()
     lastRestart := UpdateResetAttempts(0)
@@ -9,7 +8,8 @@
 
     loop, %numInstances% {
         Run, shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App
-        Sleep, 500
+        WinWaitActive, Minecraft
+        Sleep, 250
 
         PIDs := GetExcludedFromList(GetMinecraftProcesses(), usedPIDs)
         pid  := PIDs[1]
@@ -23,10 +23,8 @@
                          , x2: 0, y2: 0
                          , width: 0, height: 0 })
 
-        if (PIDs.count() > 1 || !pid)
-        {
-            if (!GetMultiState())
-            {
+        if (PIDs.count() > 1 || !pid) {
+            if (!GetMultiState()) {
                 MsgBox, 4,, % "Error: Multi-instance is not registered.`nDo you want to register multi?"
                 IfMsgBox, Yes
                     Run, configs\RegisterMulti.ahk
@@ -40,7 +38,6 @@
         }
 
         usedPIDs.push(pid)
-
         SetAffinity(pid, threadsMask)
     }
 
@@ -48,8 +45,7 @@
     ResizeInstances()
 }
 
-ResizeInstances()
-{
+ResizeInstances() {
     dim := StrSplit(layoutDimensions, ",")
     height := (A_ScreenHeight - 40 * scaleBy) / dim[2]
     width := A_ScreenWidth / dim[1]
@@ -72,8 +68,7 @@ ResizeInstances()
     }
 }
 
-GetWindowDimensions(Window)
-{
+GetWindowDimensions(Window) {
     WinGet, style, Style, %Window%
     if (isFullscreen := !(style & 0x20800000))
         return {}
@@ -88,8 +83,7 @@ GetWindowDimensions(Window)
            , height: winHeight - 38 * scaleBy }
 }
 
-GetMinecraftProcesses()
-{
+GetMinecraftProcesses() {
     local tPtr := 0, pPtr := 0, nTTL := 0, processName, processID, list := []
   
     if !DllCall("Wtsapi32\WTSEnumerateProcesses", "Ptr", 0, "Int", 0, "Int", 1, "PtrP", pPtr, "PtrP", nTTL)
@@ -109,8 +103,7 @@ GetMinecraftProcesses()
     return list, DllCall("SetLastError", "UInt", nTTL)
 }
 
-GetMinecraftVersion()
-{
+GetMinecraftVersion() {
     if WinExist("Minecraft")
         exeDir := new _ClassMemory("ahk_exe Minecraft.Windows.exe", "PROCESS_VM_READ").GetModuleFileNameEx()
     else {
@@ -125,8 +118,7 @@ GetMinecraftVersion()
     return MCversion
 }
 
-ConfigureMinecraftPointers()
-{
+ConfigureMinecraftPointers() {
     switch GetMinecraftVersion()
     {
         case "1.19.50.2": offsetsX      := [0x048E3910, 0x10, 0x128, 0x0, 0xF8, 0x398, 0x18, 0x0, 0x8] 
@@ -156,8 +148,7 @@ GetMCScale(w, h, applyDPI:=false) {
     return x < y ? x : y
 }
 
-SetAffinity(pid, mask) 
-{
+SetAffinity(pid, mask) {
     if (hProcess := DllCall("OpenProcess", "UInt", 0x0200, "Int", 0, "Int", pid))
     {
         DllCall("SetProcessAffinityMask", "Ptr", hProcess, "Ptr", mask)
@@ -165,8 +156,7 @@ SetAffinity(pid, mask)
     }
 }
 
-CloseInstances()
-{
+CloseInstances() {
     MCInstances := []
 
     SetTitleMatchMode, 3
@@ -174,13 +164,11 @@ CloseInstances()
         Process, Close, Minecraft.Windows.exe
 }
 
-OpenMinecraftDir()
-{
+OpenMinecraftDir() {
     Run, %minecraftDir%
 }
 
-UpdateResetAttempts(amount := 1)
-{
+UpdateResetAttempts(amount := 1) {
     txt := FileOpen("configs/attempts.txt", "r") ; open/reads txt
     attempts := txt.read() + amount
     if amount {
@@ -192,8 +180,7 @@ UpdateResetAttempts(amount := 1)
     return attempts
 }
 
-ShouldRestart(resetCounter)
-{
+ShouldRestart(resetCounter) {
     if !lastRestart {
         lastRestart := resetCounter
         return false
@@ -205,8 +192,7 @@ ShouldRestart(resetCounter)
     }
 }
 
-WorldBopper(action := "r", targetWorldName := "My World", daysBefore := 512)
-{
+WorldBopper(action := "r", targetWorldName := "My World", daysBefore := 512) {
     static isDeleting := false
 
     daysBefore := daysBefore == "" ? 512 : daysBefore
@@ -271,8 +257,7 @@ WorldBopper(action := "r", targetWorldName := "My World", daysBefore := 512)
     }
 }
 
-GetMultiState()
-{
+GetMultiState() {
     cmd := "(Get-AppxPackage -Name Microsoft.MinecraftUWP).'PackageFullName' > '" A_ScriptDir "\configs\mcpackage.txt'"
     RunWait, PowerShell.exe -Command &{%cmd%},, Hide
     FileRead, mcpackage, configs\mcpackage.txt
@@ -299,8 +284,7 @@ GetSpawnChance(min, max) {
     return Floor(totalInRange/total*100*100)/100
 }
 
-GetExcludedFromList(list, excludeList)
-{
+GetExcludedFromList(list, excludeList) {
     returnList := []
 
     for i, item in list
