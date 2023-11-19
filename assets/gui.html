@@ -93,6 +93,10 @@
             cursor: default;
         }
 
+        ul > ul > li {
+            list-style-type: circle;
+        }
+
         #sidebar {
             height: 100%;
             width: 25%;
@@ -229,7 +233,7 @@
             font-size: 12px;
             padding: 0px;
         }
-
+        
     </style>
 
     <script>
@@ -294,7 +298,7 @@
             </div>
 
             <button id="info-button" onclick="openTab(event, 'Info')">(i)</button>
-            <p style="color: lightgrey; position: absolute; bottom: -1px; left: 2px; cursor: default;">v0.5</p>
+            <p style="color: lightgrey; position: absolute; bottom: -1px; left: 2px; cursor: default;">v1.0</p>
         </div>
 
         <div id="Macro" class="tab-content" style="display: block;">
@@ -491,10 +495,10 @@
             <hr>
             <div class="tab-content__row">
                 <div class="">
-                    <h3>Reset Method (Experimental)</h3>
+                    <h3>Reset Method</h3>
                     <select id="resetMethod" onchange="AHK('Gui_UpdateSetting', 'Other', 'resetMethod', this.value)">
                         <option value="setup">Setup</option>
-                        <option value="setupless">Setup-less</option>
+                        <option value="setupless">Setupless</option>
                     </select>
                 </div>
             </div>
@@ -593,9 +597,9 @@
                     Pixel coordinates are set with their respected colour to determine the current screen and click.
                 </p>
                 <br>
-                <li>Setup-less (Experiemental)</li>
+                <li>Setupless</li>
                 <p>
-                    Finds English text, determining the buttons to press. Make sure MC GUI scaling is at the lowest value.
+                    Finds English text, determining the buttons to press. Make sure MC GUI scaling is at the highest value.
                 </p>
                 <br>
                 <li>Reading Screen Memory</li>
@@ -632,6 +636,35 @@
             <br>
             <br>
             <h1>Version History</h1>
+
+            <br>
+            <h2>v1.0</h2>
+            <hr>
+            <br>
+            <h3>General</h3>
+            <ul>
+                <li>Coop Mode - avoids the 0/8 bug</li>
+                <li>Setup now uses identifiers instead of button text</li>
+                <li>Hotkeys now only fires when Minecraft is the active window</li>
+                <ul>
+                    <li>Restart MC is an exception to this</li>
+                </ul>
+                <li>Added option "Hide on Minimise", use the tray icon to reshow the gui</li>
+                <li>Show chance of spawn based on min/max coordinates</li>
+                <li>Instances opens 2x faster</li>
+                <li>Fixed most causes of the "Failed to get process ID" error</li>
+                <li>Fixed the macro rarely getting stuck on the world creation screen</li>
+            </ul>
+            <br>
+            <h3>Timer Additions</h3>
+            <ul>
+                <li>Gradient Text</li>
+                <li>Outline</li>
+                <li>Animation</li>
+                <li>Preview</li>
+                <li>Higher resolution timing for accuracy</li>
+                <li>Fixed timer not hiding when exiting instance if it did not start</li>
+            </ul>
 
             <br>
             <h2>v0.5</h2>
