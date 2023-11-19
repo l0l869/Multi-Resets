@@ -32,7 +32,6 @@ global resetDll := DllCall("LoadLibrary", "Str", "functions/reset.dll", "Ptr")
 DllCall("gdi32\AddFontResource", "Str", A_ScriptDir "\assets\Mojangles.ttf")
 
 LoadIniConfigs()
-LoadClickData()
 FetchUpdates()
 
 Menu, Tray, Icon, assets/_Icon.ico

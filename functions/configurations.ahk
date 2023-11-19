@@ -41,17 +41,29 @@ LoadClickData() {
 
     clicksFile := FileOpen("configs/clicks.txt", "r")
     clicksArray := StrSplit(clicksFile.read(), "`n")
+
+    if (SubStr(clicksArray[1], 1, 1) == "#") {
+        clicksArray.RemoveAt(1)
+    } else if (SubStr(clicksArray[1], 1, 5) == "Heart") {
+        Msgbox,4,, % "Outdated click data.`n" "V1.0+ uses identifiers to determine the current button to click, rather than using the colour of the text on the button.`n`n" "Yes: Do the setup`n" "No: Opt in for setupless resets"
+        IfMsgBox, Yes
+            Run, configs\Setup.ahk    
+        IfMsgBox, No
+            Gui_UpdateSetting("Other", "resetMethod", "setupless")
+        
+        return
+    }
+
     for k, click in clicksArray
     {
         clickObj := StrSplit(click, ",")
-
         if !clickObj.count()
             continue
 
-        if (clickObj[4])
-            screenClicks.push({ btn: clickObj[1], x: clickObj[2], y: clickObj[3], colour: clickObj[4] })
+        if (clickObj[6])
+            screenClicks.push({btn:clickObj[1], x:clickObj[2], y:clickObj[3], px:clickObj[4], py:clickObj[5], colour:clickObj[6]})
         else
-            worldcreationClicks.push({ x: clickObj[2], y: clickObj[3] })
+            worldcreationClicks.push({x:clickObj[2], y:clickObj[3]})
     }
     clicksFile.close()
 
@@ -122,6 +134,11 @@ LoadIniConfigs() {
         timerPreview := ""
     } else if (tPreview == "true" && timerPreview) {
         timerPreview.setSettings(timerOptions*)
+    }
+
+    if (resetMethod == "setup" && !worldcreationClicks.count()) {
+        f := Func("LoadClickData")
+        SetTimer, %f%, -500
     }
 
     ; checks invalid value. Mainly because i messed merging configs from older versions to newer

@@ -108,7 +108,7 @@ IterateReset(instance)
             MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0
             return instance.isResetting := (instance.isResetting ? 5 : 0)
 
-        case "World":
+        case "WorldCreation":
             if (instance.isResetting == 6 && instance.lastClick+3000 > A_TickCount)
                 return
             instance.lastClick := A_TickCount
@@ -282,7 +282,7 @@ GetCurrentClick(instance, method)
             case 1: currentScreen := "SaveAndQuit"
             case 2: currentScreen := "CreateNew"
             case 3: currentScreen := "CreateNewWorld"
-            case 4: currentScreen := "World"
+            case 4: currentScreen := "WorldCreation"
         }
         if (currentScreen == "SaveAndQuit" && instance.isResetting == 6) ; if it skips checking coords
             currentScreen := "Heart"
@@ -322,7 +322,7 @@ GetCurrentScreen(instance)
                 case 3: currentScreen := "Heart"
                 case 5: currentScreen := "CreateNew"
                 case 6: currentScreen := "CreateNewWorld"
-                case 7: currentScreen := "World"
+                case 7: currentScreen := "WorldCreation"
             }
         }
         else { ; 1.2.13.54
@@ -331,7 +331,7 @@ GetCurrentScreen(instance)
                 case 4: currentScreen := "Heart"
                 case 6: currentScreen := "CreateNew"
                 case 7: currentScreen := "CreateNewWorld"
-                case 8: currentScreen := "World"
+                case 8: currentScreen := "WorldCreation"
             }
         }
 
@@ -346,7 +346,7 @@ GetCurrentScreen(instance)
 
         for k, btn in screenClicks
         {
-            PixelGetColor, pixelColour, instance.x1+btn.x, instance.y1+btn.y, RGB
+            PixelGetColor, pixelColour, instance.x1+btn.px, instance.y1+btn.py, RGB
             if (pixelColour == btn.colour){
                 currentScreen := btn.btn
                 break

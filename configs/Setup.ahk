@@ -5,14 +5,14 @@ CoordMode, Mouse, Screen
 CoordMode, Pixel, Screen
 
 global scaleBy := A_ScreenDPI / 96
-global currentButton := 1
-global BUTTON_NAMES := ["Heart","SaveAndQuit","CreateNew","CreateNewWorld","World"]
+global currentID := 1
+global IDENTIFIERS := ["Heart","SaveAndQuit","CreateNew","CreateNewWorld","WorldCreation"]
 global clickData := []
 global screenClicks := []
 global worldcreationClicks := []
-global hwnd, win, mouseX, mouseY, atMouseColour, btnName
+global layoutDimensions, hwnd, win, mouseX, mouseY, atMouseColour, btnName
 
-MsgBox % "Tab: Assign Button`n" "Shift + Esc: Finish Setup"
+MsgBox % "Tab: Assign`n" "Shift + Esc: Finish Setup"
 
 SetTitleMatchMode, 3
 while WinExist("Minecraft")
@@ -21,7 +21,7 @@ while WinExist("Minecraft")
 Run, shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App
 WinWait, Minecraft
 hwnd := WinExist("Minecraft")
-IniRead, layoutDimensions, configs.ini, Settings, layoutDimensions
+IniRead, layoutDimensions, configs.ini, Macro, layoutDimensions
 dim := StrSplit(layoutDimensions, ",")
 height := (A_ScreenHeight-40*scaleBy)/dim[2]
 width := A_ScreenWidth/dim[1]
@@ -30,7 +30,7 @@ WinMove, % "ahk_id " hwnd,, (A_ScreenWidth-width-8)/2, (A_ScreenHeight-height+16
 global textMouseToolTip, textMouseColourTip, textButtonList
 Gui, Setup:Show, % "x0 y0 w" A_ScreenWidth " h" A_ScreenHeight
 Gui, Setup:Font, % "s25 cFFFFFF q4", Mojangles
-Gui, Setup:Add , Text, x0 y0 w400 h150 vtextMouseToolTip
+Gui, Setup:Add , Text, x0 y0 w500 h150 vtextMouseToolTip
 Gui, Setup:Add , Text, x0 y0 w200 h100 vtextMouseColourTip
 Gui, Setup:Add , Text, x0 y0 w550 h300 vtextButtonList
 Gui, Setup:         +AlwaysOnTop -Border -Caption +LastFound +ToolWindow
@@ -63,7 +63,7 @@ updateSetupWindow:
 return
 
 updateTextMouseTip:
-    btnName := BUTTON_NAMES[currentButton] ? BUTTON_NAMES[currentButton] : "worldcreation"
+    btnName := IDENTIFIERS[currentID] ? IDENTIFIERS[currentID] : "WorldCreation"
     PixelGetColor, atMouseRawColour, mouseX, mouseY, RGB
     switch atMouseRawColour ;hover colour to unhover colour
     {
@@ -81,7 +81,8 @@ updateTextMouseTip:
     GuiControl, Setup:Move, textMouseColourTip, % "x" mouseX+135 "y" mouseY+75
     Gui       , Setup:Font, % "s" 25 " q4" " c" atMouseColour, Mojangles
     GuiControl, Setup:Font, textMouseColourTip
-    GuiControl, Setup:    , textMouseToolTip, % "X:" Floor(mouseX-win.x1) " Y:" Floor(mouseY-win.y1) "`nButton: " btnName "`nColour: "
+    currentType := !clickData[currentID] && IDENTIFIERS[currentID] ? "Identifier" : "Button"
+    GuiControl, Setup:    , textMouseToolTip, % "X:" Floor(mouseX-win.x1) " Y:" Floor(mouseY-win.y1) "`n" currentType ": " btnName "`nColour: "
     GuiControl, Setup:    , textMouseColourTip, % atMouseColour
 
     if(mouseX < 600 && mouseY < 350)
@@ -99,12 +100,12 @@ updateTextButtonList:
         padding := ""
         loop, %paddingLength%
             padding .= " "
-        buttonListString .= btn.btn "" padding ": X:" btn.x " Y:" btn.y " Colour: " btn.colour "`n"
+        buttonListString .= btn.btn "" padding ": X:" btn.x " Y:" btn.y " pX:" btn.px " pY:" btn.py " Colour: " btn.colour "`n"
     }
     for k, btn in worldcreationClicks
-        buttonListString .=  "worldcreation" A_index " : X:" btn.x " Y:" btn.y "`n"
+        buttonListString .=  "WorldCreation" A_index " : X:" btn.x " Y:" btn.y "`n"
 
-    Gui       , Setup:Font, % "s15 cFFFFFF q4", Consolas
+    Gui       , Setup:Font, % "s13 cFFFFFF q4", Consolas
     GuiControl, Setup:Font, textButtonList
     GuiControl, Setup:    , textButtonList, % buttonListString
 return
@@ -127,28 +128,45 @@ LoadButtons()
     worldcreationClicks := []
 
     clicksFile := FileOpen("clicks.txt", "r")
-    clickList := StrSplit(clicksFile.read(), "`n")
-    for k, click in clickList
-    {
-        objClick := StrSplit(click,",")
+    clicksArray := StrSplit(clicksFile.read(), "`n")
 
-        if !objClick.count()
+    if (SubStr(clicksArray[1], 1, 1) == "#")
+        clicksArray.RemoveAt(1)
+    else
+        return
+
+    for k, click in clicksArray
+    {
+        clickObj := StrSplit(click,",")
+        if !clickObj.count()
             continue
 
-        if (objClick[4])
-            screenClicks.push({btn:objClick[1],x:objClick[2],y:objClick[3],colour:objClick[4]})
+        if (clickObj[6])
+            screenClicks.push({btn:clickObj[1], x:clickObj[2], y:clickObj[3], px:clickObj[4], py:clickObj[5], colour:clickObj[6]})
         else
-            worldcreationClicks.push({x:objClick[2],y:objClick[3]})
+            worldcreationClicks.push({x:clickObj[2], y:clickObj[3]})
     }
     clicksFile.close()
 }
 
 AssignButton()
-{
-    data := BUTTON_NAMES[currentButton] ? BUTTON_NAMES[currentButton] "," Floor(mouseX-win.x1) "," Floor(mouseY-win.y1) "," atMouseColour : "worldcreation," Floor(mouseX-win.x1) "," Floor(mouseY-win.y1)
-    clickData[currentButton] := data
-    currentButton += 1
-    Click
+{    
+    if (IDENTIFIERS[currentID] == "Heart" || IDENTIFIERS[currentID] == "WorldCreation") {
+        clickData[currentID] := IDENTIFIERS[currentID] ",,," Floor(mouseX-win.x1) "," Floor(mouseY-win.y1) "," atMouseColour
+        currentID++
+    } else if (currentID <= IDENTIFIERS.count()) {
+        if (!clickData[currentID])
+            clickData[currentID] := Floor(mouseX-win.x1) "," Floor(mouseY-win.y1) "," atMouseColour
+        else {
+            clickData[currentID] := IDENTIFIERS[currentID] "," Floor(mouseX-win.x1) "," Floor(mouseY-win.y1) "," . clickData[currentID]
+            click
+            currentID++
+        }
+    } else {
+        clickData[currentID] := "WorldCreation," Floor(mouseX-win.x1) "," Floor(mouseY-win.y1)
+        click
+        currentID++
+    }
 }
 
 FinishSetup()
@@ -159,7 +177,7 @@ FinishSetup()
         ExitApp
     }
 
-    clickDataString := ""
+    clickDataString := "#1," layoutDimensions "`n"
     for k, click in clickData
         clickDataString .= click "`n"
     txt := FileOpen("clicks.txt", "w")
