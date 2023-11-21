@@ -201,20 +201,28 @@ RunInstance(instance)
         return
     SetAffinity(instance.pid, 2**threadCount - 1)
     instance.isResetting := -1
+    For k, v in MCInstances {
+        if (v.hwnd == instance.hwnd) {
+            timer1.currentInstance := k
+            break
+        }
+    }
 
     if (coopMode == "true") {
-        WinActivate, % "ahk_id " instance.hwnd
-        sleep, 10
-        WinActivate, ahk_class Shell_TrayWnd
         while (isResettingInstances()) {
             for k, inst in MCInstances
             {
-                if (inst.isResetting >= 4) {
+                if (inst.isResetting == 5) {
                     inst.isResetting -= 100
                     SuspendProcess(inst.pid)
                     Continue
-                } else if (inst.isResetting > 0)
+                } else if (inst.isResetting == 6)
+                    inst.isResetting := 1
+                else if (inst.isResetting > 0) {
+                    WinActivate, ahk_class Shell_TrayWnd ; setupless doesnt bring save quit menu
+                    sleep, 10
                     IterateReset(inst)
+                }
             }
         }
         Sleep, 70
@@ -238,6 +246,8 @@ RunInstance(instance)
 
 ExitInstance()
 {
+    timer1.reset()
+    timer1.currentInstance := 0
     for k, instance in MCInstances
     {
         if (instance.isResetting == -1) {

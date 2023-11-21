@@ -217,12 +217,13 @@ global FuncUpdateMainTimer := Func("UpdateMainTimer")
 SetTimer, %FuncUpdateMainTimer%, 500
 
 UpdateMainTimer() {
-    if !timer1
+    if (timerActive == "false") {
+        if timer1.isShown
+            timer1.hide()
         return
+    }
 
-    timer1.currentInstance := FindCurrentInstance()
-
-    if (!timer1.isShown && timer1.currentInstance) {
+    if (!timer1.isShown && timer1.currentInstance && !IsResettingInstances()) {
         timer1.show()
         timer1.reset()
         f := Func("WaitForMovement").Bind(MCInstances[timer1.currentInstance])
@@ -234,25 +235,15 @@ UpdateMainTimer() {
     }
 }
 
-FindCurrentInstance() {
-    for k, instance in MCInstances
-        if (instance.isResetting == -1)
-            return k
-
-    if (MCInstances[timer1.currentInstance].isResetting != -1)
-        return 0
-}
-
 WaitForMovement(instance) {
     static waiting
-
-    if (waiting || timer1.tickFunction)
+    if (timer1.tickFunction || waiting)
         return
-
     waiting := true
+
     xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
 
-    while (waiting && timer1.currentInstance := FindCurrentInstance())
+    while (timer1.currentInstance && waiting)
     {
         newCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
         hasInputted := (GetKeyState("W") || GetKeyState("A") || GetKeyState("S") || GetKeyState("D") || GetKeyState("Space")) && WinActive("Minecraft")
