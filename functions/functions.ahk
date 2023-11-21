@@ -9,7 +9,15 @@
     loop, %numInstances% {
         Run, shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App
         WinWaitActive, Minecraft
-        Sleep, 250
+        startTick := A_TickCount
+        index1 := A_Index
+        While (A_TickCount-startTick < 1000) {
+            if (WinActive("Minecraft") != MCInstances[index1-1].hwnd) {
+                sleep, 200
+                break
+            }
+        }
+        sleep, 50
 
         PIDs := GetExcludedFromList(GetMinecraftProcesses(), usedPIDs)
         pid  := PIDs[1]
