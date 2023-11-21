@@ -5,6 +5,7 @@ global resetMode
      , autoRestart
      , resetThreshold
      , keyDelay
+     , switchDelay
      , numInstances
      , layoutDimensions
      , threadsUsage
@@ -92,6 +93,7 @@ LoadIniConfigs() {
     IniRead, autoRestart     , %iniFile%, Macro, autoRestart
     IniRead, resetThreshold  , %iniFile%, Macro, resetThreshold
     IniRead, keyDelay        , %iniFile%, Macro, keyDelay
+    IniRead, switchDelay     , %iniFile%, Macro, switchDelay
     IniRead, numInstances    , %iniFile%, Macro, numInstances
     IniRead, layoutDimensions, %iniFile%, Macro, layoutDimensions
 
@@ -154,6 +156,7 @@ UpdateGuiElements() {
     WB.document.getElementById("autoRestart").checked := autoRestart == "true" ? 1 : 0
     WB.document.getElementById("resetThreshold").value := resetThreshold
     WB.document.getElementById("keyDelay").value := keyDelay
+    WB.document.getElementById("switchDelay").value := switchDelay
     WB.document.getElementById("numInstances").value := numInstances
     WB.document.getElementById("layoutDimensions").value := layoutDimensions
     WB.document.getElementById("threadsUsage").value := threadsUsage

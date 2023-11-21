@@ -70,8 +70,9 @@ ResetInstances()
 IterateReset(instance)
 {
     MouseMove, % instance.x1 + instance.width/2, % instance.y1 + instance.height/2
-    Sleep, 10
+    Sleep, % 10 + switchDelay
     WinActivate, % "ahk_id " instance.hwnd
+    Sleep, %switchDelay%
 
     currentClick := GetCurrentClick(instance, resetMethod)
     currentScreen := currentClick[1]
