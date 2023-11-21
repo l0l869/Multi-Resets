@@ -26,7 +26,8 @@ DownloadLatest(latestVersions) {
     SetTimer, %FuncUpdateMainTimer%, Off
     timer1.__Delete()
     timer1 := ""
-    DllCall("FreeLibrary", "UPtr", resetDll) 
+    DllCall("FreeLibrary", "UPtr", resetDll)
+    DllCall("gdi32\RemoveFontResource", "Str", A_ScriptDir "\assets\Mojangles.ttf")
 
     scriptMainDir := RegExReplace(A_ScriptDir, "\\[^\\]*$", "")
     tempFolder := A_ScriptDir "\temp"
