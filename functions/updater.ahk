@@ -1,5 +1,4 @@
-FetchUpdates()
-{
+FetchUpdates() {
     if (!DllCall("Wininet.dll\InternetGetConnectedState", "Str", 0x40, "Int", 0))
         return 0
 
@@ -19,8 +18,16 @@ FetchUpdates()
     return latestVersions
 }
 
-DownloadLatest(latestVersions)
-{
+DownloadLatest(latestVersions) {
+    if (timerPreview) {
+        timerPreview.__Delete()
+        timerPreview := ""
+    }
+    SetTimer, %FuncUpdateMainTimer%, Off
+    timer1.__Delete()
+    timer1 := ""
+    DllCall("FreeLibrary", "UPtr", resetDll) 
+
     scriptMainDir := RegExReplace(A_ScriptDir, "\\[^\\]*$", "")
     tempFolder := A_ScriptDir "\temp"
     RegExMatch(latestVersions[2], "Multi-Resets\.v[0-9]+\.[0-9]+(\.[0-9]+)?\.zip", newVersionZipName)
@@ -46,8 +53,7 @@ DownloadLatest(latestVersions)
     ExitApp
 }
 
-MergeConfigs(source, destination)
-{
+MergeConfigs(source, destination) {
     newIniFile := destination "\configs.ini"
     IniWrite, %resetKey%     , %newIniFile%, Hotkeys, Reset
     IniWrite, %stopresetKey% , %newIniFile%, Hotkeys, StopReset
