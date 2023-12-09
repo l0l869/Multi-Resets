@@ -45,14 +45,14 @@ InitGui()
 Gui, Main:Show, % "w" 600/scaleBy " h" 400/scaleBy, Multi-Resets
 
 Hotkey, IfWinActive, Minecraft
-    Hotkey, %resetKey%, Reset
-    Hotkey, %stopresetKey%, StopReset
-    if starttimerKey
-        Hotkey, %starttimerKey%, StartTimer
-    if stoptimerKey
-        Hotkey, %stoptimerKey%, StopTimer
-    if resettimerKey
-        Hotkey, %resettimerKey%, ResetTimer
+Hotkey, %resetKey%, Reset
+Hotkey, %stopresetKey%, StopReset
+if starttimerKey
+    Hotkey, %starttimerKey%, StartTimer
+if stoptimerKey
+    Hotkey, %stoptimerKey%, StopTimer
+if resettimerKey
+    Hotkey, %resettimerKey%, ResetTimer
 
 Hotkey, IfWinActive
 Hotkey, %restartKey%, Restart
@@ -186,8 +186,8 @@ return
 MainGuiClose:
 SetTimer, %FuncUpdateMainTimer%, Off
 timer1 := ""
-    DllCall("FreeLibrary", "UPtr", resetDll) 
+DllCall("FreeLibrary", "UPtr", resetDll)
 DllCall("gdi32\RemoveFontResource", "Str", A_ScriptDir "\assets\Mojangles.ttf")
-    ExitApp
+ExitApp
 
 #Include functions/reset.ahk
