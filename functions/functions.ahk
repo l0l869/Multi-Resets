@@ -318,6 +318,23 @@ GetSpawnChance(min, max) {
     return Floor(totalInRange/total*100*100)/100
 }
 
+GetFontNames(charset) {
+   hDC := DllCall("GetDC", "UInt", 0, "Ptr")
+   VarSetCapacity(LOGFONT, 92, 0)
+   NumPut(charset, &LOGFONT + 23, "UChar")
+   DllCall("EnumFontFamiliesEx", "Ptr", hDC, "Ptr", 0
+                               , "Ptr", RegisterCallback("EnumFontFamExProc", "F", 4)
+                               , "Ptr", pFonts := Object(Fonts := {}), "UInt", 0)
+   ObjRelease(pFonts), DllCall("ReleaseDC", "Ptr", 0, "Ptr", hDC)
+   return Fonts
+}
+
+EnumFontFamExProc(lpelfe, lpntme, FontType, lParam) {
+   font := StrGet(lpelfe + 28)
+   Object(lParam)[font] := 1
+   return true
+}
+
 GetExcludedFromList(list, excludeList) {
     returnList := []
 

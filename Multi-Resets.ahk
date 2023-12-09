@@ -41,30 +41,8 @@ Menu, Tray, Add, Close Instances, CloseInstances
 
 global WB
 Gui, Main:Add, ActiveX, vWB x0 y0 w600 h400, shell.explorer
-WB.Silent := true
-; slow but if you ever want to utilise directory within html
-; WB.Navigate("file:///" A_ScriptDir "\assets\gui.html") 
-; while (WB.readystate != 4 || WB.busy)
-; 	Sleep, 10
-WB.Navigate("about:<!DOCTYPE HTML><meta http-equiv='x-ua-compatible' content='IE=Edge'>")
-FileRead, html, assets/gui.html
-WB.Document.write(html)
-WB.Document.parentWindow.AHK := Func("JS_AHK")
-
-Gui, Main:+HwndGuiHwnd
-
-; dark mode title bar
-DllCall("dwmapi\DwmSetWindowAttribute", "Ptr", GuiHwnd, "Int", 20, "Int*", true, "Int", 4)
-
-; dark mode menu
-uxTheme := DllCall("GetModuleHandle", "Str", "uxTheme", "Ptr")
-setPreferredAppMode := DllCall("GetProcAddress", "Ptr", uxTheme, "Ptr", 135, "Ptr")
-flushMenuThemes := DllCall("GetProcAddress", "Ptr", uxTheme, "Ptr", 136, "Ptr")
-DllCall(setPreferredAppMode, "Int", 1)
-DllCall(flushMenuThemes)
-
+InitGui()
 Gui, Main:Show, % "w" 600/scaleBy " h" 400/scaleBy, Multi-Resets
-UpdateGuiElements()
 
 Hotkey, IfWinActive, Minecraft
     Hotkey, %resetKey%, Reset
@@ -83,6 +61,39 @@ return
 
 #Include functions/memory.ahk
 #Include functions/functions.ahk
+
+InitGui() {
+    WB.Silent := true
+    WB.Navigate("about:<!DOCTYPE HTML><meta http-equiv='x-ua-compatible' content='IE=Edge'>")
+    FileRead, html, assets/gui.html
+    WB.Document.write(html)
+    WB.Document.parentWindow.AHK := Func("JS_AHK")
+    Gui, Main:+HwndGuiHwnd
+
+    ; dark mode title bar
+    DllCall("dwmapi\DwmSetWindowAttribute", "Ptr", GuiHwnd, "Int", 20, "Int*", true, "Int", 4)
+
+    ; dark mode menu
+    uxTheme := DllCall("GetModuleHandle", "Str", "uxTheme", "Ptr")
+    setPreferredAppMode := DllCall("GetProcAddress", "Ptr", uxTheme, "Ptr", 135, "Ptr")
+    flushMenuThemes := DllCall("GetProcAddress", "Ptr", uxTheme, "Ptr", 136, "Ptr")
+    DllCall(setPreferredAppMode, "Int", 1)
+    DllCall(flushMenuThemes)
+
+    fonts := GetFontNames(0)
+    select := WB.document.getElementById("font-list")
+    for k, font in fonts {
+        newOption := WB.document.createElement("option")
+        optionText := WB.document.createTextNode(k)
+        textStyle := newOption.style
+        textStyle["font-family"] := k
+        newOption.appendChild(optionText)
+        select.appendChild(newOption)
+    }
+    s := WB.document.getElementById("tFont").style, s["font-family"] := tFont
+
+    UpdateGuiElements()
+}
 
 Gui_UpdateSetting(section, key, value) {
     IniWrite, %value%, %iniFile%, %section%, %key%

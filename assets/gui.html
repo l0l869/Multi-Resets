@@ -233,7 +233,13 @@
             font-size: 12px;
             padding: 0px;
         }
-        
+
+        .picker button {
+            width: 25px;
+            height: 25px;
+            font-size: 16px;
+            padding: 0px;
+        }
     </style>
 
     <script>
@@ -405,10 +411,12 @@
             </div>
             <hr>
             <div class="tab-content__row">
-                <div>
+                <div class="picker">
                     <h3>Font</h3>
-                    <input type="text" id="tFont" style="width: 150px;" oninput="AHK('Gui_UpdateSetting', 'Timer', 'font', this.value)">
+                    <input type="text" id="tFont" style="width: 150px;" oninput="AHK('Gui_UpdateSetting', 'Timer', 'font', this.value); tFont.style['font-family'] = this.value">
+                    <button onclick="fontlist.style.display = fontlist.style.display == 'none' ? 'block' : 'none';">&#9776;</button>
                 </div>
+                <select id="font-list" name="fontlist" style="display: none; margin: 5px 0px;" onchange="tFont.value = this.value; AHK('Gui_UpdateSetting', 'Timer', 'font', this.value.replace(/@/, '')); tFont.style['font-family'] = this.value"></select>
             </div>
             <div class="tab-content__row">
                 <div>
@@ -467,7 +475,7 @@
             </div>
             <div class="tab-content__row">
                 <div>
-                    <h3>Animation Speed</h3>
+                    <h3>Animation Length</h3>
                     <input type="text" id="tAnimationSpeed" oninput="AHK('Gui_UpdateSetting', 'Timer', 'animationSpeed', this.value)">
                 </div>
             </div>
@@ -634,7 +642,7 @@
             <h3>Timer</h3>
             <ul>
                 <li>Colours are inputted in the hexadecimal ARGB format</li>
-                <li>Animation Speed can be omitted, if you don't want the timer to be animated</li>
+                <li>Animation Length can be omitted, if you don't want the timer to be animated</li>
                 <li>Auto Splitting works for 1.16.1 + 1.16.10</li>
             </ul>
 
