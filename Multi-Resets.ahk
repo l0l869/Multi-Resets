@@ -39,7 +39,7 @@ Menu, Tray, Add, MC Directory, OpenMinecraftDir
 Menu, Tray, Add, Launch Instances, LaunchInstances
 Menu, Tray, Add, Close Instances, CloseInstances
 
-global WB
+global WB, GuiHwnd
 Gui, Main:Add, ActiveX, vWB x0 y0 w600 h400, shell.explorer
 InitGui()
 Gui, Main:Show, % "w" 600/scaleBy " h" 400/scaleBy, Multi-Resets
