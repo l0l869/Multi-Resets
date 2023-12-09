@@ -202,8 +202,14 @@ ShouldRestart(resetCounter) {
 
 WorldBopper(action := "r", targetWorldName := "My World", daysBefore := 512) {
     static isDeleting := false
+    static isCalculating := false
 
-    daysBefore := daysBefore == "" ? 512 : daysBefore
+    if isCalculating
+        return
+    isCalculating := true
+    WB.document.getElementById("bopToBeDeleted").textContent := "Worlds to be deleted: Calculating..."
+
+    daysBefore := daysBefore == "" ? 2048 : daysBefore
     Worlds := []
     Loop, Files, % minecraftDir "\minecraftWorlds\*", D
     {
@@ -215,10 +221,16 @@ WorldBopper(action := "r", targetWorldName := "My World", daysBefore := 512) {
     
     selectedWorlds := []
     For k, world in Worlds
-        if ((world.worldName == targetWorldName || targetWorldName == "") && A_NOW-world.lastPlayed < daysBefore*86400)
+        if ((world.worldName == targetWorldName || targetWorldName == "") && DateToSeconds(A_NOW)-DateToSeconds(world.lastPlayed) < daysBefore*86400)
             selectedWorlds.push(world)
+    isCalculating := false
 
     if (action == "r") {
+        inputName := WB.document.getElementById("bopName").value, inputName := inputName == "" ? "My World" : inputName
+        inputDays := WB.document.getElementById("bopDays").value, inputDays := inputDays == "" ? 2048 : inputDays
+        if (inputName != targetWorldName || inputDays != daysBefore)
+            return WorldBopper("r", inputName, inputDays)
+
         WB.document.getElementById("bopToBeDeleted").textContent := "Worlds to be deleted: " selectedWorlds.count() " out of " Worlds.count()
         return selectedWorlds
     }
@@ -263,6 +275,20 @@ WorldBopper(action := "r", targetWorldName := "My World", daysBefore := 512) {
     else if (action == "c") {
         isDeleting := false
     }
+}
+
+DateToSeconds(date) {
+    ; ignoring leap stuff because too much work
+    ; also this will break if year >= 10000, just a reminder for anyone in the year 10000
+
+    year := SubStr(date, 1, 4)
+    month := SubStr(date, 5, 2)
+    day := SubStr(date, 7, 2)
+    hour := SubStr(date, 9, 2)
+    minute := SubStr(date, 11, 2)
+    second := SubStr(date, 13, 2)
+
+    return year*31536000+month*2629800+day*86400+hour*3600+minute*60+second
 }
 
 GetMultiState() {
