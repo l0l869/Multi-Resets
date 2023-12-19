@@ -1,4 +1,4 @@
-Reset:
+﻿Reset:
     hasExited := ExitIfRunning()
 
     if (resetMode == "manual") {
@@ -103,6 +103,9 @@ IterateReset(instance)
             return instance.isResetting := (instance.isResetting ? 3 : 0)
 
         case "CreateNew":
+            if (instance.isResetting == 4 && instance.lastClick+2000 > A_TickCount)
+                return
+            instance.lastClick := A_TickCount
             MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0, D
             Sleep, %clickDuration%
             MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0, U
