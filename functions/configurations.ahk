@@ -6,6 +6,7 @@ global resetMode
      , resetThreshold
      , keyDelay
      , switchDelay
+     , clickDuration
      , numInstances
      , layoutDimensions
      , threadsUsage
@@ -94,6 +95,7 @@ LoadIniConfigs() {
     IniRead, resetThreshold  , %iniFile%, Macro, resetThreshold
     IniRead, keyDelay        , %iniFile%, Macro, keyDelay
     IniRead, switchDelay     , %iniFile%, Macro, switchDelay
+    IniRead, clickDuration   , %iniFile%, Macro, clickDuration
     IniRead, numInstances    , %iniFile%, Macro, numInstances
     IniRead, layoutDimensions, %iniFile%, Macro, layoutDimensions
 
@@ -157,6 +159,7 @@ UpdateGuiElements() {
     WB.document.getElementById("resetThreshold").value := resetThreshold
     WB.document.getElementById("keyDelay").value := keyDelay
     WB.document.getElementById("switchDelay").value := switchDelay
+    WB.document.getElementById("clickDuration").value := clickDuration
     WB.document.getElementById("numInstances").value := numInstances
     WB.document.getElementById("layoutDimensions").value := layoutDimensions
     WB.document.getElementById("threadsUsage").value := threadsUsage
@@ -205,6 +208,8 @@ SetDefaultConfigs() {
     IniWrite, false, %iniFile%, Macro, autoRestart
     IniWrite, 120  , %iniFile%, Macro, resetThreshold
     IniWrite, 50   , %iniFile%, Macro, keyDelay
+    IniWrite, 0    , %iniFile%, Macro, switchDelay
+    IniWrite, 30   , %iniFile%, Macro, clickDuration
     IniWrite, 4    , %iniFile%, Macro, numInstances
     layout := "2,2"
     IniWrite, %layout%, %iniFile%, Macro, layoutDimensions

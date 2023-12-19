@@ -70,6 +70,8 @@ MergeConfigs(source, destination) {
     IniWrite, %autoRestart%     , %newIniFile%, Macro, autoRestart
     IniWrite, %resetThreshold%  , %newIniFile%, Macro, resetThreshold
     IniWrite, %keyDelay%        , %newIniFile%, Macro, keyDelay
+    IniWrite, %switchDelay%     , %newIniFile%, Macro, switchDelay
+    IniWrite, %clickDuration%   , %newIniFile%, Macro, clickDuration
     IniWrite, %numInstances%    , %newIniFile%, Macro, numInstances
     IniWrite, %layoutDimensions%, %newIniFile%, Macro, layoutDimensions
 

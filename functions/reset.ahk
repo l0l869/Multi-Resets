@@ -1,4 +1,4 @@
-﻿Reset:
+Reset:
     hasExited := ExitIfRunning()
 
     if (resetMode == "manual") {
@@ -69,6 +69,8 @@ ResetInstances()
 
 IterateReset(instance)
 {
+    if (WinActive("ahk_id " instance.hwnd))
+       WinActivate, ahk_class Shell_TrayWnd
     MouseMove, % instance.x1 + instance.width/2, % instance.y1 + instance.height/2
     Sleep, % 10 + switchDelay
     WinActivate, % "ahk_id " instance.hwnd
@@ -95,22 +97,25 @@ IterateReset(instance)
             return RunInstance(instance)
 
         case "SaveAndQuit":
-            MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0
+            MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0, D
+            Sleep, %clickDuration%
+            MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0, U
             return instance.isResetting := (instance.isResetting ? 3 : 0)
 
         case "CreateNew":
-            if (instance.isResetting == 4 && instance.lastClick+3000 > A_TickCount)
-                return
-            instance.lastClick := A_TickCount
-            MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0
+            MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0, D
+            Sleep, %clickDuration%
+            MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0, U
             return instance.isResetting := (instance.isResetting ? 4 : 0)
 
         case "CreateNewWorld":
-            MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0
+            MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0, D
+            Sleep, %clickDuration%
+            MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0, U
             return instance.isResetting := (instance.isResetting ? 5 : 0)
 
         case "WorldCreation":
-            if (instance.isResetting == 6 && instance.lastClick+3000 > A_TickCount)
+            if (instance.isResetting == 6 && instance.lastClick+5000 > A_TickCount)
                 return
             instance.lastClick := A_TickCount
 
