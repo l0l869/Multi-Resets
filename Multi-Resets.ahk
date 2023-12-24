@@ -32,7 +32,6 @@ global resetDll := DllCall("LoadLibrary", "Str", "functions/reset.dll", "Ptr")
 DllCall("gdi32\AddFontResource", "Str", A_ScriptDir "\assets\Mojangles.ttf")
 
 LoadIniConfigs()
-FetchUpdates()
 
 Menu, Tray, Icon, assets/_Icon.ico
 Menu, Tray, Add, MC Directory, OpenMinecraftDir
@@ -43,6 +42,8 @@ global WB, GuiHwnd
 Gui, Main:Add, ActiveX, vWB x0 y0 w600 h400, shell.explorer
 InitGui()
 Gui, Main:Show, % "w" 600/scaleBy " h" 400/scaleBy, Multi-Resets
+
+latestFetchedVersion := FetchUpdates()
 
 Hotkey, IfWinActive, Minecraft
 Hotkey, %resetKey%, Reset
@@ -98,6 +99,32 @@ InitGui() {
 Gui_UpdateSetting(section, key, value) {
     IniWrite, %value%, %iniFile%, %section%, %key%
     LoadIniConfigs()
+}
+
+Gui_UpdateProgress(show, percent := 0, text := "", buttonFunc := "") {
+    static background_blur
+        , progress_container
+        , progress_slider    
+        , progress_text
+        , progress_button
+
+    if (!background_blur) {
+        background_blur := WB.document.getElementById("background-blur")
+        progress_container := WB.document.getElementById("progress-container")
+        progress_text := WB.document.getElementById("progress-text")
+        progress_slider := WB.document.getElementById("progress-slider")
+        progress_button := progress_container.querySelector("button")
+    }
+
+    background_blur.style.display := progress_container.style.display := show ? "block" : "none"
+    if (!buttonFunc)
+        progress_button.style.display := "none"
+    else if (buttonFunc != 1) {
+        progress_button.style.display := "block"
+        progress_button.onclick := buttonFunc
+    }
+    progress_slider.style.width := percent "%"
+    progress_text.textContent := text
 }
 
 Gui_EditHotkeys() {
@@ -163,6 +190,10 @@ Gui_RegisterMulti() {
 
 Gui_Setup() {
     Run, configs\Setup.ahk
+}
+
+Gui_UpdateToLatest() {
+    DownloadLatest(latestFetchedVersion)
 }
 
 JS_AHK(func, prms*) {

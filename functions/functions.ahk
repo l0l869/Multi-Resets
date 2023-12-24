@@ -236,24 +236,18 @@ WorldBopper(action := "r", targetWorldName := "My World", daysBefore := 512) {
     }
     else if (action == "d") {
         isDeleting := true
-        WB.document.getElementById("progress-container").style.display := "block"
-        progresstext := WB.document.getElementById("progress-text")
-        progressslider := WB.document.getElementById("progress-slider")
         total := selectedWorlds.count()
 
+        Gui_UpdateProgress(true, 0, "0%", Func("JS_AHK").bind("WorldBopper", "c"))
         For k, world in selectedWorlds
         {
             if !isDeleting
                 break
             FileRemoveDir, % minecraftDir "\minecraftWorlds\" world.folder, 1
             precentageDone := Floor(k / total * 100)
-            progresstext.textContent := precentageDone "% (" k "/" total ")"
-            progressslider.style.width := precentageDone "%"
+            Gui_UpdateProgress(true, precentageDone, precentageDone "% (" k "/" total ")", 1)
         }
-
-        WB.document.getElementById("progress-container").style.display := "none"
-        progresstext.textContent := "0%"
-        progressslider.style.width := "0%"
+        Gui_UpdateProgress(false, 0, "0%")
         
         return WorldBopper("r", WB.document.getElementById("bopName").value, WB.document.getElementById("bopDays").value)
     }
