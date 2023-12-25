@@ -226,6 +226,13 @@ UpdateMainTimer() {
     if (!WinExist("ahk_id " MCInstances[timer1.currentInstance].hwnd))
         timer1.currentInstance := 0
 
+    if (timer1.currentInstance && !IsResettingInstances() && !timer1.startTick) {
+        timer1.show()
+        timer1.reset()
+        WaitForMovement := Func("WaitForMovement").Bind(MCInstances[timer1.currentInstance])
+        SetTimer, %WaitForMovement%, -0
+    }
+    
     if (timer1.isShown) {
         if (!timer1.currentInstance) {
             timer1.hide()
@@ -234,12 +241,7 @@ UpdateMainTimer() {
             timer1.hide()
         }
     } else {
-        if (timer1.currentInstance && !IsResettingInstances() && !timer1.startTick) {
-            timer1.show()
-            timer1.reset()
-            WaitForMovement := Func("WaitForMovement").Bind(MCInstances[timer1.currentInstance])
-            SetTimer, %WaitForMovement%, -0
-        } else if (WinActive("ahk_id " MCInstances[timer1.currentInstance].hwnd)) {
+        if (WinActive("ahk_id " MCInstances[timer1.currentInstance].hwnd)) {
             timer1.show()
         }
     }
