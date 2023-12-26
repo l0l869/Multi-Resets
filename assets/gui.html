@@ -371,6 +371,12 @@
             </div>
             <div class="tab-content__row">
                 <div>
+                    <input type="checkbox" id="seamlessRestarts" onchange="AHK('Gui_UpdateSetting', 'Macro', 'seamlessRestarts', this.checked ? 'true' : 'false')">
+                    <h3>Seamless</h3>
+                </div>
+            </div> 
+            <div class="tab-content__row">
+                <div>
                     <h3>Reset Threshold</h3>
                     <input type="number" id="resetThreshold" oninput="AHK('Gui_UpdateSetting', 'Macro', 'resetThreshold', this.value)">
                 </div>

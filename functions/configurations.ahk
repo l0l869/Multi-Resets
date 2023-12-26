@@ -3,6 +3,7 @@ global resetMode
      , minCoords
      , originDistance
      , autoRestart
+     , seamlessRestarts
      , resetThreshold
      , keyDelay
      , switchDelay
@@ -44,7 +45,9 @@ LoadClickData() {
     clicksFile := FileOpen("configs/clicks.txt", "r")
     clicksArray := StrSplit(clicksFile.read(), "`n")
 
-    if (SubStr(clicksArray[1], 1, 1) == "#") {
+    metaData := StrSplit(clicksArray[1], ",")
+
+    if (SubStr(metaData[1], 1, 1) == "#") {
         clicksArray.RemoveAt(1)
     } else if (SubStr(clicksArray[1], 1, 5) == "Heart") {
         Msgbox,4,, % "Outdated click data.`n" "V1.0+ uses identifiers to determine the current button to click, rather than using the colour of the text on the button.`n`n" "Yes: Do the setup`n" "No: Opt in for setupless resets"
@@ -54,6 +57,13 @@ LoadClickData() {
             Gui_UpdateSetting("Other", "resetMethod", "setupless")
         
         return
+    }
+
+    clickDataVersion := StrReplace(metaData[1], "#")
+    if (clickDataVersion == 1) {
+        Msgbox,4,, % "V2 Click Data Update:`n- Macro can now look for the " """Play""" " button`n- Necessay for seamless restarts`n`nRedo the setup?"
+        IfMsgBox, Yes
+            Run, configs\Setup.ahk    
     }
 
     for k, click in clicksArray
@@ -92,6 +102,7 @@ LoadIniConfigs() {
     IniRead, minCoords       , %iniFile%, Macro, minCoords
     IniRead, originDistance  , %iniFile%, Macro, originDistance
     IniRead, autoRestart     , %iniFile%, Macro, autoRestart
+    IniRead, seamlessRestarts, %iniFile%, Macro, seamlessRestarts
     IniRead, resetThreshold  , %iniFile%, Macro, resetThreshold
     IniRead, keyDelay        , %iniFile%, Macro, keyDelay
     IniRead, switchDelay     , %iniFile%, Macro, switchDelay
@@ -156,6 +167,7 @@ UpdateGuiElements() {
     WB.document.getElementById("minCoords").value := minCoords
     WB.document.getElementById("originDistance").value := originDistance
     WB.document.getElementById("autoRestart").checked := autoRestart == "true" ? 1 : 0
+    WB.document.getElementById("seamlessRestarts").checked := seamlessRestarts == "true" ? 1 : 0
     WB.document.getElementById("resetThreshold").value := resetThreshold
     WB.document.getElementById("keyDelay").value := keyDelay
     WB.document.getElementById("switchDelay").value := switchDelay
@@ -206,6 +218,7 @@ SetDefaultConfigs() {
     IniWrite, 700  , %iniFile%, Macro, minCoords
     IniWrite, 400  , %iniFile%, Macro, originDistance
     IniWrite, false, %iniFile%, Macro, autoRestart
+    IniWrite, false, %iniFile%, Macro, seamlessRestarts
     IniWrite, 120  , %iniFile%, Macro, resetThreshold
     IniWrite, 50   , %iniFile%, Macro, keyDelay
     IniWrite, 0    , %iniFile%, Macro, switchDelay
@@ -237,4 +250,53 @@ SetDefaultConfigs() {
     IniWrite, setup, %iniFile%, Other, resetMethod
     IniWrite, false, %iniFile%, Other, coopMode
     IniWrite, false, %iniFile%, Other, hideOnMinimise
+}
+
+MergeConfigs(source, destination) {
+    newIniFile := destination "\configs.ini"
+    IniWrite, %resetKey%     , %newIniFile%, Hotkeys, Reset
+    IniWrite, %stopresetKey% , %newIniFile%, Hotkeys, StopReset
+    IniWrite, %restartKey%   , %newIniFile%, Hotkeys, Restart
+    IniWrite, %starttimerKey%, %newIniFile%, Hotkeys, StartTimer
+    IniWrite, %stoptimerKey% , %newIniFile%, Hotkeys, StopTimer
+    IniWrite, %resettimerKey%, %newIniFile%, Hotkeys, ResetTimer
+    
+    IniWrite, %resetMode%       , %newIniFile%, Macro, resetMode
+    IniWrite, %maxCoords%       , %newIniFile%, Macro, maxCoords
+    IniWrite, %minCoords%       , %newIniFile%, Macro, minCoords
+    IniWrite, %originDistance%  , %newIniFile%, Macro, originDistance
+    IniWrite, %autoRestart%     , %newIniFile%, Macro, autoRestart
+    IniWrite, %seamlessRestarts%, %newIniFile%, Macro, seamlessRestarts
+    IniWrite, %resetThreshold%  , %newIniFile%, Macro, resetThreshold
+    IniWrite, %keyDelay%        , %newIniFile%, Macro, keyDelay
+    IniWrite, %switchDelay%     , %newIniFile%, Macro, switchDelay
+    IniWrite, %clickDuration%   , %newIniFile%, Macro, clickDuration
+    IniWrite, %numInstances%    , %newIniFile%, Macro, numInstances
+    IniWrite, %layoutDimensions%, %newIniFile%, Macro, layoutDimensions
+
+    IniWrite, %timerActivated%, %newIniFile%, Timer, timerActive
+    IniWrite, %tAnchor%       , %newIniFile%, Timer, anchor
+    IniWrite, %tOffsetX%      , %newIniFile%, Timer, offsetX
+    IniWrite, %tOffsetY%      , %newIniFile%, Timer, offsetY
+    IniWrite, %tFont%         , %newIniFile%, Timer, font
+    IniWrite, %tFontSize%     , %newIniFile%, Timer, fontSize
+    IniWrite, %tFontColour1%  , %newIniFile%, Timer, fontColour1
+    IniWrite, %tFontColour2%  , %newIniFile%, Timer, fontColour2
+    IniWrite, %tGradientAngle%, %newIniFile%, Timer, gradientAngle
+    IniWrite, %tAnimationType%, %newIniFile%, Timer, animationType
+    IniWrite, %tOutlineWidth% , %newIniFile%, Timer, outlineWidth
+    IniWrite, %tOutlineColour%, %newIniFile%, Timer, outlineColour
+    IniWrite, %tDecimalPlaces%, %newIniFile%, Timer, decimalPlaces
+    IniWrite, %tRefreshRate%  , %newIniFile%, Timer, refreshRate
+    IniWrite, %tAutoSplit%    , %newIniFile%, Timer, autoSplit
+    IniWrite, %tPreview%      , %newIniFile%, Timer, preview
+
+    IniWrite, %threadsUsage%    , %newIniFile%, Other, threadsUsage
+    IniWrite, %readScreenMemory%, %newIniFile%, Other, readScreenMemory
+    IniWrite, %resetMethod%     , %newIniFile%, Other, resetMethod
+    IniWrite, %coopMode%        , %newIniFile%, Other, coopMode
+    IniWrite, %hideOnMinimise%  , %newIniFile%, Other, hideOnMinimise
+
+    FileCopy, %source%\attempts.txt, %destination%, 1
+    FileCopy, %source%\clicks.txt, %destination%, 1
 }

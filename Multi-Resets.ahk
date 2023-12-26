@@ -20,14 +20,11 @@ EnvGet, threadCount, NUMBER_OF_PROCESSORS
 global threadCount
 global scaleBy := A_ScreenDPI / 96
 global MCversion
-global offsetsX
-global offsetsZ
-global offsetsScreen
+global offsetsX, offsetsZ, offsetsScreen
 global lastRestart
 global timer1
-global screenClicks := []
-global worldcreationClicks := []
-global MCInstances := []
+global screenClicks := [], worldcreationClicks := []
+global MCInstances := [], replacementInstances := []
 global resetDll := DllCall("LoadLibrary", "Str", "functions/reset.dll", "Ptr")
 DllCall("gdi32\AddFontResource", "Str", A_ScriptDir "\assets\Mojangles.ttf")
 

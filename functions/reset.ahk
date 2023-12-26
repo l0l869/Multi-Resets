@@ -52,15 +52,38 @@ ResetInstances()
     CoordMode, Mouse, Screen
     CoordMode, Pixel, Screen
     
-    if (autoRestart == "true")
+    seamlessRestart := autoRestart == "true" && seamlessRestarts == "true"
+    if (autoRestart == "true" && seamlessRestarts == "false")
         ShouldRestart(UpdateResetAttempts(0))
 
     while (IsResettingInstances())
     {
+        if (seamlessRestart) {
+            currentResetAttempts := UpdateResetAttempts(0)
+            if (!lastRestart)
+                lastRestart := currentResetAttempts
+
+            if (!replacementInstances.count())
+                LaunchReplacementInstances()
+            else if (lastRestart+resetThreshold <= currentResetAttempts) {
+                lastRestart := currentResetAttempts
+
+                for k, instance in MCInstances {
+                    while WinExist("ahk_id " instance.hwnd)
+                        Process, Close, % instance.pid
+                }
+                for k, instance in replacementInstances
+                    ResumeProcess(instance.pid)
+
+                MCInstances := replacementInstances
+                replacementInstances := []
+            }
+        }
+
         for k, instance in MCInstances
         {
             if (instance.isResetting <= 0)
-                Continue
+                continue
 
             IterateReset(instance)
         }
@@ -83,6 +106,15 @@ IterateReset(instance)
 
     switch (currentScreen)
     {
+        case "Play":
+            if (instance.lastClick+3000 > A_TickCount)
+                return
+            instance.lastClick := A_TickCount
+            MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0, D
+            Sleep, %clickDuration%
+            MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0, U
+            return instance.isResetting := (instance.isResetting ? 3 : 0)
+
         case "Heart":
             Send, {Esc}
             Sleep, 100
@@ -100,6 +132,7 @@ IterateReset(instance)
             MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0, D
             Sleep, %clickDuration%
             MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0, U
+            instance.resetCount++
             return instance.isResetting := (instance.isResetting ? 3 : 0)
 
         case "CreateNew":
@@ -162,9 +195,8 @@ IterateReset(instance)
     }
 }
 
-shouldAutoReset(instance)
-{
-    if (MCversion == "1.19.50.2") ; or: if (offsetsZ)
+shouldAutoReset(instance) {
+    if (MCversion == "1.19.50.2")
     {
         startTick := A_TickCount
         while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
@@ -204,8 +236,7 @@ ExitIfRunning() {
             return ExitInstance()
 }
 
-RunInstance(instance)
-{
+RunInstance(instance) {
     if (instance.isResetting == -1)
         return
     SetAffinity(instance.pid, 2**threadCount - 1)
@@ -253,8 +284,7 @@ RunInstance(instance)
     exit
 }
 
-ExitInstance()
-{
+ExitInstance() {
     timer1.reset()
     timer1.currentInstance := 0
     for k, instance in MCInstances
@@ -276,8 +306,7 @@ ExitInstance()
     return 1
 }
 
-EnterHoveredInstance()
-{
+EnterHoveredInstance() {
     CoordMode, Mouse, Screen
     MouseGetPos, mX, mY
     for k, instance in MCInstances
@@ -285,8 +314,7 @@ EnterHoveredInstance()
             return RunInstance(instance)
 }
 
-GetCurrentClick(instance, method)
-{
+GetCurrentClick(instance, method) {
     currentScreen := ""
     clickX := -1
     clickY := -1
@@ -302,6 +330,7 @@ GetCurrentClick(instance, method)
             case 2: currentScreen := "CreateNew"
             case 3: currentScreen := "CreateNewWorld"
             case 4: currentScreen := "WorldCreation"
+            case 5: currentScreen := "Play"
         }
         if (currentScreen == "SaveAndQuit" && instance.isResetting == 6) ; if it skips checking coords
             currentScreen := "Heart"
@@ -309,9 +338,10 @@ GetCurrentClick(instance, method)
         currentScreen := GetCurrentScreen(instance)
         switch currentScreen
         {
-            case "SaveAndQuit": index := 2
-            case "CreateNew": index := 3
-            case "CreateNewWorld": index := 4
+            case "Play": index := 1
+            case "SaveAndQuit": index := 3
+            case "CreateNew": index := 4
+            case "CreateNewWorld": index := 5
         }
         clickX := screenClicks[index].x
         clickY := screenClicks[index].y
@@ -319,8 +349,7 @@ GetCurrentClick(instance, method)
     return [currentScreen, clickX, clickY]
 }
 
-GetCurrentScreen(instance)
-{
+GetCurrentScreen(instance) {
     currentScreen := ""
 
     if (readScreenMemory == "true") {

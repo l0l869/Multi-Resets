@@ -3,25 +3,23 @@
     CloseInstances()
     lastRestart := UpdateResetAttempts(0)
     usedPIDs := []
+    usedHWNDs := []
     threadsMask := (2 ** Ceil(threadCount * threadsUsage)) - 1
     WinActivate, ahk_class Shell_TrayWnd
 
     loop, %numInstances% {
+        index1 := A_Index
+        WinActivate, ahk_class Shell_TrayWnd
         Run, shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App
         WinWaitActive, Minecraft
-        startTick := A_TickCount
-        index1 := A_Index
-        While (A_TickCount-startTick < 1000) {
-            if (WinActive("Minecraft") != MCInstances[index1-1].hwnd) {
-                sleep, 200
-                break
-            }
-        }
-        sleep, 50
 
         PIDs := GetExcludedFromList(GetMinecraftProcesses(), usedPIDs)
-        pid  := PIDs[1]
-        hwnd := WinActive("Minecraft")
+        pid := PIDs[1]
+        mcHwnds := []
+        WinGet, var, List, Minecraft
+        Loop, % var
+            mcHwnds.push(var%A_Index%)
+        hwnd := GetExcludedFromList(mcHwnds, usedHWNDs)[1]
         proc := new _ClassMemory("ahk_pid " pid, "PROCESS_VM_READ")
         MCInstances.push({ hwnd: hwnd
                          , pid: pid
@@ -46,21 +44,22 @@
         }
 
         usedPIDs.push(pid)
+        usedHWNDs.push(hwnd)
         SetAffinity(pid, threadsMask)
     }
 
     ConfigureMinecraftPointers()
-    ResizeInstances()
+    ResizeInstances(MCInstances)
 }
 
-ResizeInstances() {
+ResizeInstances(instances) {
     dim := StrSplit(layoutDimensions, ",")
     height := (A_ScreenHeight - 40 * scaleBy) / dim[2]
     width := A_ScreenWidth / dim[1]
 
-    for k, instance in MCInstances
+    for k, instance in instances
     {
-        positionIndex := Mod(A_Index - 1, dim[1] * dim[2]) + 1
+        positionIndex := Mod(k - 1, dim[1] * dim[2]) + 1
         x := Mod(positionIndex, dim[1])
         y := Floor((positionIndex - 1) / dim[1])
         WinRestore, % "ahk_id " instance.hwnd
@@ -74,6 +73,49 @@ ResizeInstances() {
         instance.width  := winDimensions.width
         instance.height := winDimensions.height
     }
+}
+
+LaunchReplacementInstances() {
+    usedPIDs := []
+    usedHWNDs := []
+    for k, inst in MCInstances {
+        usedPIDs.push(inst.pid)
+        usedHWNDs.push(inst.hwnd)
+    }
+
+    Loop, % numInstances {
+        index1 := A_Index
+        WinActivate, ahk_class Shell_TrayWnd
+        Run, shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App
+        WinWaitActive, Minecraft
+        
+        pid := GetExcludedFromList(GetMinecraftProcesses(), usedPIDs)[1]
+        mcHwnds := []
+        WinGet, var, List, Minecraft
+        Loop, % var
+            mcHwnds.push(var%A_Index%)
+        hwnd := GetExcludedFromList(mcHwnds, usedHWNDs)[1]
+        proc := new _ClassMemory("ahk_pid " pid, "PROCESS_VM_READ")
+        usedPIDs.push(pid)
+        usedHWNDs.push(hwnd)
+
+        replacementInstances[index1] := { hwnd: hwnd
+                                        , pid: pid
+                                        , proc: proc
+                                        , isResetting: 1
+                                        , x1: 0, y1: 0
+                                        , x2: 0, y2: 0
+                                        , width: 0, height: 0 }
+    }
+    ResizeInstances(replacementInstances)
+
+    SuspendInstancesFunc := Func("SuspendInstances").bind(replacementInstances)
+    SetTimer, %SuspendInstancesFunc%, -45000
+}
+
+SuspendInstances(instances) {
+    for k, instance in instances
+        SuspendProcess(instance.pid)
 }
 
 GetWindowDimensions(Window) {
@@ -166,6 +208,7 @@ SetAffinity(pid, mask) {
 
 CloseInstances() {
     MCInstances := []
+    replacementInstances := []
 
     SetTitleMatchMode, 3
     while WinExist("Minecraft")
@@ -332,10 +375,8 @@ EnumFontFamExProc(lpelfe, lpntme, FontType, lParam) {
 GetExcludedFromList(list, excludeList) {
     returnList := []
 
-    for i, item in list
-    {
-        for ii, excludeItem in excludeList
-        {
+    for i, item in list {
+        for ii, excludeItem in excludeList {
             if (item == excludeItem)
                 continue, 2
         }

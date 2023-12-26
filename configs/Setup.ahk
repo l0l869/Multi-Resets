@@ -6,7 +6,7 @@ CoordMode, Pixel, Screen
 
 global scaleBy := A_ScreenDPI / 96
 global currentID := 1
-global IDENTIFIERS := ["Heart","SaveAndQuit","CreateNew","CreateNewWorld","WorldCreation"]
+global IDENTIFIERS := ["Play","Heart","SaveAndQuit","CreateNew","CreateNewWorld","WorldCreation"]
 global clickData := []
 global screenClicks := []
 global worldcreationClicks := []
@@ -177,7 +177,7 @@ FinishSetup()
         ExitApp
     }
 
-    clickDataString := "#1," layoutDimensions "`n"
+    clickDataString := "#2," layoutDimensions "`n"
     for k, click in clickData
         clickDataString .= click "`n"
     txt := FileOpen("clicks.txt", "w")

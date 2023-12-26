@@ -105,7 +105,8 @@ extern "C" __declspec(dllexport) int GetCurrentClick(HWND hwnd, int dpiScale, in
     const std::vector<bool> CreateNewPattern = {0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,0,1,0,1,0,1,0,0,1,1,1,0,0,1,0,0,0,1,0,0,0,0,0,0};
     const std::vector<bool> CreateNewWorldPattern = {0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,0,1,0,1,0,1,0,0,1,1,1,0,0,1,0,0,0,1,0,0,0,0,0,1};
     const std::vector<bool> GameSettingsPattern = {1,0,0,1,1,0,0,1,1,1,0,0,1,1,0,1,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,0,1,1,1,0,1,0,1,1,1,1};
-    const std::vector<std::vector<bool>> textPatterns = {SaveAndQuitPattern, CreateNewPattern, CreateNewWorldPattern, GameSettingsPattern};
+    const std::vector<bool> PlayPattern = {1,1,1,1,0,0,1,0,0,0,1,1,1,0,0,1,0,0,0,1};
+    const std::vector<std::vector<bool>> textPatterns = {SaveAndQuitPattern, CreateNewPattern, CreateNewWorldPattern, GameSettingsPattern, PlayPattern};
 
     int pIndex = -1;
     std::pair<int, int> result = {-1, -1};
