@@ -15,6 +15,7 @@ global resetMode
      , resetMethod
      , coopMode
      , hideOnMinimise
+     , isBored
      , resetKey, stopresetKey, restartKey
      , starttimerKey, stoptimerKey, resettimerKey
 
@@ -133,6 +134,7 @@ LoadIniConfigs() {
     IniRead, resetMethod     , %iniFile%, Other, resetMethod
     IniRead, coopMode        , %iniFile%, Other, coopMode
     IniRead, hideOnMinimise  , %iniFile%, Other, hideOnMinimise
+    IniRead, isBored         , %iniFile%, Other, isBored
 
     timerOptions := [tAnchor, tOffsetX, tOffsetY, tFont, tFontSize, tFontColour1, tFontColour2, tGradientAngle, tAnimationType, tAnimationSpeed, tOutlineWidth, tOutlineColour, tDecimalPlaces, tRefreshRate, tAutoSplit]
     if !timer1
@@ -179,6 +181,7 @@ UpdateGuiElements() {
     WB.document.getElementById("resetMethod").value := resetMethod
     WB.document.getElementById("coopMode").checked := coopMode == "true" ? 1 : 0
     WB.document.getElementById("hideOnMinimise").checked := hideOnMinimise == "true" ? 1 : 0
+    WB.document.getElementById("isBored").checked := isBored == "true" ? 1 : 0
 
     WB.document.getElementById("tActive").checked := timerActive == "true" ? 1 : 0
     WB.document.getElementById("tAnchor").value := tAnchor
@@ -250,6 +253,7 @@ SetDefaultConfigs() {
     IniWrite, setup, %iniFile%, Other, resetMethod
     IniWrite, false, %iniFile%, Other, coopMode
     IniWrite, false, %iniFile%, Other, hideOnMinimise
+    IniWrite, false, %iniFile%, Other, isBored
 }
 
 MergeConfigs(source, destination) {
@@ -296,6 +300,7 @@ MergeConfigs(source, destination) {
     IniWrite, %resetMethod%     , %newIniFile%, Other, resetMethod
     IniWrite, %coopMode%        , %newIniFile%, Other, coopMode
     IniWrite, %hideOnMinimise%  , %newIniFile%, Other, hideOnMinimise
+    IniWrite, %isBored%         , %newIniFile%, Other, isBored
 
     FileCopy, %source%\attempts.txt, %destination%, 1
     FileCopy, %source%\clicks.txt, %destination%, 1

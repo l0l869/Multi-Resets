@@ -56,6 +56,9 @@ ResetInstances()
     if (autoRestart == "true" && seamlessRestarts == "false")
         ShouldRestart(UpdateResetAttempts(0))
 
+    if (isBored == "true")
+        gameScript.Show()
+
     while (IsResettingInstances())
     {
         if (seamlessRestart) {
@@ -88,6 +91,7 @@ ResetInstances()
             IterateReset(instance)
         }
     }
+    gameScript.Hide()
 }
 
 IterateReset(instance)
@@ -103,6 +107,9 @@ IterateReset(instance)
     currentScreen := currentClick[1]
     clickX := currentClick[2]
     clickY := currentClick[3]
+
+    if (isBored == "true")
+        gameScript.AllowClick({x:instance.x1+clickX,y:instance.y1+clickY})
 
     switch (currentScreen)
     {
@@ -184,9 +191,10 @@ IterateReset(instance)
                 wcClicks := worldcreationClicks
             }
 
-            for k, click in wcClicks 
-            {
+            for k, click in wcClicks {
                 Sleep, %keyDelay%
+                if (isBored == "true")
+                    gameScript.AllowClick({x:instance.x1+click.x,y:instance.y1+click.y})
                 MouseClick,, instance.x1 + click.x, instance.y1 + click.y,,0
             }
             Sleep, 25 ; click doesnt register with mousemove right after
@@ -281,7 +289,6 @@ RunInstance(instance) {
             }
         }
     }
-    exit
 }
 
 ExitInstance() {
@@ -391,15 +398,16 @@ GetCurrentScreen(instance) {
 
     }
     else { ; pixel search
-
-        for k, btn in screenClicks
-        {
+        for k, btn in screenClicks {
+            if (!instance.clicksAllowed)
+                gameScript.AllowClick({x:instance.x1+btn.px, y:instance.y1+btn.py}, 99999999)
             PixelGetColor, pixelColour, instance.x1+btn.px, instance.y1+btn.py, RGB
-            if (pixelColour == btn.colour){
+            if (pixelColour == btn.colour) {
                 currentScreen := btn.btn
                 break
             }
         }
+        instance.clicksAllowed := true
     }
 
     if (currentScreen == "SaveAndQuit" && instance.isResetting == 6) ; if it skips checking coords

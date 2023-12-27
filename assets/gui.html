@@ -590,6 +590,12 @@
                 <button onclick="AHK('Gui_Setup')">Setup</button>
             </div>
             <hr>
+            <div class="tab-content__row">
+                <div>
+                    <input type="checkbox" id="isBored" onchange="AHK('Gui_UpdateSetting', 'Other', 'isBored', this.checked ? 'true' : 'false')">
+                    <h3>are u bored?</h3>
+                </div>
+            </div>
 
         </div>
 

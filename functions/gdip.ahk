@@ -55,6 +55,21 @@ SelectObject(hdc, hgdiobj) {
     return DllCall("SelectObject", "UPtr", hdc, "UPtr", hgdiobj)
 }
 
+Gdip_FillRectangle(pGraphics, pBrush, x, y, w, h:=0) {
+    if (h<=0 || !h)
+        h := w
+
+    Return DllCall("gdiplus\GdipFillRectangle"
+                , "UPtr", pGraphics
+                , "UPtr", pBrush
+                , "float", x, "float", y
+                , "float", w, "float", h)
+}
+
+Gdip_SetCompositingMode(pGraphics, CompositingMode) {
+    return DllCall("gdiplus\GdipSetCompositingMode", "UPtr", pGraphics, "int", CompositingMode)
+}
+
 Gdip_FontFamilyCreate(FontName) {
     hFontFamily := 0
     gdipLastError := DllCall("gdiplus\GdipCreateFontFamilyFromName"
