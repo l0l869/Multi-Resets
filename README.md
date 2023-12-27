@@ -23,13 +23,14 @@ Supported Auto-reset Versions: 1.19.50, 1.16.10, 1.16.1, 1.16.0.58, 1.16.0.57, 1
 - **Number of Instances**: Recommended amount: Total Logical Processors / 4.
 - **Layout**: The arrangement of instances (x, y).
 - **Key Delay**: Delay (in milliseconds) between world creation clicks. Set it to or above 50 for verification.
+- **Click Duration**: The duration the clicks are held down for in order for the game to register them.
 
 ### Timer
 - **Anchor**: The anchor point for the timer placement.
 - **Offset**: The X and Y offsets (in pixels) from where the timer is anchored.
 - **Font**: Can use any font installed on your system.
 - **Colour**: Any valid hexadecimal colour in the ARGB form.
-- **Animation Speed**: In seconds, the length of the animation. Set 0 to omit.
+- **Animation Length**: In seconds, the length of the animation. Set 0 to omit.
 - **Decimals**: Number of decimal places.
 - **Auto Split**: Automatically stops the timer when the credits roll. Supported versions: 1.16.1, 1.16.10.
 
@@ -37,7 +38,7 @@ Supported Auto-reset Versions: 1.19.50, 1.16.10, 1.16.1, 1.16.0.58, 1.16.0.57, 1
 - **Reset Method**: How the macro resets. Setup requires setting pixels to know where and when to click. Setupless automatically finds the text of buttons.
 - **Read Screen Memory**: Relies on memory to know which screen you're on. Use only if the macro can't find buttons by their pixel colour. Supports: 1.16.1 and 1.2.13.
 - **Coop Mode**: Prevents the 0/8 bug.
-- **Threads Utilisation**: The precentage of CPU threads the instances will utilise.
+- **Threads Utilisation**: The percentage of CPU threads the instances will utilise.
 
 ## Manual Resetting
 
