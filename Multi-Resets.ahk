@@ -13,7 +13,7 @@ SendMode, Input
 SetMouseDelay, -1
 EnvGet, A_LocalAppData, LocalAppData
 
-global SCRIPT_VERSION := 20231225.00
+global SCRIPT_VERSION := 20231227.21
 global iniFile := A_ScriptDir "\configs\configs.ini"
 global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang"
 
