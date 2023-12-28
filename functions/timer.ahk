@@ -223,13 +223,12 @@ UpdateMainTimer() {
         return
     }
 
-    if (!WinExist("ahk_id " MCInstances[timer1.currentInstance].hwnd))
+    instance := MCInstances[timer1.currentInstance]
+    if (!WinExist("ahk_id " instance.hwnd))
         timer1.currentInstance := 0
 
-    if (timer1.currentInstance && !IsResettingInstances() && !timer1.startTick) {
-        timer1.show()
-        timer1.reset()
-        WaitForMovement := Func("WaitForMovement").Bind(MCInstances[timer1.currentInstance])
+    if (instance.isResetting == -1 && !IsResettingInstances() && !timer1.startTick) {
+        WaitForMovement := Func("WaitForMovement").Bind(instance)
         SetTimer, %WaitForMovement%, -0
     }
     
@@ -237,11 +236,11 @@ UpdateMainTimer() {
         if (!timer1.currentInstance) {
             timer1.hide()
             timer1.reset()
-        } else if (!WinActive("ahk_id " MCInstances[timer1.currentInstance].hwnd)) {
+        } else if (!WinActive("ahk_id " instance.hwnd)) {
             timer1.hide()
         }
     } else {
-        if (WinActive("ahk_id " MCInstances[timer1.currentInstance].hwnd)) {
+        if (WinActive("ahk_id " instance.hwnd)) {
             timer1.show()
         }
     }
@@ -252,16 +251,18 @@ WaitForMovement(instance) {
     if (timer1.tickFunction || waiting)
         return
     waiting := true
+    timer1.reset()
+    timer1.show()
 
     xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
 
-    while (timer1.currentInstance && waiting)
-    {
+    while (waiting && timer1.currentInstance && instance.isResetting == -1) {
         newCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
         hasInputted := (GetKeyState("W") || GetKeyState("A") || GetKeyState("S") || GetKeyState("D") || GetKeyState("Space")) && WinActive("Minecraft")
         if (xCoord != newCoord || hasInputted) {
             timer1.start()
-            return waiting := false
+            break
         }
     }
+    return waiting := false
 }

@@ -83,8 +83,7 @@ ResetInstances()
             }
         }
 
-        for k, instance in MCInstances
-        {
+        for k, instance in MCInstances {
             if (instance.isResetting <= 0)
                 continue
 
@@ -139,7 +138,6 @@ IterateReset(instance)
             MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0, D
             Sleep, %clickDuration%
             MouseClick,, instance.x1 + clickX, instance.y1 + clickY,, 0, U
-            instance.resetCount++
             return instance.isResetting := (instance.isResetting ? 3 : 0)
 
         case "CreateNew":
@@ -281,8 +279,7 @@ RunInstance(instance) {
         WinMaximize, % "ahk_id " instance.hwnd
         instance.isResetting := -1
 
-        for k, inst in MCInstances
-        {
+        for k, inst in MCInstances {
             if (inst.isResetting >= 0 || inst.isResetting == -2) {
                 inst.isResetting -= 100
                 SuspendProcess(inst.pid)
@@ -292,10 +289,9 @@ RunInstance(instance) {
 }
 
 ExitInstance() {
-    timer1.reset()
     timer1.currentInstance := 0
-    for k, instance in MCInstances
-    {
+    timer1.reset()
+    for k, instance in MCInstances {
         if (instance.isResetting == -1) {
             WinRestore, % "ahk_id " instance.hwnd
             Sleep, 100
@@ -329,8 +325,7 @@ GetCurrentClick(instance, method) {
         returnedCode := -1
         DllCall("reset\GetCurrentClick", "UPtr", instance.hwnd, "Int", scaleBy, "Int*", returnedCode, "Int*", clickX, "Int*", clickY)
 
-        switch returnedCode 
-        {
+        switch returnedCode {
             case -1: return
             case 0: currentScreen := "Heart"
             case 1: currentScreen := "SaveAndQuit"
@@ -343,8 +338,7 @@ GetCurrentClick(instance, method) {
             currentScreen := "Heart"
     } else { 
         currentScreen := GetCurrentScreen(instance)
-        switch currentScreen
-        {
+        switch currentScreen {
             case "Play": index := 1
             case "SaveAndQuit": index := 3
             case "CreateNew": index := 4
@@ -362,18 +356,15 @@ GetCurrentScreen(instance) {
     if (readScreenMemory == "true") {
 
         startTick := A_TickCount
-        while !valueUI := ReadMemoryValue(instance.proc, "Int", offsetsScreen*)
-        {
+        while !valueUI := ReadMemoryValue(instance.proc, "Int", offsetsScreen*) {
             if (A_TickCount-startTick > 3000) {
                 MsgBox, % "failed to get current screen from memory: " valueUI
                 Exit
             }
         }
 
-        if (offsetsScreen[1] == 0x036A4B00) ; 1.16.1.2
-        {
-            switch (valueUI)
-            {
+        if (offsetsScreen[1] == 0x036A4B00) { ; 1.16.1.2
+            switch (valueUI) {
                 case 3: currentScreen := "Heart"
                 case 5: currentScreen := "CreateNew"
                 case 6: currentScreen := "CreateNewWorld"
@@ -381,8 +372,7 @@ GetCurrentScreen(instance) {
             }
         }
         else { ; 1.2.13.54
-            switch (valueUI)
-            {
+            switch (valueUI) {
                 case 4: currentScreen := "Heart"
                 case 6: currentScreen := "CreateNew"
                 case 7: currentScreen := "CreateNewWorld"
@@ -421,16 +411,14 @@ ReadMemoryValue(process, dataType, baseOffset, offsets*) {
 }
 
 SuspendProcess(pid) {
-    if (hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", pid))
-    {
+    if (hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", pid)) {
         DllCall("ntdll.dll\NtSuspendProcess", "Int", hProcess)
         DllCall("CloseHandle", "Int", hProcess)
     }
 }
 
 ResumeProcess(pid) {
-    if (hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", pid))
-    {
+    if (hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", pid)) {
         DllCall("ntdll.dll\NtResumeProcess", "Int", hProcess)
         DllCall("CloseHandle", "Int", hProcess)
     }
