@@ -28,6 +28,7 @@ Class Timer
     __Delete() {
         DeleteDC(this.hdc)
         DeleteObject(this.obm)
+        Gdip_DeleteFontFamily(this.hFamily)
         Gdip_DeleteFont(this.hFont)
         Gdip_DeleteStringFormat(this.hFormat)
         Gdip_DeleteBrush(this.pBrush)
@@ -116,6 +117,7 @@ Class Timer
             }
         }
 
+        Gdip_DeleteBrush(this.pBrush)
         this.pBrush := Gdip_CreateLinearGrBrush(textPosition.x+gPan, textPosition.y, x2+gPan, y2, this.fontColour1, this.fontColour2)
         Gdip_RotateLinearGrBrushAtCenter(this.pBrush, gAngle)
 
@@ -185,6 +187,7 @@ Class Timer
 
     setSettings(anchor, offsetX, offsetY, font, fontSize, fontColour1, fontColour2, gradientAngle, animationType 
                 , animationSpeed, outlineWidth, outlineColour, decimalPlaces, refreshRate, autoSplit) {
+        Gdip_DeleteFontFamily(this.hFamily)
         Gdip_DeleteFont(this.hFont)
         Gdip_DeleteStringFormat(this.hFormat)
         
@@ -204,8 +207,8 @@ Class Timer
         this.refreshRate := refreshRate
         this.autoSplit := autoSplit
 
-        hFamily := Gdip_FontFamilyCreate(this.font)
-        this.hFont := Gdip_FontCreate(hFamily, this.fontSize)
+        this.hFamily := Gdip_FontFamilyCreate(this.font)
+        this.hFont := Gdip_FontCreate(this.hFamily, this.fontSize)
         this.hFormat := Gdip_StringFormatCreate(0x4000)
 
         if !this.tickFunction

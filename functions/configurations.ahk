@@ -37,7 +37,7 @@ global timerActive
      , tAutoSplit
      , tPreview
 
-global timerPreview
+global timerPreview := new Timer()
 
 LoadClickData() {
     screenClicks := []
@@ -142,15 +142,15 @@ LoadIniConfigs() {
     else
         timer1.setSettings(timerOptions*)
 
-    if (tPreview == "true" && !timerPreview) {
-        timerPreview := new Timer(timerOptions*)
-        timerPreview.show()
-        timerPreview.start()
-    } else if (tPreview == "false" && timerPreview) {
-        timerPreview.__Delete()
-        timerPreview := ""
-    } else if (tPreview == "true" && timerPreview) {
+    if (tPreview == "true") {
         timerPreview.setSettings(timerOptions*)
+        if (!timerPreview.isShown) {
+            timerPreview.show()
+            timerPreview.start()
+        }
+    } else if (tPreview == "false" && timerPreview.isShown) {
+        timerPreview.hide()
+        timerPreview.reset()
     }
 
     if (resetMethod == "setup" && !worldcreationClicks.count()) {
