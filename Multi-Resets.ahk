@@ -216,6 +216,7 @@ return
 MainGuiClose:
 SetTimer, %FuncUpdateMainTimer%, Off
 timer1 := ""
+timerPreview := ""
 DllCall("FreeLibrary", "UPtr", resetDll)
 DllCall("gdi32\RemoveFontResource", "Str", A_ScriptDir "\assets\Mojangles.ttf")
 ExitApp
