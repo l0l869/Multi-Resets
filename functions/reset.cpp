@@ -5,6 +5,13 @@
 #include <chrono>
 #include <memory>
 
+const std::vector<bool> SaveAndQuitPattern = {1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,1,0,0,1};
+const std::vector<bool> CreateNewPattern = {0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,0,1,0,1,0,1,0,0,1,1,1,0,0,1,0,0,0,1,0,0,0,0,0,0};
+const std::vector<bool> CreateNewWorldPattern = {0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,0,1,0,1,0,1,0,0,1,1,1,0,0,1,0,0,0,1,0,0,0,0,0,1};
+const std::vector<bool> GameSettingsPattern = {1,0,0,1,1,0,0,1,1,1,0,0,1,1,0,1,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,0,1,1,1,0,1,0,1,1,1,1};
+const std::vector<bool> PlayPattern = {1,1,1,1,0,0,1,0,0,0,1,1,1,0,0,1,0,0,0,1};
+const std::vector<std::vector<bool>> textPatterns = {SaveAndQuitPattern, CreateNewPattern, CreateNewWorldPattern, GameSettingsPattern, PlayPattern};
+
 int GetMCScale(int w, int h, bool applyDPI = false, int dpiScale = 1) {
     if (applyDPI) {
         w += 16 * dpiScale;
@@ -101,18 +108,12 @@ extern "C" __declspec(dllexport) int GetCurrentClick(HWND hwnd, int dpiScale, in
     pBitmap->UnlockBits(&bitmapData);
     Gdiplus::GdiplusShutdown(gdiplusToken);
 
-    const std::vector<bool> SaveAndQuitPattern = {1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,1,0,0,1};
-    const std::vector<bool> CreateNewPattern = {0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,0,1,0,1,0,1,0,0,1,1,1,0,0,1,0,0,0,1,0,0,0,0,0,0};
-    const std::vector<bool> CreateNewWorldPattern = {0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,0,1,0,1,0,1,0,0,1,1,1,0,0,1,0,0,0,1,0,0,0,0,0,1};
-    const std::vector<bool> GameSettingsPattern = {1,0,0,1,1,0,0,1,1,1,0,0,1,1,0,1,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,0,1,1,1,0,1,0,1,1,1,1};
-    const std::vector<bool> PlayPattern = {1,1,1,1,0,0,1,0,0,0,1,1,1,0,0,1,0,0,0,1};
-    const std::vector<std::vector<bool>> textPatterns = {SaveAndQuitPattern, CreateNewPattern, CreateNewWorldPattern, GameSettingsPattern, PlayPattern};
+    if (!foundPixels.size()) return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
 
     int pIndex = -1;
     std::pair<int, int> result = {-1, -1};
     for (int i = 0; i < textPatterns.size(); i++) {
-        const std::vector<bool>& pattern = textPatterns[i];
-        result = FindPattern(foundPixels, pattern);
+        result = FindPattern(foundPixels, textPatterns[i]);
 
         if (result.first != -1) {
             pIndex = i + 1;
