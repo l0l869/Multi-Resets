@@ -35,6 +35,7 @@ global timerActive
      , tDecimalPlaces
      , tRefreshRate
      , tAutoSplit
+     , remindShowPacks
      , tPreview
 
 global timerPreview := new Timer()
@@ -127,6 +128,7 @@ LoadIniConfigs() {
     IniRead, tDecimalPlaces , %iniFile%, Timer, decimalPlaces
     IniRead, tRefreshRate   , %iniFile%, Timer, refreshRate
     IniRead, tAutoSplit     , %iniFile%, Timer, autoSplit
+    IniRead, remindShowPacks, %iniFile%, Timer, remindShowPacks
     IniRead, tPreview       , %iniFile%, Timer, preview
 
     IniRead, threadsUsage    , %iniFile%, Other, threadsUsage
@@ -198,6 +200,7 @@ UpdateGuiElements() {
     WB.document.getElementById("tOutlineColour").value := tOutlineColour
     WB.document.getElementById("tDecimalPlaces").value := tDecimalPlaces
     WB.document.getElementById("tAutoSplit").checked := tAutoSplit == "true" ? 1 : 0
+    WB.document.getElementById("remindShowPacks").checked := remindShowPacks == "true" ? 1 : 0
     WB.document.getElementById("tPreview").checked := tPreview == "true" ? 1 : 0
 
     hex := "0x" SubStr(tFontColour1, StrLen(tFontColour1)-5, 6)
@@ -246,6 +249,7 @@ SetDefaultConfigs() {
     IniWrite, 3        , %iniFile%, Timer, decimalPlaces
     IniWrite, 0        , %iniFile%, Timer, refreshRate
     IniWrite, true     , %iniFile%, Timer, autoSplit
+    IniWrite, false    , %iniFile%, Timer, remindShowPacks
     IniWrite, false    , %iniFile%, Timer, preview
 
     IniWrite, 0.8  , %iniFile%, Other, threadsUsage
@@ -278,22 +282,23 @@ MergeConfigs(source, destination) {
     IniWrite, %numInstances%    , %newIniFile%, Macro, numInstances
     IniWrite, %layoutDimensions%, %newIniFile%, Macro, layoutDimensions
 
-    IniWrite, %timerActivated%, %newIniFile%, Timer, timerActive
-    IniWrite, %tAnchor%       , %newIniFile%, Timer, anchor
-    IniWrite, %tOffsetX%      , %newIniFile%, Timer, offsetX
-    IniWrite, %tOffsetY%      , %newIniFile%, Timer, offsetY
-    IniWrite, %tFont%         , %newIniFile%, Timer, font
-    IniWrite, %tFontSize%     , %newIniFile%, Timer, fontSize
-    IniWrite, %tFontColour1%  , %newIniFile%, Timer, fontColour1
-    IniWrite, %tFontColour2%  , %newIniFile%, Timer, fontColour2
-    IniWrite, %tGradientAngle%, %newIniFile%, Timer, gradientAngle
-    IniWrite, %tAnimationType%, %newIniFile%, Timer, animationType
-    IniWrite, %tOutlineWidth% , %newIniFile%, Timer, outlineWidth
-    IniWrite, %tOutlineColour%, %newIniFile%, Timer, outlineColour
-    IniWrite, %tDecimalPlaces%, %newIniFile%, Timer, decimalPlaces
-    IniWrite, %tRefreshRate%  , %newIniFile%, Timer, refreshRate
-    IniWrite, %tAutoSplit%    , %newIniFile%, Timer, autoSplit
-    IniWrite, %tPreview%      , %newIniFile%, Timer, preview
+    IniWrite, %timerActivated% , %newIniFile%, Timer, timerActive
+    IniWrite, %tAnchor%        , %newIniFile%, Timer, anchor
+    IniWrite, %tOffsetX%       , %newIniFile%, Timer, offsetX
+    IniWrite, %tOffsetY%       , %newIniFile%, Timer, offsetY
+    IniWrite, %tFont%          , %newIniFile%, Timer, font
+    IniWrite, %tFontSize%      , %newIniFile%, Timer, fontSize
+    IniWrite, %tFontColour1%   , %newIniFile%, Timer, fontColour1
+    IniWrite, %tFontColour2%   , %newIniFile%, Timer, fontColour2
+    IniWrite, %tGradientAngle% , %newIniFile%, Timer, gradientAngle
+    IniWrite, %tAnimationType% , %newIniFile%, Timer, animationType
+    IniWrite, %tOutlineWidth%  , %newIniFile%, Timer, outlineWidth
+    IniWrite, %tOutlineColour% , %newIniFile%, Timer, outlineColour
+    IniWrite, %tDecimalPlaces% , %newIniFile%, Timer, decimalPlaces
+    IniWrite, %tRefreshRate%   , %newIniFile%, Timer, refreshRate
+    IniWrite, %tAutoSplit%     , %newIniFile%, Timer, autoSplit
+    IniWrite, %remindShowPacks%, %newIniFile%, Timer, remindShowPacks
+    IniWrite, %tPreview%       , %newIniFile%, Timer, preview
 
     IniWrite, %threadsUsage%    , %newIniFile%, Other, threadsUsage
     IniWrite, %readScreenMemory%, %newIniFile%, Other, readScreenMemory

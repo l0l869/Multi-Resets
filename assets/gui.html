@@ -536,6 +536,12 @@
                     <h3>Auto Split</h3>
                 </div>
             </div>
+            <div class="tab-content__row">
+                <div>
+                    <input type="checkbox" id="remindShowPacks" onchange="AHK('Gui_UpdateSetting', 'Timer', 'remindShowPacks', this.checked ? 'true' : 'false')">
+                    <h3>Remind: Show Packs</h3>
+                </div>
+            </div>
 
             <div style="position: absolute; right: 0px; bottom: 0px; display: flex;">
                 <input type="checkbox" id="tPreview" onchange="AHK('Gui_UpdateSetting', 'Timer', 'preview', this.checked ? 'true' : 'false')">
@@ -578,7 +584,7 @@
             <div class="tab-content__row">
                 <div>
                     <input type="checkbox" id="hideOnMinimise" onchange="AHK('Gui_UpdateSetting', 'Other', 'hideOnMinimise', this.checked ? 'true' : 'false')">
-                    <h3>Hide on Minimise</h3>
+                    <h3>Minimise to Tray</h3>
                 </div>
             </div>
             <hr>
@@ -678,7 +684,7 @@
             <br>
             <h3>Cumulative Resetting</h3>
             <ul>
-                <li>Automatically resets and queues up more instances until you hit "stop reset," allowing you to cycle through the queued instances. This means you can go off on a break and come back with many instances ready at hand.</li>
+                <li>Automatically resets and queues up more instances until you hit "stop reset," allowing you to cycle through the queued instances. This means you can go off on a break and come back with more instances ready at hand.</li>
                 <li>Disable auto-restart and coop mode. It's also recommended to have some switch delay to prevent instances crashing.</li>
             </ul>
 

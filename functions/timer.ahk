@@ -74,10 +74,12 @@ Class Timer
     stop() {
         if !this.tickFunction
             return 1
+        this.elapsedTick := this.QPC() - this.startTick
         tickFunction := this.tickFunction
         SetTimer, % tickFunction, off
-
         this.tickFunction:=""
+
+        this.UpdateTimerText(this.FormatTime(this.elapsedTick))
     }
 
     Tick() {
@@ -181,8 +183,24 @@ Class Timer
             baseOffset := 0x036A4B00
 
         instanceProc := MCInstances[this.currentInstance].proc
-        if (baseOffset && instanceProc.read(instanceProc.baseAddress + baseOffset, "Char", 0x28, 0x198, 0x10, 0x150, 0x798) == 2)
+        if (baseOffset && instanceProc.read(instanceProc.baseAddress + baseOffset, "Char", 0x28, 0x198, 0x10, 0x150, 0x798) == 2) {
             this.stop()
+            if (remindShowPacks == "true") {
+                Sleep, 1000
+                this.RemindShowPacks()
+            }
+            exit
+        }
+    }
+
+    RemindShowPacks() {
+        options := "Centre vCentre w100p h100p c" this.pBrush " ow" this.outlineWidth " oc" this.outlineColour " s" this.fontSize " r4"
+        Gdip_TextToGraphics(this.G, "show packs", options, this.font, A_ScreenWidth, A_ScreenHeight)
+        UpdateLayeredWindow(this.hwnd, this.hdc, 0,0, A_ScreenWidth, A_ScreenHeight)
+        Sleep, 3000
+        Gdip_GraphicsClear(this.G)
+        UpdateLayeredWindow(this.hwnd, this.hdc, 0,0, A_ScreenWidth, A_ScreenHeight)
+        this.UpdateTimerText(this.FormatTime(this.elapsedTick))
     }
 
     setSettings(anchor, offsetX, offsetY, font, fontSize, fontColour1, fontColour2, gradientAngle, animationType 
@@ -259,10 +277,10 @@ WaitForMovement(instance) {
 
     xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
 
-    while (waiting && timer1.currentInstance && instance.isResetting == -1) {
+    while (timer1.currentInstance && instance.isResetting == -1) {
         newCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
         hasInputted := (GetKeyState("W") || GetKeyState("A") || GetKeyState("S") || GetKeyState("D") || GetKeyState("Space")) && WinActive("Minecraft")
-        if (xCoord != newCoord || hasInputted) {
+        if (newCoord && (xCoord != newCoord || hasInputted)) {
             timer1.start()
             break
         }
