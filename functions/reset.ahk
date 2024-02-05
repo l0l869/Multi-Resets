@@ -1,4 +1,4 @@
-﻿Reset:
+Reset:
     hasExited := ExitIfRunning()
 
     if (resetMode == "manual") {
@@ -29,26 +29,26 @@ StopReset:
 return
 
 Restart:
-    LaunchInstances()
+CloseInstances()
+Loop, %numInstances%
+    MCInstances[A_Index] := LaunchInstance(A_Index)
+ConfigureMinecraftPointers()
+lastRestart := UpdateResetAttempts(0)
 return
 
 StartTimer:
-    if timer1
-        timer1.start()
+timer1.start()
 return
 
 StopTimer:
-    if timer1
-        timer1.stop()
+timer1.stop()
 Return
 
 ResetTimer:
-    if timer1
-        timer1.reset()
+timer1.reset()
 return
 
-ResetInstances()
-{
+ResetInstances() {
     CoordMode, Mouse, Screen
     CoordMode, Pixel, Screen
     
@@ -66,8 +66,12 @@ ResetInstances()
             if (!lastRestart)
                 lastRestart := currentResetAttempts
 
-            if (!replacementInstances.count())
-                LaunchReplacementInstances()
+            if (!replacementInstances.count()) {
+                Loop, %numInstances%
+                    replacementInstances[A_Index] := LaunchInstance(A_Index)
+                SuspendInstancesFunc := Func("SuspendInstances").bind(replacementInstances)
+                SetTimer, %SuspendInstancesFunc%, -40000
+            }
             else if (lastRestart+resetThreshold <= currentResetAttempts) {
                 lastRestart := currentResetAttempts
 
@@ -75,8 +79,10 @@ ResetInstances()
                     while WinExist("ahk_id " instance.hwnd)
                         Process, Close, % instance.pid
                 }
-                for k, instance in replacementInstances
+                for k, instance in replacementInstances {
                     ResumeProcess(instance.pid)
+                    instance.isResetting := 1
+                }
 
                 MCInstances := replacementInstances
                 replacementInstances := []
@@ -93,8 +99,7 @@ ResetInstances()
     gameScript.Hide()
 }
 
-IterateReset(instance)
-{
+IterateReset(instance) {
     if (WinActive("ahk_id " instance.hwnd))
        WinActivate, ahk_class Shell_TrayWnd
     MouseMove, % instance.x1 + instance.width/2, % instance.y1 + instance.height/2
@@ -256,19 +261,14 @@ RunInstance(instance) {
 
     if (coopMode == "true") {
         while (isResettingInstances()) {
-            for k, inst in MCInstances
-            {
+            for k, inst in MCInstances {
                 if (inst.isResetting == 5) {
                     inst.isResetting -= 100
                     SuspendProcess(inst.pid)
-                    Continue
                 } else if (inst.isResetting == 6)
                     inst.isResetting := 1
-                else if (inst.isResetting > 0) {
-                    WinActivate, ahk_class Shell_TrayWnd ; setupless doesnt bring save quit menu
-                    sleep, 10
+                else if (inst.isResetting > 0)
                     IterateReset(inst)
-                }
             }
         }
         Sleep, 70
@@ -277,7 +277,7 @@ RunInstance(instance) {
     } else {
         Sleep, 70
         WinMaximize, % "ahk_id " instance.hwnd
-        instance.isResetting := -1
+        WinActivate, % "ahk_id " instance.hwnd
 
         for k, inst in MCInstances {
             if (inst.isResetting >= 0 || inst.isResetting == -2) {

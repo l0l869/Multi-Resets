@@ -1,116 +1,73 @@
-﻿LaunchInstances() {
-    SetTitleMatchMode, 3
-    CloseInstances()
-    lastRestart := UpdateResetAttempts(0)
-    usedPIDs := []
+LaunchInstance(index) {
+    usedPIDs := GetMinecraftProcesses()
     usedHWNDs := []
-    threadsMask := (2 ** Ceil(threadCount * threadsUsage)) - 1
+    WinGet, var, List, Minecraft
+    Loop, % var
+        usedHWNDs.push(var%A_Index%)
+
     WinActivate, ahk_class Shell_TrayWnd
+    Run, shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App
+    WinWaitActive, Minecraft
 
-    loop, %numInstances% {
-        index1 := A_Index
-        WinActivate, ahk_class Shell_TrayWnd
-        Run, shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App
-        WinWaitActive, Minecraft
+    PIDs := GetExcludedFromList(GetMinecraftProcesses(), usedPIDs)
+    pid := PIDs[1]
+    mcHwnds := []
+    WinGet, var, List, Minecraft
+    Loop, % var
+        mcHwnds.push(var%A_Index%)
+    hwnd := GetExcludedFromList(mcHwnds, usedHWNDs)[1]
+    proc := new _ClassMemory("ahk_pid " pid, "PROCESS_VM_READ")
 
-        PIDs := GetExcludedFromList(GetMinecraftProcesses(), usedPIDs)
-        pid := PIDs[1]
-        mcHwnds := []
-        WinGet, var, List, Minecraft
-        Loop, % var
-            mcHwnds.push(var%A_Index%)
-        hwnd := GetExcludedFromList(mcHwnds, usedHWNDs)[1]
-        proc := new _ClassMemory("ahk_pid " pid, "PROCESS_VM_READ")
-        MCInstances.push({ hwnd: hwnd
-                         , pid: pid
-                         , proc: proc
-                         , isResetting: 0
-                         , x1: 0, y1: 0
-                         , x2: 0, y2: 0
-                         , width: 0, height: 0 })
+    instance := { hwnd: hwnd
+                , pid: pid
+                , proc: proc
+                , isResetting: 0
+                , x1: 0, y1: 0
+                , x2: 0, y2: 0
+                , width: 0, height: 0 }
 
-        if (PIDs.count() > 1 || !pid) {
-            if (!GetMultiState()) {
-                MsgBox, 4,, % "Error: Multi-instance is not registered.`nDo you want to register multi?"
-                IfMsgBox, Yes
-                    Run, configs\RegisterMulti.ahk
-                return
-            }
+    ResizeInstance(instance, index)
 
-            MsgBox, 4,, % "Error: Failed to get process ID.`nDo you want to try and relaunch instances?"
+    threadsMask := (2 ** Ceil(threadCount * threadsUsage)) - 1
+    SetAffinity(pid, threadsMask)
+
+
+    if (PIDs.count() > 1 || !pid) {
+        if (!IsMultiRegistered()) {
+            MsgBox, 4,, % "Error: Multi-instance is not registered.`nDo you want to register multi?"
             IfMsgBox, Yes
-                LaunchInstances()
+                Run, configs\RegisterMulti.ahk
             return
         }
-
-        usedPIDs.push(pid)
-        usedHWNDs.push(hwnd)
-        SetAffinity(pid, threadsMask)
+        MsgBox, % "Error: Failed to get process ID."
     }
 
-    ConfigureMinecraftPointers()
-    ResizeInstances(MCInstances)
+    return instance
 }
 
-ResizeInstances(instances) {
+ResizeInstance(instance, index) {
+    VarSetCapacity(workArea, 16, 0)
+    DllCall("SystemParametersInfo", "UInt", 0x0030, "UInt", 0, "UPtr", &rect, "UInt", 0)
+    workAreaWidth := NumGet(&rect, 8, "Int")
+    workAreaHeight := NumGet(&rect, 12, "Int")
+
     dim := StrSplit(layoutDimensions, ",")
-    height := (A_ScreenHeight - 40 * scaleBy) / dim[2]
-    width := A_ScreenWidth / dim[1]
+    width := workAreaWidth / dim[1]
+    height := workAreaHeight / dim[2]
 
-    for k, instance in instances
-    {
-        positionIndex := Mod(k - 1, dim[1] * dim[2]) + 1
-        x := Mod(positionIndex, dim[1])
-        y := Floor((positionIndex - 1) / dim[1])
-        WinRestore, % "ahk_id " instance.hwnd
-        WinMove, % "ahk_id " instance.hwnd,, width*x-8, height*y, width+16, height+8
+    positionIndex := Mod(index - 1, dim[1] * dim[2]) + 1
+    x := Mod(positionIndex, dim[1])
+    y := Floor((positionIndex - 1) / dim[1])
+    WinRestore, % "ahk_id " instance.hwnd
+    WinMove, % "ahk_id " instance.hwnd,, width*x-8, height*y, width+16, height+8
 
-        winDimensions := GetWindowDimensions("ahk_id " instance.hwnd)
-        instance.x1     := winDimensions.x1
-        instance.y1     := winDimensions.y1
-        instance.x2     := winDimensions.x2
-        instance.y2     := winDimensions.y2
-        instance.width  := winDimensions.width
-        instance.height := winDimensions.height
-    }
-}
-
-LaunchReplacementInstances() {
-    usedPIDs := []
-    usedHWNDs := []
-    for k, inst in MCInstances {
-        usedPIDs.push(inst.pid)
-        usedHWNDs.push(inst.hwnd)
-    }
-
-    Loop, % numInstances {
-        index1 := A_Index
-        WinActivate, ahk_class Shell_TrayWnd
-        Run, shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App
-        WinWaitActive, Minecraft
-        
-        pid := GetExcludedFromList(GetMinecraftProcesses(), usedPIDs)[1]
-        mcHwnds := []
-        WinGet, var, List, Minecraft
-        Loop, % var
-            mcHwnds.push(var%A_Index%)
-        hwnd := GetExcludedFromList(mcHwnds, usedHWNDs)[1]
-        proc := new _ClassMemory("ahk_pid " pid, "PROCESS_VM_READ")
-        usedPIDs.push(pid)
-        usedHWNDs.push(hwnd)
-
-        replacementInstances[index1] := { hwnd: hwnd
-                                        , pid: pid
-                                        , proc: proc
-                                        , isResetting: 1
-                                        , x1: 0, y1: 0
-                                        , x2: 0, y2: 0
-                                        , width: 0, height: 0 }
-    }
-    ResizeInstances(replacementInstances)
-
-    SuspendInstancesFunc := Func("SuspendInstances").bind(replacementInstances)
-    SetTimer, %SuspendInstancesFunc%, -45000
+    winDimensions := GetWindowDimensions("ahk_id " instance.hwnd)
+    instance.x1     := winDimensions.x1
+    instance.y1     := winDimensions.y1
+    instance.x2     := winDimensions.x2
+    instance.y2     := winDimensions.y2
+    instance.width  := winDimensions.width
+    instance.height := winDimensions.height
 }
 
 SuspendInstances(instances) {
@@ -328,7 +285,7 @@ DateToSeconds(date) {
     return year*31536000+month*2629800+day*86400+hour*3600+minute*60+second
 }
 
-GetMultiState() {
+IsMultiRegistered() {
     cmd := "(Get-AppxPackage -Name Microsoft.MinecraftUWP).'PackageFullName' > '" A_ScriptDir "\configs\mcpackage.txt'"
     RunWait, PowerShell.exe -Command &{%cmd%},, Hide
     FileRead, mcpackage, configs\mcpackage.txt

@@ -34,7 +34,7 @@ LoadIniConfigs()
 
 Menu, Tray, Icon, assets/_Icon.ico
 Menu, Tray, Add, MC Directory, OpenMinecraftDir
-Menu, Tray, Add, Launch Instances, LaunchInstances
+Menu, Tray, Add, Launch Instances, Restart
 Menu, Tray, Add, Close Instances, CloseInstances
 
 global WB, GuiHwnd
