@@ -25,7 +25,7 @@ global offsetsX, offsetsZ, offsetsScreen
 global lastRestart
 global timer1
 global screenClicks := [], worldcreationClicks := []
-global MCInstances := [], replacementInstances := []
+global MCInstances := [], replacementInstances := [], queuedInstances := []
 global resetDll := DllCall("LoadLibrary", "Str", "functions/reset.dll", "Ptr")
 global gameScript := LoadFile("functions/game.ahk")
 DllCall("gdi32\AddFontResource", "Str", A_ScriptDir "\assets\Mojangles.ttf")

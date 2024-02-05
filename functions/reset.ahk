@@ -6,14 +6,17 @@ Reset:
             for k, instance in MCInstances
                 if (instance.isResetting <= 0)
                     instance.isResetting := 1
-
         ResetInstances()
-    }
-    else if (resetMode == "auto") {
+    } else if (resetMode == "cumulative" && queuedInstances.count()) {
+        nextInstance := queuedInstances.count()
+        ResumeProcess(queuedInstances[nextInstance].pid)
+        MCInstances.push(queuedInstances[nextInstance])
+        queuedInstances.RemoveAt(nextInstance, 1)
+        RunInstance(MCInstances[MCInstances.count()])
+    } else {
         for k, instance in MCInstances
             if (instance.isResetting == 0)
                 instance.isResetting := 1
-
         ResetInstances()
     }
 return
@@ -26,6 +29,9 @@ StopReset:
 
     for k, instance in MCInstances
         instance.isResetting := 0
+
+    if (resetMode == "cumulative" && queuedInstances.count())
+        Gosub, Reset
 return
 
 Restart:
@@ -136,6 +142,8 @@ IterateReset(instance) {
                 return instance.isResetting := (instance.isResetting ? -2 : 0)
             else if (shouldAutoReset(instance))
                 return instance.isResetting := (instance.isResetting ? 1 : 0)
+            else if (resetMode == "cumulative")
+                return SaveInstance(instance)
 
             return RunInstance(instance)
 
@@ -245,6 +253,8 @@ ExitIfRunning() {
     for k, instance in MCInstances
         if (instance.isResetting == -1)
             return ExitInstance()
+
+    return false
 }
 
 RunInstance(instance) {
@@ -291,6 +301,15 @@ RunInstance(instance) {
 ExitInstance() {
     timer1.currentInstance := 0
     timer1.reset()
+    if (resetMode == "cumulative" && MCInstances[numInstances+1].isResetting == -1) {
+        for k, instance in MCInstances
+            if (instance.isResetting == -1)
+                WinClose, % "ahk_id " instance.hwnd
+        MCInstances.pop()
+
+        if (savedInstances.count())
+            return true
+    }
     for k, instance in MCInstances {
         if (instance.isResetting == -1) {
             WinRestore, % "ahk_id " instance.hwnd
@@ -305,8 +324,7 @@ ExitInstance() {
         }
     }
     Sleep, 100
-
-    return 1
+    return true
 }
 
 EnterHoveredInstance() {

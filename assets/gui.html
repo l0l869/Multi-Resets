@@ -97,6 +97,10 @@
             list-style-type: circle;
         }
 
+        ul {
+            padding: 0px 30px;
+        }
+
         #sidebar {
             height: 100%;
             width: 25%;
@@ -338,6 +342,7 @@
                     <select id="resetMode" onchange="AHK('Gui_UpdateSetting', 'Macro', 'resetMode', this.value)">
                         <option value="auto">Auto</option>
                         <option value="manual">Manual</option>
+                        <option value="cumulative">Cumulative</option>
                     </select>
                 </div>
             </div>
@@ -671,9 +676,16 @@
             </ul>
 
             <br>
+            <h3>Cumulative Resetting</h3>
+            <ul>
+                <li>Automatically resets and queues up more instances until you hit "stop reset," allowing you to cycle through the queued instances. This means you can go off on a break and come back with many instances ready at hand.</li>
+                <li>Disable auto-restart and coop mode. It's also recommended to have some switch delay to prevent instances crashing.</li>
+            </ul>
+
+            <br>
             <h3>Affinity</h3>
             <ul>
-                <li>Set the threads utilistaion to the (%) amount of CPU threads during resets</li>
+                <li>Set the threads utilisation to the (%) amount of CPU threads utilised during resets</li>
                 <li>All CPU threads will be utilised during runs</li>
                 <li>For efficient resetting, the recommended number of instances: Total CPU Threads / 4 </li>
             </ul>
@@ -683,7 +695,7 @@
             <ul>
                 <li>Colours are inputted in the hexadecimal ARGB format</li>
                 <li>Animation Length can be omitted, if you don't want the timer to be animated</li>
-                <li>Auto Splitting works for 1.16.1 + 1.16.10</li>
+                <li>Auto Splitting works for 1.16.1 and 1.16.10</li>
             </ul>
 
             <br>

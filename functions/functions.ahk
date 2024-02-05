@@ -70,6 +70,21 @@ ResizeInstance(instance, index) {
     instance.height := winDimensions.height
 }
 
+SaveInstance(instance) {
+    SuspendProcess(instance.pid)
+    queuedInstances.push(instance)
+
+    index := 0
+    For k, v in MCInstances {
+        if (v.hwnd == instance.hwnd) {
+            index := k
+            break
+        }
+    }
+    MCInstances[index] := LaunchInstance(index)
+    MCInstances[index].isResetting := 1
+}
+
 SuspendInstances(instances) {
     for k, instance in instances
         SuspendProcess(instance.pid)
@@ -166,6 +181,7 @@ SetAffinity(pid, mask) {
 CloseInstances() {
     MCInstances := []
     replacementInstances := []
+    queuedInstances := []
 
     SetTitleMatchMode, 3
     while WinExist("Minecraft")
