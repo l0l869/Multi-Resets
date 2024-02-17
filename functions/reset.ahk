@@ -35,8 +35,11 @@ StopReset:
             instance.isResetting := 0
         Critical, Off
 
-        if (resetMode == "cumulative" && queuedInstances.count())
+        if (resetMode == "cumulative" && queuedInstances.count()) {
+            for k, instance in MCInstances
+                WinMinimize, % "ahk_id " instance.hwnd
             Gosub, Reset
+        }
     }
 return
 
@@ -322,7 +325,7 @@ RunInstance(instance) {
 ExitInstance() {
     timer1.currentInstance := 0
     timer1.reset()
-    if (resetMode == "cumulative" && MCInstances[numInstances+1].isResetting == -1) {
+    if (resetMode == "cumulative" && MCInstances[MCInstances.MaxIndex()].isResetting == -1) {
         for k, instance in MCInstances
             if (instance.isResetting == -1)
                 WinClose, % "ahk_id " instance.hwnd
