@@ -1,4 +1,4 @@
-Reset:
+﻿Reset:
     hasExited := ExitIfRunning()
 
     if (resetMode == "manual") {
@@ -102,6 +102,11 @@ ResetInstances() {
         }
 
         for k, instance in MCInstances {
+            if !WinExist("ahk_id " instance.hwnd) { ; if crashes
+                MCInstances[k] := LaunchInstance(k)
+                MCInstances[k].isResetting := 1
+            }
+
             if (instance.isResetting <= 0)
                 continue
 
