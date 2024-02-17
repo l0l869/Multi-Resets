@@ -268,10 +268,6 @@ UpdateMainTimer() {
 }
 
 WaitForMovement(instance) {
-    static waiting
-    if (timer1.tickFunction || waiting)
-        return
-    waiting := true
     timer1.reset()
     timer1.show()
 
@@ -285,5 +281,4 @@ WaitForMovement(instance) {
             break
         }
     }
-    return waiting := false
 }
