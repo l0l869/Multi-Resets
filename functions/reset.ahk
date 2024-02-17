@@ -1,4 +1,4 @@
-Reset:
+﻿Reset:
     hasExited := ExitIfRunning()
 
     if (resetMode == "manual") {
@@ -22,16 +22,22 @@ Reset:
 return
 
 StopReset:
-    if (resetMode == "manual" && !IsResettingInstances()) {
+    isResetting := IsResettingInstances()
+
+    if (resetMode == "manual" && !isResetting) {
         EnterHoveredInstance()
         return
     }
+    
+    if isResetting {
+        Critical
+        for k, instance in MCInstances
+            instance.isResetting := 0
+        Critical, Off
 
-    for k, instance in MCInstances
-        instance.isResetting := 0
-
-    if (resetMode == "cumulative" && queuedInstances.count())
-        Gosub, Reset
+        if (resetMode == "cumulative" && queuedInstances.count())
+            Gosub, Reset
+    }
 return
 
 Restart:
@@ -281,13 +287,19 @@ RunInstance(instance) {
                     IterateReset(inst)
             }
         }
-        Sleep, 70
-        WinMaximize, % "ahk_id " instance.hwnd
-        WinActivate, % "ahk_id " instance.hwnd
+        WinActivate, ahk_class Shell_TrayWnd
+        while !WinActive("ahk_id " instance.hwnd) {
+            WinMaximize, % "ahk_id " instance.hwnd
+            WinActivate, % "ahk_id " instance.hwnd
+            Sleep, 100
+        }
     } else {
-        Sleep, 70
-        WinMaximize, % "ahk_id " instance.hwnd
-        WinActivate, % "ahk_id " instance.hwnd
+        WinActivate, ahk_class Shell_TrayWnd
+        while !WinActive("ahk_id " instance.hwnd) {
+            WinMaximize, % "ahk_id " instance.hwnd
+            WinActivate, % "ahk_id " instance.hwnd
+            Sleep, 100
+        }
 
         for k, inst in MCInstances {
             if (inst.isResetting >= 0 || inst.isResetting == -2) {
@@ -307,7 +319,7 @@ ExitInstance() {
                 WinClose, % "ahk_id " instance.hwnd
         MCInstances.pop()
 
-        if (savedInstances.count())
+        if (queuedInstances.count())
             return true
     }
     for k, instance in MCInstances {
