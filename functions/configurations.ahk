@@ -2,6 +2,7 @@ global resetMode
      , maxCoords
      , minCoords
      , originDistance
+     , queueLimit
      , autoRestart
      , seamlessRestarts
      , resetThreshold
@@ -103,6 +104,7 @@ LoadIniConfigs() {
     IniRead, maxCoords       , %iniFile%, Macro, maxCoords
     IniRead, minCoords       , %iniFile%, Macro, minCoords
     IniRead, originDistance  , %iniFile%, Macro, originDistance
+    IniRead, queueLimit      , %iniFile%, Macro, queueLimit
     IniRead, autoRestart     , %iniFile%, Macro, autoRestart
     IniRead, seamlessRestarts, %iniFile%, Macro, seamlessRestarts
     IniRead, resetThreshold  , %iniFile%, Macro, resetThreshold
@@ -170,6 +172,7 @@ UpdateGuiElements() {
     WB.document.getElementById("maxCoords").value := maxCoords
     WB.document.getElementById("minCoords").value := minCoords
     WB.document.getElementById("originDistance").value := originDistance
+    WB.document.getElementById("queueLimit").value := queueLimit
     WB.document.getElementById("autoRestart").checked := autoRestart == "true" ? 1 : 0
     WB.document.getElementById("seamlessRestarts").checked := seamlessRestarts == "true" ? 1 : 0
     WB.document.getElementById("resetThreshold").value := resetThreshold
@@ -223,6 +226,7 @@ SetDefaultConfigs() {
     IniWrite, 1800 , %iniFile%, Macro, maxCoords
     IniWrite, 700  , %iniFile%, Macro, minCoords
     IniWrite, 400  , %iniFile%, Macro, originDistance
+    IniWrite, 100  , %iniFile%, Macro, queueLimit
     IniWrite, false, %iniFile%, Macro, autoRestart
     IniWrite, false, %iniFile%, Macro, seamlessRestarts
     IniWrite, 120  , %iniFile%, Macro, resetThreshold
@@ -273,6 +277,7 @@ MergeConfigs(source, destination) {
     IniWrite, %maxCoords%       , %newIniFile%, Macro, maxCoords
     IniWrite, %minCoords%       , %newIniFile%, Macro, minCoords
     IniWrite, %originDistance%  , %newIniFile%, Macro, originDistance
+    IniWrite, %queueLimit%      , %newIniFile%, Macro, queueLimit
     IniWrite, %autoRestart%     , %newIniFile%, Macro, autoRestart
     IniWrite, %seamlessRestarts%, %newIniFile%, Macro, seamlessRestarts
     IniWrite, %resetThreshold%  , %newIniFile%, Macro, resetThreshold
@@ -282,7 +287,7 @@ MergeConfigs(source, destination) {
     IniWrite, %numInstances%    , %newIniFile%, Macro, numInstances
     IniWrite, %layoutDimensions%, %newIniFile%, Macro, layoutDimensions
 
-    IniWrite, %timerActivated% , %newIniFile%, Timer, timerActive
+    IniWrite, %timerActive%    , %newIniFile%, Timer, timerActive
     IniWrite, %tAnchor%        , %newIniFile%, Timer, anchor
     IniWrite, %tOffsetX%       , %newIniFile%, Timer, offsetX
     IniWrite, %tOffsetY%       , %newIniFile%, Timer, offsetY

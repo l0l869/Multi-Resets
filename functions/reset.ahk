@@ -1,4 +1,4 @@
-﻿Reset:
+Reset:
     hasExited := ExitIfRunning()
 
     if (resetMode == "manual") {
@@ -8,11 +8,11 @@
                     instance.isResetting := 1
         ResetInstances()
     } else if (resetMode == "cumulative" && queuedInstances.count()) {
-        nextInstance := queuedInstances.count()
+        nextInstance := queuedInstances.MaxIndex()
         ResumeProcess(queuedInstances[nextInstance].pid)
         MCInstances.push(queuedInstances[nextInstance])
         queuedInstances.RemoveAt(nextInstance, 1)
-        RunInstance(MCInstances[MCInstances.count()])
+        RunInstance(MCInstances[MCInstances.MaxIndex()])
     } else {
         for k, instance in MCInstances
             if (instance.isResetting == 0)
@@ -146,10 +146,14 @@ IterateReset(instance) {
 
             if (resetMode == "manual")
                 return instance.isResetting := (instance.isResetting ? -2 : 0)
-            else if (shouldAutoReset(instance))
+            else if (ShouldAutoReset(instance))
                 return instance.isResetting := (instance.isResetting ? 1 : 0)
-            else if (resetMode == "cumulative")
-                return SaveInstance(instance)
+            else if (resetMode == "cumulative") {
+                SaveInstance(instance)
+                if (queuedInstances.count() >= queueLimit)
+                    Gosub, StopReset
+                return
+            }
 
             return RunInstance(instance)
 
@@ -220,7 +224,7 @@ IterateReset(instance) {
     }
 }
 
-shouldAutoReset(instance) {
+ShouldAutoReset(instance) {
     if (MCversion == "1.19.50.2")
     {
         startTick := A_TickCount
