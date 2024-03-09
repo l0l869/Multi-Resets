@@ -12,6 +12,7 @@ SetWorkingDir, %A_ScriptDir%
 SendMode, Input
 SetMouseDelay, -1
 EnvGet, A_LocalAppData, LocalAppData
+Process, Priority,, High 
 
 global SCRIPT_VERSION := 20240217.23
 global iniFile := A_ScriptDir "\configs\configs.ini"
@@ -148,22 +149,22 @@ Gui_EditHotkeys() {
     Gui, hotkeysWin:add, Button, x10 y140 w310 h30 gSaveHotkeys, Save
 
     IniRead, iniKey, %iniFile%, Hotkeys, Reset
-        GuiControl, hotkeysWin:, hotkeyboxReset, %iniKey%
+    GuiControl, hotkeysWin:, hotkeyboxReset, %iniKey%
         
     IniRead, iniKey, %iniFile%, Hotkeys, StopReset
-        GuiControl, hotkeysWin:, hotkeyboxStopReset, %iniKey%
+    GuiControl, hotkeysWin:, hotkeyboxStopReset, %iniKey%
 
     IniRead, iniKey, %iniFile%, Hotkeys, Restart
-        GuiControl, hotkeysWin:, hotkeyboxRestart, %iniKey%
+    GuiControl, hotkeysWin:, hotkeyboxRestart, %iniKey%
 
     IniRead, iniKey, %iniFile%, Hotkeys, StartTimer
-        GuiControl, hotkeysWin:, hotkeyboxStartTimer, %iniKey%
+    GuiControl, hotkeysWin:, hotkeyboxStartTimer, %iniKey%
         
     IniRead, iniKey, %iniFile%, Hotkeys, StopTimer
-        GuiControl, hotkeysWin:, hotkeyboxStopTimer, %iniKey%
+    GuiControl, hotkeysWin:, hotkeyboxStopTimer, %iniKey%
 
     IniRead, iniKey, %iniFile%, Hotkeys, ResetTimer
-        GuiControl, hotkeysWin:, hotkeyboxResetTimer, %iniKey%
+    GuiControl, hotkeysWin:, hotkeyboxResetTimer, %iniKey%
 
     return
 
@@ -184,11 +185,15 @@ Gui_EditHotkeys() {
 }
 
 Gui_RegisterMulti() {
-    Run, configs\RegisterMulti.ahk
+    Run, configs\scripts\RegisterMulti.ahk
 }
 
 Gui_Setup() {
-    Run, configs\Setup.ahk
+    Run, configs\scripts\Setup.ahk
+}
+
+Gui_BlockMarketplace() {
+    Run, configs\scripts\BlockMarketplace.ahk
 }
 
 Gui_UpdateToLatest() {
@@ -200,25 +205,24 @@ JS_AHK(func, prms*) {
 }
 
 MainGuiSize:
-if (A_EventInfo != 1 || hideOnMinimise == "false")
-    return
-
-WinHide, % "ahk_id " GuiHwnd
-Menu, Tray, Add, Open GUI, RestoreGui
+    if (A_EventInfo != 1 || hideOnMinimise == "false")
+        return
+    WinHide, % "ahk_id " GuiHwnd
+    Menu, Tray, Add, Open GUI, RestoreGui
 return
 
 RestoreGui:
-WinShow, % "ahk_id " GuiHwnd
-WinRestore, % "ahk_id " GuiHwnd
-Menu, Tray, Delete, Open GUI
+    WinShow, % "ahk_id " GuiHwnd
+    WinRestore, % "ahk_id " GuiHwnd
+    Menu, Tray, Delete, Open GUI
 return
 
 MainGuiClose:
-SetTimer, %FuncUpdateMainTimer%, Off
-timer1 := ""
-timerPreview := ""
-DllCall("FreeLibrary", "UPtr", resetDll)
-DllCall("gdi32\RemoveFontResource", "Str", A_ScriptDir "\assets\Mojangles.ttf")
-ExitApp
+    SetTimer, %FuncUpdateMainTimer%, Off
+    timer1 := ""
+    timerPreview := ""
+    DllCall("FreeLibrary", "UPtr", resetDll)
+    DllCall("gdi32\RemoveFontResource", "Str", A_ScriptDir "\assets\Mojangles.ttf")
+    ExitApp
 
 #Include functions/reset.ahk
