@@ -1,6 +1,6 @@
 ﻿#SingleInstance, Force
 SetBatchLines, -1
-SetWorkingDir %A_ScriptDir%
+SetWorkingDir, % A_ScriptDir "/../"
 CoordMode, Mouse, Screen
 CoordMode, Pixel, Screen
 
@@ -185,7 +185,7 @@ FinishSetup()
     txt.close()
 
     if WinExist("Multi-Resets")
-        Run, %A_ScriptDir%/../Multi-Resets.ahk
+        Run, %A_WorkingDir%/../Multi-Resets.ahk
     ExitApp
 }
 

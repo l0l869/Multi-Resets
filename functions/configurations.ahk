@@ -55,7 +55,7 @@ LoadClickData() {
     } else if (SubStr(clicksArray[1], 1, 5) == "Heart") {
         Msgbox,4,, % "Outdated click data.`n" "V1.0+ uses identifiers to determine the current button to click, rather than using the colour of the text on the button.`n`n" "Yes: Do the setup`n" "No: Opt in for setupless resets"
         IfMsgBox, Yes
-            Run, configs\Setup.ahk    
+            Run, configs\scripts\Setup.ahk    
         IfMsgBox, No
             Gui_UpdateSetting("Other", "resetMethod", "setupless")
         
@@ -66,11 +66,10 @@ LoadClickData() {
     if (clickDataVersion == 1) {
         Msgbox,4,, % "V2 Click Data Update:`n- Macro can now look for the " """Play""" " button`n- Necessay for seamless restarts`n`nRedo the setup?"
         IfMsgBox, Yes
-            Run, configs\Setup.ahk    
+            Run, configs\scripts\Setup.ahk    
     }
 
-    for k, click in clicksArray
-    {
+    for k, click in clicksArray {
         clickObj := StrSplit(click, ",")
         if !clickObj.count()
             continue
@@ -82,11 +81,10 @@ LoadClickData() {
     }
     clicksFile.close()
 
-    if !worldcreationClicks.count()
-    {
+    if !worldcreationClicks.count() {
         MsgBox,4,, % "Insufficient Click Data. Do you want to do the setup?"
         IfMsgBox, Yes
-            Run, configs\Setup.ahk
+            Run, configs\scripts\Setup.ahk
 
         return
     }

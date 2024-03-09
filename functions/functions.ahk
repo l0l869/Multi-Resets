@@ -36,7 +36,7 @@ LaunchInstance(index) {
         if (!IsMultiRegistered()) {
             MsgBox, 4,, % "Error: Multi-instance is not registered.`nDo you want to register multi?"
             IfMsgBox, Yes
-                Run, configs\RegisterMulti.ahk
+                Run, % "configs\scripts\RegisterMulti.ahk 1"
             return
         }
         MsgBox, % "Error: Failed to get process ID."
@@ -347,7 +347,6 @@ EnumFontFamExProc(lpelfe, lpntme, FontType, lParam) {
 
 GetExcludedFromList(list, excludeList) {
     returnList := []
-
     for i, item in list {
         for ii, excludeItem in excludeList {
             if (item == excludeItem)
@@ -355,6 +354,5 @@ GetExcludedFromList(list, excludeList) {
         }
         returnList.push(item)
     }
-
     return returnList
 }
