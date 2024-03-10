@@ -31,8 +31,6 @@ global resetDll := DllCall("LoadLibrary", "Str", "functions/reset.dll", "Ptr")
 global gameScript := LoadFile("functions/game.ahk")
 DllCall("gdi32\AddFontResource", "Str", A_ScriptDir "\assets\Mojangles.ttf")
 
-LoadIniConfigs()
-
 Menu, Tray, Icon, assets/_Icon.ico
 Menu, Tray, Add, MC Directory, OpenMinecraftDir
 Menu, Tray, Add, Launch Instances, Restart
@@ -81,24 +79,7 @@ InitGui() {
     DllCall(setPreferredAppMode, "Int", 1)
     DllCall(flushMenuThemes)
 
-    fonts := GetFontNames(0)
-    select := WB.document.getElementById("font-list")
-    for k, font in fonts {
-        newOption := WB.document.createElement("option")
-        optionText := WB.document.createTextNode(k)
-        textStyle := newOption.style
-        textStyle["font-family"] := k
-        newOption.appendChild(optionText)
-        select.appendChild(newOption)
-    }
-    s := WB.document.getElementById("tFont").style, s["font-family"] := tFont
-
-    UpdateGuiElements()
-}
-
-Gui_UpdateSetting(section, key, value) {
-    IniWrite, %value%, %iniFile%, %section%, %key%
-    LoadIniConfigs()
+    InitGuiElements()
 }
 
 Gui_UpdateProgress(show, percent := 0, text := "", buttonFunc := "") {

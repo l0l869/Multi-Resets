@@ -14,8 +14,7 @@ FetchUpdates() {
     RegexMatch(latestVersions[2], "/v([\d.]+)/", versionTag)
     versionTag := StrReplace(versionTag, "/")
 
-    if (SCRIPT_VERSION < latestVersions[1])
-    {
+    if (SCRIPT_VERSION < latestVersions[1]) {
         WB.document.getElementById("script-version").textContent := "Current Version: " SCRIPT_VERSION
         WB.document.getElementById("new-script-version").textContent := "New Version: " latestVersions[1]
         WB.document.getElementById("new-tag-version").textContent := "New Tag Version: " versionTag
@@ -53,11 +52,9 @@ FetchUpdates() {
 
 DownloadLatest(latestVersions) {
     Gui_UpdateProgress(true, 0, "Releasing Objects")
-    if (timerPreview) {
-        timerPreview.__Delete()
-        timerPreview := ""
-    }
     SetTimer, %FuncUpdateMainTimer%, Off
+    timerPreview.__Delete()
+    timerPreview := ""
     timer1.__Delete()
     timer1 := ""
     DllCall("FreeLibrary", "UPtr", resetDll)
@@ -72,6 +69,7 @@ DownloadLatest(latestVersions) {
     if (ErrorLevel || !FileExist(tempFolder "\" newVersionZipName)) {
         FileRemoveDir, %tempFolder%, 1
         MsgBox, Update Failed!
+        Run, Multi-Resets.ahk
         return
     }
     Gui_UpdateProgress(true, 50, "Unzipping")

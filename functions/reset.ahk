@@ -67,11 +67,11 @@ ResetInstances() {
     CoordMode, Mouse, Screen
     CoordMode, Pixel, Screen
     
-    seamlessRestart := autoRestart == "true" && seamlessRestarts == "true"
-    if (autoRestart == "true" && seamlessRestarts == "false")
+    seamlessRestart := autoRestart && seamlessRestarts
+    if (autoRestart && !seamlessRestarts)
         ShouldRestart(UpdateResetAttempts(0))
 
-    if (isBored == "true")
+    if isBored
         gameScript.Show()
 
     while (IsResettingInstances())
@@ -132,7 +132,7 @@ IterateReset(instance) {
     clickX := currentClick[2]
     clickY := currentClick[3]
 
-    if (isBored == "true")
+    if isBored
         gameScript.AllowClick({x:instance.x1+clickX,y:instance.y1+clickY})
 
     switch (currentScreen)
@@ -222,7 +222,7 @@ IterateReset(instance) {
 
             for k, click in wcClicks {
                 Sleep, %keyDelay%
-                if (isBored == "true")
+                if isBored
                     gameScript.AllowClick({x:instance.x1+click.x,y:instance.y1+click.y})
                 MouseClick,, instance.x1 + click.x, instance.y1 + click.y,,0
             }
@@ -287,7 +287,7 @@ RunInstance(instance) {
         }
     }
 
-    if (coopMode == "true") {
+    if coopMode {
         while (isResettingInstances()) {
             for k, inst in MCInstances {
                 if (inst.isResetting == 5) {
@@ -395,7 +395,7 @@ GetCurrentClick(instance, method) {
 GetCurrentScreen(instance) {
     currentScreen := ""
 
-    if (readScreenMemory == "true") {
+    if readScreenMemory {
 
         startTick := A_TickCount
         while !valueUI := ReadMemoryValue(instance.proc, "Int", offsetsScreen*) {

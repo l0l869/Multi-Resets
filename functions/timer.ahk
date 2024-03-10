@@ -83,7 +83,7 @@ Class Timer
     }
 
     Tick() {
-        if (this.autoSplit == "true")
+        if this.autoSplit
             this.CheckAutoSplit()
 
         this.elapsedTick := this.QPC() - this.startTick
@@ -185,7 +185,7 @@ Class Timer
         instanceProc := MCInstances[this.currentInstance].proc
         if (baseOffset && instanceProc.read(instanceProc.baseAddress + baseOffset, "Char", 0x28, 0x198, 0x10, 0x150, 0x798) == 2) {
             this.stop()
-            if (remindShowPacks == "true") {
+            if remindShowPacks {
                 Sleep, 1000
                 this.RemindShowPacks()
             }
@@ -238,7 +238,7 @@ global FuncUpdateMainTimer := Func("UpdateMainTimer")
 SetTimer, %FuncUpdateMainTimer%, 500
 
 UpdateMainTimer() {
-    if (timerActive == "false") {
+    if !timerActive {
         if timer1.isShown
             timer1.hide()
         return

@@ -10,7 +10,7 @@
             font-family: Arial;
         }
         #container {
-            background-color: rgb(50, 50, 50);
+            background: linear-gradient(-45deg, rgb(40, 40, 40) 25%, rgb(50, 50, 50));
             position: fixed;
             width: 600px;
             height: 400px;
@@ -221,9 +221,34 @@
             background-color: rgb(125, 75, 75);
         }
 
+        .hint {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 2px;
+            padding: 5px;
+            font-size: 14px;
+            top: 0px;
+            right: 0px;
+            max-width: 75%;
+        }
+
+        h3:hover .hint {
+            visibility: visible;
+            opacity: 1;
+            transition: opacity 0.3s linear 1.5s;
+        }
+
         #spawn-hint {
+            position: absolute;
+            right: 0px;
+            bottom: 0px;
             opacity: 0;
             transition: 1s;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 2px;
+            padding: 5px;
         }
 
         .colour-picker {
@@ -248,18 +273,18 @@
         #update-btn {
             display: none;
             opacity: 0;
-            transition-duration: 1s;
-            animation: pulse-size 2s infinite alternate;
         }
-
+                
         #update-btn button {
+            animation: pulse 2s infinite;
             border: 2px solid white;
             color: white;
         }
 
-        @keyframes pulse-size {
-            from {transform: scale(1);}
-            to {transform: scale(1.1);}
+        @keyframes pulse {
+            0% {box-shadow: 0 0 0 0 rgba(255, 255, 255, 1);}
+            70% {box-shadow: 0 0 0 6px rgba(255, 255, 255, 0);}
+            100% {box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);}
         }
 
         
@@ -291,6 +316,10 @@
         }
         let timeoutId;
         function getSpawnChance() {
+            guiInitialised = document.getElementById("isBored")
+            if (!guiInitialised)
+                return
+
             min = document.getElementById("minCoords").value
             max = document.getElementById("maxCoords").value
 
@@ -335,286 +364,31 @@
 
         <div id="Macro" class="tab-content" style="display: block;">
             <h2>Macro</h2>
-            <hr>
-            <div class="tab-content__row">
-                <div class="">
-                    <h3>Reset Mode</h3>
-                    <select id="resetMode" onchange="AHK('Gui_UpdateSetting', 'Macro', 'resetMode', this.value)">
-                        <option value="auto">Auto</option>
-                        <option value="manual">Manual</option>
-                        <option value="cumulative">Cumulative</option>
-                    </select>
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Min Coordinate</h3>
-                    <input type="number" id="minCoords" oninput="AHK('Gui_UpdateSetting', 'Macro', 'minCoords', this.value), getSpawnChance()">
-                </div>
-                <div id="spawn-hint">
-                    <p id="spawn-chance">Chance of Spawn: </p>
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Max Coordinate</h3>
-                    <input type="number" id="maxCoords" oninput="AHK('Gui_UpdateSetting', 'Macro', 'maxCoords', this.value), getSpawnChance()">
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Distance from 0,0 (1.19.50)</h3>
-                    <input type="number" id="originDistance" oninput="AHK('Gui_UpdateSetting', 'Macro', 'originDistance', this.value)">
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Queue Limit</h3>
-                    <input type="number" id="queueLimit" oninput="AHK('Gui_UpdateSetting', 'Macro', 'queueLimit', this.value)">
-                </div>
-            </div>
-            <hr>
-            <div class="tab-content__row">
-                <div>
-                    <input type="checkbox" id="autoRestart" onchange="AHK('Gui_UpdateSetting', 'Macro', 'autoRestart', this.checked ? 'true' : 'false')">
-                    <h3>Auto Restart</h3>
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <input type="checkbox" id="seamlessRestarts" onchange="AHK('Gui_UpdateSetting', 'Macro', 'seamlessRestarts', this.checked ? 'true' : 'false')">
-                    <h3>Seamless</h3>
-                </div>
-            </div> 
-            <div class="tab-content__row">
-                <div>
-                    <h3>Reset Threshold</h3>
-                    <input type="number" id="resetThreshold" oninput="AHK('Gui_UpdateSetting', 'Macro', 'resetThreshold', this.value)">
-                </div>
-            </div>
-            <hr>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Number of Instances</h3>
-                    <input type="number" id="numInstances" oninput="AHK('Gui_UpdateSetting', 'Macro', 'numInstances', this.value)">
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Layout</h3>
-                    <input type="text" id="layoutDimensions" oninput="AHK('Gui_UpdateSetting', 'Macro', 'layoutDimensions', this.value)">
-                </div>
-            </div>
-            <hr>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Key Delay</h3>
-                    <input type="number" id="keyDelay" oninput="AHK('Gui_UpdateSetting', 'Macro', 'keyDelay', this.value)">
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Switch Delay</h3>
-                    <input type="number" id="switchDelay" oninput="AHK('Gui_UpdateSetting', 'Macro', 'switchDelay', this.value)">
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Click Duration</h3>
-                    <input type="number" id="clickDuration" oninput="AHK('Gui_UpdateSetting', 'Macro', 'clickDuration', this.value)">
-                </div>
+            <div id="spawn-hint">
+                <p id="spawn-chance">Chance of Spawn: </p>
             </div>
         </div>
-
+        
         <div id="Timer" class="tab-content" style="display: none;">
             <h2>Timer</h2>
-            <hr>
-            <div class="tab-content__row">
-                <div>
-                    <input type="checkbox" id="tActive" onchange="AHK('Gui_UpdateSetting', 'Timer', 'timerActive', this.checked ? 'true' : 'false')">
-                    <h3>Timer</h3>
-                </div>
-            </div>
-            <hr>
-            <div class="tab-content__row">
-                <div class="">
-                    <h3>Anchor</h3>
-                    <select id="tAnchor" onchange="AHK('Gui_UpdateSetting', 'Timer', 'anchor', this.value)">
-                        <option value="TopLeft">Top Left</option>
-                        <option value="TopRight">Top Right</option>
-                        <option value="BottomLeft">Bottom Left</option>
-                        <option value="BottomRight">Bottom Right</option>
-                    </select>
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Offset</h3>
-                    <input type="number" id="tOffsetX" oninput="AHK('Gui_UpdateSetting', 'Timer', 'offsetX', this.value)">
-                    <input type="number" id="tOffsetY" oninput="AHK('Gui_UpdateSetting', 'Timer', 'offsetY', this.value)">
-                </div>
-            </div>
-            <hr>
-            <div class="tab-content__row">
-                <div class="picker">
-                    <h3>Font</h3>
-                    <input type="text" id="tFont" style="width: 150px;" oninput="AHK('Gui_UpdateSetting', 'Timer', 'font', this.value); tFont.style['font-family'] = this.value">
-                    <button onclick="fontlist.style.display = fontlist.style.display == 'none' ? 'block' : 'none';">&#9776;</button>
-                </div>
-                <select id="font-list" name="fontlist" style="display: none; margin: 5px 0px;" onchange="tFont.value = this.value; AHK('Gui_UpdateSetting', 'Timer', 'font', this.value.replace(/@/, '')); tFont.style['font-family'] = this.value"></select>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Size</h3>
-                    <input type="number" id="tFontSize" oninput="AHK('Gui_UpdateSetting', 'Timer', 'fontSize', this.value)">
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Colour 1</h3>
-                    <input type="text" name="tFontColour1" id="tFontColour1" style="width: 150px;" oninput="AHK('Gui_UpdateSetting', 'Timer', 'fontColour1', this.value)">
-                </div>
-                <div class="colour-picker">
-                    <object id="Dlg" classid="CLSID:3050F819-98B5-11CF-BB82-00AA00BDCE0B" width="0" height="0"></object>
-                    <button id="btn-colour1" onclick="var c = Dlg.ChooseColorDlg(); window.event.srcElement.style.color = c; tFontColour1.value = decToARGB(c); AHK('Gui_UpdateSetting', 'Timer', 'fontColour1', tFontColour1.value)">&block;&block;</button>
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Colour 2</h3>
-                    <input type="text" name="tFontColour2" id="tFontColour2" style="width: 150px;" oninput="AHK('Gui_UpdateSetting', 'Timer', 'fontColour2', this.value)">
-                </div>
-                <div class="colour-picker">
-                    <button id="btn-colour2" onclick="var c = Dlg.ChooseColorDlg(); window.event.srcElement.style.color = c; tFontColour2.value = decToARGB(c); AHK('Gui_UpdateSetting', 'Timer', 'fontColour2', tFontColour2.value)">&block;&block;</button>
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Outline Width</h3>
-                    <input type="text" id="tOutlineWidth" oninput="AHK('Gui_UpdateSetting', 'Timer', 'outlineWidth', this.value)">
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Outline Colour</h3>
-                    <input type="text" name="tOutlineColour" id="tOutlineColour" style="width: 150px;" oninput="AHK('Gui_UpdateSetting', 'Timer', 'outlineColour', this.value)">
-                </div>
-                <div class="colour-picker">
-                    <button id="btn-colour3" onclick="var c = Dlg.ChooseColorDlg(); window.event.srcElement.style.color = c; tOutlineColour.value = decToARGB(c); AHK('Gui_UpdateSetting', 'Timer', 'outlineColour', tOutlineColour.value)">&block;&block;</button>
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Gradient Angle</h3>
-                    <input type="text" id="tGradientAngle" oninput="AHK('Gui_UpdateSetting', 'Timer', 'gradientAngle', this.value)">
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Animation Type</h3>
-                    <select id="tAnimationType" onchange="AHK('Gui_UpdateSetting', 'Timer', 'animationType', this.value)">
-                        <option value="rotatory">Rotatory</option>
-                        <option value="panoramic">Panoramic</option>
-                    </select>
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Animation Length</h3>
-                    <input type="text" id="tAnimationSpeed" oninput="AHK('Gui_UpdateSetting', 'Timer', 'animationSpeed', this.value)">
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Decimals</h3>
-                    <select id="tDecimalPlaces" onchange="AHK('Gui_UpdateSetting', 'Timer', 'decimalPlaces', this.value)">
-                        <option value="0">0</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                    </select>
-                </div>
-            </div>
-            <hr>
-            <div class="tab-content__row">
-                <div>
-                    <input type="checkbox" id="tAutoSplit" onchange="AHK('Gui_UpdateSetting', 'Timer', 'autoSplit', this.checked ? 'true' : 'false')">
-                    <h3>Auto Split</h3>
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <input type="checkbox" id="remindShowPacks" onchange="AHK('Gui_UpdateSetting', 'Timer', 'remindShowPacks', this.checked ? 'true' : 'false')">
-                    <h3>Remind: Show Packs</h3>
-                </div>
-            </div>
-
-            <div style="position: absolute; right: 0px; bottom: 0px; display: flex;">
-                <input type="checkbox" id="tPreview" onchange="AHK('Gui_UpdateSetting', 'Timer', 'preview', this.checked ? 'true' : 'false')">
-                <h3>Show Preview</h3>
-            </div>
         </div>
 
         <div id="Other" class="tab-content" style="display: none;">
             <h2>Other</h2>
-            <hr>
-            <div class="tab-content__row">
-                <div class="">
-                    <h3>Reset Method</h3>
-                    <select id="resetMethod" onchange="AHK('Gui_UpdateSetting', 'Other', 'resetMethod', this.value)">
-                        <option value="setup">Setup</option>
-                        <option value="setupless">Setupless</option>
-                    </select>
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <input type="checkbox" id="readScreenMemory" onchange="AHK('Gui_UpdateSetting', 'Other', 'readScreenMemory', this.checked ? 'true' : 'false')">
-                    <h3>Read Screen Memory</h3>
-                </div>
-            </div>
-            <div class="tab-content__row">
-                <div>
-                    <input type="checkbox" id="coopMode" onchange="AHK('Gui_UpdateSetting', 'Other', 'coopMode', this.checked ? 'true' : 'false')">
-                    <h3>Coop Mode</h3>
-                </div>
-            </div>
-            <hr>
-            <div class="tab-content__row">
-                <div>
-                    <h3>Threads Utilisation</h3>
-                    <input type="number" id="threadsUsage" oninput="AHK('Gui_UpdateSetting', 'Other', 'threadsUsage', this.value)">
-                </div>
-            </div>
-            <hr>
-            <div class="tab-content__row">
-                <div>
-                    <input type="checkbox" id="hideOnMinimise" onchange="AHK('Gui_UpdateSetting', 'Other', 'hideOnMinimise', this.checked ? 'true' : 'false')">
-                    <h3>Minimise to Tray</h3>
-                </div>
-            </div>
-            <hr>
-            <div class="tab-content__row">
+            <div class="tab-content__row 4">
                 <button onclick="openTab(event, 'WorldBopper'); AHK('WorldBopper', 'r', 'My World', 14)">World Bopper</button>
             </div>
-            <div class="tab-content__row">
+            <div class="tab-content__row 4">
                 <button onclick="AHK('Gui_EditHotkeys')">Edit Hotkeys</button>
             </div>
-            <div class="tab-content__row">
+            <div class="tab-content__row 4">
                 <button onclick="AHK('Gui_RegisterMulti')">Register Multi</button>
             </div>
-            <div class="tab-content__row">
+            <div class="tab-content__row 4">
                 <button onclick="AHK('Gui_BlockMarketplace')">Block Marketplace</button>
             </div>
-            <div class="tab-content__row">
+            <div class="tab-content__row 4">
                 <button onclick="AHK('Gui_Setup')">Setup</button>
-            </div>
-            <hr>
-            <div class="tab-content__row">
-                <div>
-                    <input type="checkbox" id="isBored" onchange="AHK('Gui_UpdateSetting', 'Other', 'isBored', this.checked ? 'true' : 'false')">
-                    <h3>are u bored?</h3>
-                </div>
             </div>
 
         </div>
@@ -909,6 +683,7 @@
 
         <div id="background-blur" style="display: none; position: absolute; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.25); z-index: 9;"></div>
 
+        <object id="colourDialog" classid="CLSID:3050F819-98B5-11CF-BB82-00AA00BDCE0B" width="0" height="0"></object>
     </div>
 </body>
 
