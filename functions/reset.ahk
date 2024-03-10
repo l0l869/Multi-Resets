@@ -44,23 +44,25 @@ StopReset:
 return
 
 Restart:
-CloseInstances()
-Loop, %numInstances%
-    MCInstances[A_Index] := LaunchInstance(A_Index)
-ConfigureMinecraftPointers()
-lastRestart := UpdateResetAttempts(0)
+    LogF("INF", "Launching Instances...")
+    CloseInstances()
+    Loop, %numInstances%
+        MCInstances[A_Index] := LaunchInstance(A_Index)
+    ConfigureMinecraftPointers()
+    lastRestart := UpdateResetAttempts(0)
+    LogF("INF", "Launched " numInstances " Instances with " layoutDimensions " layout")
 return
 
 StartTimer:
-timer1.start()
+    timer1.start()
 return
 
 StopTimer:
-timer1.stop()
+    timer1.stop()
 Return
 
 ResetTimer:
-timer1.reset()
+    timer1.reset()
 return
 
 ResetInstances() {
@@ -108,6 +110,7 @@ ResetInstances() {
             if !WinExist("ahk_id " instance.hwnd) { ; if crashes
                 MCInstances[k] := LaunchInstance(k)
                 MCInstances[k].isResetting := 1
+                LogF("WAR", "Instance #" k " crashed, relaunching...")
             }
 
             if (instance.isResetting <= 0)
@@ -233,17 +236,16 @@ IterateReset(instance) {
 }
 
 ShouldAutoReset(instance) {
-    if (MCversion == "1.19.50.2")
-    {
+    if (MCversion == "1.19.50.2") {
         startTick := A_TickCount
         while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
             if (A_TickCount - startTick > 2000)
-                return true
+                return true, LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
 
         startTick := A_TickCount
         while !zCoord := ReadMemoryValue(instance.proc, "Float", offsetsZ*)
             if (A_TickCount - startTick > 2000)
-                return true
+                return true, LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
 
         if (Sqrt(xCoord**2 + zCoord**2) < originDistance)
             return true
@@ -252,7 +254,7 @@ ShouldAutoReset(instance) {
         startTick := A_TickCount
         while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
             if (A_TickCount - startTick > 2000)
-                return true
+                return true, LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
 
         if (xCoord < minCoords || xCoord > maxCoords)
             return true
@@ -401,6 +403,7 @@ GetCurrentScreen(instance) {
         while !valueUI := ReadMemoryValue(instance.proc, "Int", offsetsScreen*) {
             if (A_TickCount-startTick > 3000) {
                 MsgBox, % "failed to get current screen from memory: " valueUI
+                LogF("ERR", "Timed Out: Failed to get current screen from memory")
                 Exit
             }
         }

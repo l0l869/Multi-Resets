@@ -14,6 +14,8 @@ SetMouseDelay, -1
 EnvGet, A_LocalAppData, LocalAppData
 Process, Priority,, High 
 
+LogF("INF", "Initialising (" A_AhkVersion " " A_PtrSize*8 "-bit)")
+
 global SCRIPT_VERSION := 20240217.23
 global iniFile := A_ScriptDir "\configs\configs.ini"
 global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang"
@@ -80,6 +82,7 @@ InitGui() {
     DllCall(flushMenuThemes)
 
     InitGuiElements()
+    LogF("INF", "Initialised")
 }
 
 Gui_UpdateProgress(show, percent := 0, text := "", buttonFunc := "") {
@@ -186,7 +189,7 @@ JS_AHK(func, prms*) {
 }
 
 MainGuiSize:
-    if (A_EventInfo != 1 || hideOnMinimise == "false")
+    if (A_EventInfo != 1 || !hideOnMinimise)
         return
     WinHide, % "ahk_id " GuiHwnd
     Menu, Tray, Add, Open GUI, RestoreGui
@@ -204,6 +207,7 @@ MainGuiClose:
     timerPreview := ""
     DllCall("FreeLibrary", "UPtr", resetDll)
     DllCall("gdi32\RemoveFontResource", "Str", A_ScriptDir "\assets\Mojangles.ttf")
+    LogF("INF", "App Exit")
     ExitApp
 
 #Include functions/reset.ahk

@@ -1,4 +1,4 @@
-LaunchInstance(index) {
+﻿LaunchInstance(index) {
     usedPIDs := GetMinecraftProcesses()
     usedHWNDs := []
     WinGet, var, List, Minecraft
@@ -40,6 +40,7 @@ LaunchInstance(index) {
             return
         }
         MsgBox, % "Error: Failed to get process ID."
+        LogF("ERR", "Failed to get process ID")
     }
 
     return instance
@@ -157,6 +158,7 @@ ConfigureMinecraftPointers() {
 
         default: Msgbox, Auto-reset is not supported for this version: %MCversion%.
     }
+    LogF("INF", "Current Minecraft Version: " MCversion)
 }
 
 GetMCScale(w, h, applyDPI:=false) {
@@ -171,8 +173,7 @@ GetMCScale(w, h, applyDPI:=false) {
 }
 
 SetAffinity(pid, mask) {
-    if (hProcess := DllCall("OpenProcess", "UInt", 0x0200, "Int", 0, "Int", pid))
-    {
+    if (hProcess := DllCall("OpenProcess", "UInt", 0x0200, "Int", 0, "Int", pid)) {
         DllCall("SetProcessAffinityMask", "Ptr", hProcess, "Ptr", mask)
         DllCall("CloseHandle", "Ptr", hProcess)
     }
@@ -326,6 +327,15 @@ GetSpawnChance(min, max) {
         totalInRange += dataArray[iMin+A_Index]
     }
     return Floor(totalInRange/total*100*100)/100
+}
+
+LogF(type, msg) {
+    static cleared
+    if !cleared {
+        cleared := true
+        FileDelete, configs/log.txt
+    }
+    FileAppend, [%A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%] [%type%] %msg%`n, configs/log.txt
 }
 
 GetFontNames(charset) {

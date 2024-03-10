@@ -288,6 +288,7 @@ class Setting {
 
             value := this.default.count() ? this.default[1] : this.default
             IniWrite, %value%, %iniFile%, % this.section, % this.id
+            LogF("WAR", "Invalid value for " this.id ". Setting to default: " value)
         }
         if (this.type == "checkbox" && value == "false") ;more backwards compatibility
             value := false
@@ -473,8 +474,4 @@ LoadClickData() {
 
         return
     }
-}
-
-Convertv131v14(){
-
 }
