@@ -333,9 +333,9 @@ LogF(type, msg) {
     static cleared
     if !cleared {
         cleared := true
-        FileDelete, configs/log.txt
+        FileDelete, assets/log.txt
     }
-    FileAppend, [%A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%] [%type%] %msg%`n, configs/log.txt
+    FileAppend, [%A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%] [%type%] %msg%`n, assets/log.txt
 }
 
 GetFontNames(charset) {
