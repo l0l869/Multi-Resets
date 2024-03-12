@@ -16,7 +16,7 @@ Process, Priority,, High
 
 LogF("INF", "Initialising (" A_AhkVersion " " A_PtrSize*8 "-bit)")
 
-global SCRIPT_VERSION := 20240217.23
+global SCRIPT_VERSION := 20240312.23
 global iniFile := A_ScriptDir "\configs\configs.ini"
 global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang"
 
