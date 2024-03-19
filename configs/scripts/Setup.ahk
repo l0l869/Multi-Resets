@@ -1,9 +1,12 @@
-﻿#SingleInstance, Force
+﻿; might wanna rewrite this whole thing, however it does the job
+
+#SingleInstance, Force
 SetBatchLines, -1
 SetWorkingDir, % A_ScriptDir "/../"
 CoordMode, Mouse, Screen
 CoordMode, Pixel, Screen
 
+global CLICK_DATA_VERSION := 3
 global scaleBy := A_ScreenDPI / 96
 global currentID := 1
 global IDENTIFIERS := ["Play","Heart","SaveAndQuit","CreateNew","CreateNewWorld","WorldCreation"]
@@ -64,6 +67,8 @@ return
 
 updateTextMouseTip:
     btnName := IDENTIFIERS[currentID] ? IDENTIFIERS[currentID] : "WorldCreation"
+    if (currentID == IDENTIFIERS.MaxIndex()+1)
+        btnName := "Seed"
     PixelGetColor, atMouseRawColour, mouseX, mouseY, RGB
     switch atMouseRawColour ;hover colour to unhover colour
     {
@@ -85,17 +90,16 @@ updateTextMouseTip:
     GuiControl, Setup:    , textMouseToolTip, % "X:" Floor(mouseX-win.x1) " Y:" Floor(mouseY-win.y1) "`n" currentType ": " btnName "`nColour: "
     GuiControl, Setup:    , textMouseColourTip, % atMouseColour
 
-    if(mouseX < 600 && mouseY < 350)
+    if (mouseX < 600 && mouseY < 350)
         GuiControl, Setup:Move, textButtonList, % "y" A_ScreenHeight-300
-    Else
+    else
         GuiControl, Setup:Move, textButtonList, % "y" 0
 return
 
 updateTextButtonList:
     LoadButtons()
     buttonListString := ""
-    for k, btn in screenClicks
-    {
+    for k, btn in screenClicks {
         paddingLength := 15-StrLen(btn.btn)
         padding := ""
         loop, %paddingLength%
@@ -110,8 +114,7 @@ updateTextButtonList:
     GuiControl, Setup:    , textButtonList, % buttonListString
 return
 
-GetWindowDimensions(Window)
-{
+GetWindowDimensions(Window) {
     WinGetPos, winX, winY, winWidth, winHeight, %Window%
 
     return { x1    : winX + 8  * scaleBy
@@ -122,8 +125,7 @@ GetWindowDimensions(Window)
             ,height: winHeight - 38 * scaleBy }
 }
 
-LoadButtons()
-{
+LoadButtons() {
     screenClicks := []
     worldcreationClicks := []
 
@@ -135,8 +137,7 @@ LoadButtons()
     else
         return
 
-    for k, click in clicksArray
-    {
+    for k, click in clicksArray {
         clickObj := StrSplit(click,",")
         if !clickObj.count()
             continue
@@ -149,8 +150,7 @@ LoadButtons()
     clicksFile.close()
 }
 
-AssignButton()
-{    
+AssignButton() {
     if (IDENTIFIERS[currentID] == "Heart" || IDENTIFIERS[currentID] == "WorldCreation") {
         clickData[currentID] := IDENTIFIERS[currentID] ",,," Floor(mouseX-win.x1) "," Floor(mouseY-win.y1) "," atMouseColour
         currentID++
@@ -158,26 +158,27 @@ AssignButton()
         if (!clickData[currentID])
             clickData[currentID] := Floor(mouseX-win.x1) "," Floor(mouseY-win.y1) "," atMouseColour
         else {
-            clickData[currentID] := IDENTIFIERS[currentID] "," Floor(mouseX-win.x1) "," Floor(mouseY-win.y1) "," . clickData[currentID]
-            click
+            clickData[currentID] := IDENTIFIERS[currentID] "," Floor(mouseX-win.x1) "," Floor(mouseY-win.y1) "," clickData[currentID]
             currentID++
+            click
         }
     } else {
-        clickData[currentID] := "WorldCreation," Floor(mouseX-win.x1) "," Floor(mouseY-win.y1)
-        click
+        if (currentID == IDENTIFIERS.MaxIndex()+1) ; first world creation click is seed
+            clickData[currentID] := "WorldCreation," Floor(mouseX-win.x1) "," Floor(mouseY-win.y1) ",,,,Seed"
+        else
+            clickData[currentID] := "WorldCreation," Floor(mouseX-win.x1) "," Floor(mouseY-win.y1)
         currentID++
+        click
     }
 }
 
-FinishSetup()
-{
-    if (clickData.count() <= BUTTON_NAMES.count())
-    {
+FinishSetup() {
+    if (currentID <= IDENTIFIERS.MaxIndex()+1) {
         MsgBox % "Incomplete setup`nExiting without saving..."
         ExitApp
     }
 
-    clickDataString := "#2," layoutDimensions "`n"
+    clickDataString := "#" CLICK_DATA_VERSION "," layoutDimensions "`n"
     for k, click in clickData
         clickDataString .= click "`n"
     txt := FileOpen("clicks.txt", "w")

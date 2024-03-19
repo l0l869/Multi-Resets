@@ -11,7 +11,7 @@ IniRead, resettimerKey, %iniFile%, Hotkeys, ResetTimer
 global timerPreview := new Timer()
 
 
-global resetMode, minCoords, maxCoords, originDistance, queueLimit, autoRestart, seamlessRestarts
+global resetMode, minCoords, maxCoords, originDistance, queueLimit, resetSeed, autoRestart, seamlessRestarts
      , resetThreshold, numInstances, layoutDimensions, keyDelay, switchDelay, clickDuration
 
 global timerActive, tAnchor, tOffsetX, tOffsetY, tFont, tFontSize, tFontColour1, tFontColour2, tOutlineWidth
@@ -19,11 +19,12 @@ global timerActive, tAnchor, tOffsetX, tOffsetY, tFont, tFontSize, tFontColour1,
 
 global resetMethod, readScreenMemory, coopMode, threadsUsage, hideOnMinimise, isBored
 
-macroSection := [new Setting("resetMode", "Reset Mode", "Macro", 1, "select", ["auto", "manual", "cumulative"], "The type of resetting", [Func("OptResetModeHandler")])
+macroSection := [new Setting("resetMode", "Reset Mode", "Macro", 1, "select", ["auto", "cumulative", "setSeed", "manual"], "The type of resetting", [Func("OptResetModeHandler")])
                 ,new Setting("minCoords", "Min Coordinate", "Macro", 1, "inputNumber", 700, "The minimum x-coordinate the macro auto-resets for", [Func("OptResetModeHandler"), "getSpawnChance();"])
                 ,new Setting("maxCoords", "Max Coordinate", "Macro", 1, "inputNumber", 1800, "The maximum x-coordinate the macro auto-resets for", [Func("OptResetModeHandler"), "getSpawnChance();"])
                 ,new Setting("originDistance", "Distance from 0,0 (1.19.50)", "Macro", 1, "inputNumber", 400, "The minimum number of blocks from world origin", [Func("OptResetModeHandler")])
                 ,new Setting("queueLimit", "Queue Limit", "Macro", 1, "inputNumber", 100, "Limits the number of queued instances", [Func("OptResetModeHandler")])
+                ,new Setting("resetSeed", "Seed", "Macro", 1, "select", {dir: "configs/seeds.txt", val: [564030617, 2425564754069582094, -990909152419832232, 1078231915]}, "", [Func("OptResetModeHandler")])
                 ,new Setting("autoRestart", "Auto Restart", "Macro", 2, "checkbox", false, "Automatically restarts instances`nDeprecated: Use 'Block Marketplace' to prevent the buildup of lag.", [Func("AutoRestartHandler")])
                 ,new Setting("seamlessRestarts", "Seamless", "Macro", 2, "checkbox", false, "Opens instances in the background before restarting", [Func("AutoRestartHandler")])
                 ,new Setting("resetThreshold", "Reset Threshold", "Macro", 2, "inputNumber", 120, "Number of resets accumulated between instances to initiate an automatic restart", [Func("AutoRestartHandler")])
@@ -68,7 +69,7 @@ class Setting {
         this.section := section
         this.subsection := subsection
         this.type := type
-        this.default := default
+        this.default := this.ParseDefaultValue(default)
         this.hint := hint
         this.method := method ? method : []
 
@@ -80,6 +81,16 @@ class Setting {
     Init() {
         this.CreateSetting()
         this.UpdateSettingValue(this.value)
+    }
+
+    ParseDefaultValue(value) {
+        if value.HasKey("dir") {
+            FileRead, fileData, % value.dir
+            if ErrorLevel
+                return value.val, LogF("ERR", "Couldn't load file: """ value.dir """")
+            return StrSplit(fileData, ",")
+        }
+        return value
     }
 
     CreateSetting() {
@@ -346,18 +357,28 @@ OptResetModeHandler() {
             Setting["map"]["maxCoords"]["rootDiv"]["style"]["display"] := "flex"
             Setting["map"]["originDistance"]["rootDiv"]["style"]["display"] := "flex"
             Setting["map"]["queueLimit"]["rootDiv"]["style"]["display"] := "flex"
+            Setting["map"]["resetSeed"]["rootDiv"]["style"]["display"] := "none"
 
         case "auto":
             Setting["map"]["minCoords"]["rootDiv"]["style"]["display"] := "flex"
             Setting["map"]["maxCoords"]["rootDiv"]["style"]["display"] := "flex"
             Setting["map"]["originDistance"]["rootDiv"]["style"]["display"] := "flex"
             Setting["map"]["queueLimit"]["rootDiv"]["style"]["display"] := "none"
+            Setting["map"]["resetSeed"]["rootDiv"]["style"]["display"] := "none"
 
         case "manual":
             Setting["map"]["minCoords"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["maxCoords"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["originDistance"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["queueLimit"]["rootDiv"]["style"]["display"] := "none"
+            Setting["map"]["resetSeed"]["rootDiv"]["style"]["display"] := "none"
+
+        case "setSeed":
+            Setting["map"]["minCoords"]["rootDiv"]["style"]["display"] := "none"
+            Setting["map"]["maxCoords"]["rootDiv"]["style"]["display"] := "none"
+            Setting["map"]["originDistance"]["rootDiv"]["style"]["display"] := "none"
+            Setting["map"]["queueLimit"]["rootDiv"]["style"]["display"] := "none"
+            Setting["map"]["resetSeed"]["rootDiv"]["style"]["display"] := "flex"
     }
 }
 
@@ -425,6 +446,7 @@ MergeConfigs(source, destination) {
 
     FileCopy, %source%\attempts.txt, %destination%, 1
     FileCopy, %source%\clicks.txt, %destination%, 1
+    FileCopy, %source%\seeds.txt, %destination%, 1
 }
 
 LoadClickData() {
@@ -450,9 +472,13 @@ LoadClickData() {
 
     clickDataVersion := StrReplace(metaData[1], "#")
     if (clickDataVersion == 1) {
-        Msgbox,4,, % "V2 Click Data Update:`n- Macro can now look for the " """Play""" " button`n- Necessay for seamless restarts`n`nRedo the setup?"
+        Msgbox,4,, % "V2 Click Data Update:`n- Macro can now look for the " """Play""" " button`n- Necessary for seamless restarts`n`nRedo the setup?"
         IfMsgBox, Yes
             Run, configs\scripts\Setup.ahk    
+    } else if (clickDataVersion == 2) {
+        Msgbox,4,, % "V3 Click Data Update:`n- Clicks the seed box for the reset mode " """Set Seed""" "`n`nRedo the setup?"
+        IfMsgBox, Yes
+            Run, configs\scripts\Setup.ahk
     }
 
     for k, click in clicksArray {
@@ -463,7 +489,7 @@ LoadClickData() {
         if (clickObj[6])
             screenClicks.push({btn:clickObj[1], x:clickObj[2], y:clickObj[3], px:clickObj[4], py:clickObj[5], colour:clickObj[6]})
         else
-            worldcreationClicks.push({x:clickObj[2], y:clickObj[3]})
+            worldcreationClicks.push({x:clickObj[2], y:clickObj[3], isSeedClick: clickObj[7] == "seed"})
     }
     clicksFile.close()
 

@@ -138,8 +138,7 @@ IterateReset(instance) {
     if isBored
         gameScript.AllowClick({x:instance.x1+clickX,y:instance.y1+clickY})
 
-    switch (currentScreen)
-    {
+    switch (currentScreen) {
         case "Play":
             if (instance.lastClick+3000 > A_TickCount)
                 return
@@ -155,17 +154,21 @@ IterateReset(instance) {
             if (instance.isResetting == 1)
                 return instance.isResetting := 2
 
-            if (resetMode == "manual")
-                return instance.isResetting := (instance.isResetting ? -2 : 0)
-            else if (ShouldAutoReset(instance))
-                return instance.isResetting := (instance.isResetting ? 1 : 0)
-            else if (resetMode == "cumulative") {
-                SaveInstance(instance)
-                if (queuedInstances.count() >= queueLimit)
-                    Gosub, StopReset
-                return
-            }
+            switch (resetMode) {
+                case "auto":
+                    if (ShouldAutoReset(instance))
+                        return instance.isResetting := (instance.isResetting ? 1 : 0)
+                case "cumulative":
+                    if (ShouldAutoReset(instance))
+                        return instance.isResetting := (instance.isResetting ? 1 : 0)
 
+                    SaveInstance(instance)
+                    if (queuedInstances.count() >= queueLimit)
+                        Gosub, StopReset
+                    return
+                case "setSeed": return RunInstance(instance)
+                case "manual": return instance.isResetting := (instance.isResetting ? -2 : 0)
+            }
             return RunInstance(instance)
 
         case "SaveAndQuit":
@@ -211,23 +214,33 @@ IterateReset(instance) {
                     scrollto := {x: instance.width - 5*scale, y: scrollbar[2]*(420/870)-scrollersize/2 +28*scale}
                     wcClicks.push(scrollend, scrollto)
 
-                    simulation := {x: xContent, y: instance.height-5*scale}
-                    coordinates := {x: xContent, y: instance.height-65*scale}
+                    seed := {x: xContent, y: instance.height-105*scale}
+                    simulation := {x: xContent, y: instance.height-65*scale}
+                    coordinates := {x: xContent, y: instance.height-5*scale}
                 } else {
+                    seed := {x: xContent, y: 340*scale, isSeedClick: resetSeed}
                     simulation := {x: xContent, y: 380*scale}
                     coordinates := {x: xContent, y: 433*scale}
                 }
                 create_button := {x: create_button[1], y: create_button[2]}
-                wcClicks.push(simulation, coordinates, create_button)
+                wcClicks.push(seed, simulation, coordinates, create_button)
             } else {
                 wcClicks := worldcreationClicks
             }
 
             for k, click in wcClicks {
+                if (click.isSeedClick && resetMode != "setSeed")
+                    continue
+
                 Sleep, %keyDelay%
                 if isBored
                     gameScript.AllowClick({x:instance.x1+click.x,y:instance.y1+click.y})
                 MouseClick,, instance.x1 + click.x, instance.y1 + click.y,,0
+                
+                if click.isSeedClick {
+                    Sleep, %keyDelay%
+                    Send, %resetSeed%
+                }
             }
             Sleep, 25 ; click doesnt register with mousemove right after
             UpdateResetAttempts()
