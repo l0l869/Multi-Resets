@@ -1,4 +1,4 @@
-﻿LaunchInstance(index) {
+LaunchInstance(index) {
     usedPIDs := GetMinecraftProcesses()
     usedHWNDs := []
     WinGet, var, List, Minecraft
@@ -37,7 +37,7 @@
             MsgBox, 4,, % "Error: Multi-instance is not registered.`nDo you want to register multi?"
             IfMsgBox, Yes
                 Run, % "configs\scripts\RegisterMulti.ahk 1"
-            return
+            exit
         }
         MsgBox, % "Error: Failed to get process ID."
         LogF("ERR", "Failed to get process ID")
@@ -51,6 +51,7 @@ ResizeInstance(instance, index) {
     DllCall("SystemParametersInfo", "UInt", 0x0030, "UInt", 0, "UPtr", &rect, "UInt", 0)
     workAreaWidth := NumGet(&rect, 8, "Int")
     workAreaHeight := NumGet(&rect, 12, "Int")
+    LogF("INF", "Working Area: " workAreaWidth "x" workAreaHeight ", DPI Scale: " A_ScreenDPI, A_ThisFunc ":WorkArea")
 
     dim := StrSplit(layoutDimensions, ",")
     width := workAreaWidth / dim[1]
@@ -138,12 +139,11 @@ GetMinecraftVersion() {
     }
 
     FileGetVersion, MCversion, %exeDir%
-    return MCversion
+    return MCversion, LogF("INF", "Current Minecraft Version: " MCversion)
 }
 
 ConfigureMinecraftPointers() {
-    switch GetMinecraftVersion()
-    {
+    switch GetMinecraftVersion() {
         case "1.19.50.2": offsetsX      := [0x048E3910, 0x10, 0x128, 0x0, 0xF8, 0x398, 0x18, 0x0, 0x8] 
                           offsetsZ      := [0x048E3910, 0x10, 0x128, 0x0, 0xF8, 0x398, 0x18, 0x0, 0x10]
         case "1.16.10.2": offsetsX      := [0x036A3C18, 0xA8, 0x10, 0x954]
@@ -156,9 +156,10 @@ ConfigureMinecraftPointers() {
         case "1.2.13.54": offsetsX      := [0x01FA1888, 0x0, 0x10, 0x10, 0x20, 0x0, 0x2C]
                           offsetsScreen := [0x01F2F5F8, 0xD0, 0x58]
 
-        default: Msgbox, Auto-reset is not supported for this version: %MCversion%.
+        default:
+            Msgbox, Auto-reset is not supported for this version: %MCversion%.
+            LogF("INF", "Auto-reset not supported")
     }
-    LogF("INF", "Current Minecraft Version: " MCversion)
 }
 
 GetMCScale(w, h, applyDPI:=false) {
@@ -329,13 +330,18 @@ GetSpawnChance(min, max) {
     return Floor(totalInRange/total*100*100)/100
 }
 
-LogF(type, msg) {
+LogF(type, msg, id:=0) {
     static cleared
     if !cleared {
         cleared := true
         FileDelete, assets/log.txt
     }
-    FileAppend, [%A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%] [%type%] %msg%`n, assets/log.txt
+    if id {
+        if loggedIDs[id]
+            return
+        loggedIDs[id] := true
+    }
+    FileAppend, [%A_Hour%:%A_Min%:%A_Sec%] [%type%] %msg%`n, assets/log.txt
 }
 
 GetFontNames(charset) {

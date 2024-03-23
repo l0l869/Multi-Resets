@@ -87,7 +87,7 @@ class Setting {
         if value.HasKey("dir") {
             FileRead, fileData, % value.dir
             if ErrorLevel
-                return value.val, LogF("ERR", "Couldn't load file: """ value.dir """")
+                return value.val, LogF("ERR", "Couldn't load file: """ value.dir """; A_LastError: " A_LastError)
             return StrSplit(fileData, ",")
         }
         return value
@@ -489,7 +489,7 @@ LoadClickData() {
         if (clickObj[6])
             screenClicks.push({btn:clickObj[1], x:clickObj[2], y:clickObj[3], px:clickObj[4], py:clickObj[5], colour:clickObj[6]})
         else
-            worldcreationClicks.push({x:clickObj[2], y:clickObj[3], isSeedClick: clickObj[7] == "seed"})
+            worldcreationClicks.push({x:clickObj[2], y:clickObj[3], isSeedClick: clickObj[7] == "Seed"})
     }
     clicksFile.close()
 

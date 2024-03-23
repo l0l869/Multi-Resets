@@ -3,6 +3,8 @@
 ; https://github.com/marius-sucan/AHK-GDIp-Library-Compilation
 ;==============================================================
 
+global gdipLastError
+
 Gdip_Startup(multipleInstances:=0) {
     pToken := 0
     If (multipleInstances=0)

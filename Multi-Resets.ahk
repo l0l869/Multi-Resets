@@ -1,3 +1,5 @@
+LogF("INF", "Initialising (" A_AhkVersion " " A_PtrSize*8 "-bit)")
+
 #NoEnv
 #SingleInstance, Force
 #Include, %A_ScriptDir%
@@ -14,8 +16,6 @@ SetMouseDelay, -1
 EnvGet, A_LocalAppData, LocalAppData
 Process, Priority,, High 
 
-LogF("INF", "Initialising (" A_AhkVersion " " A_PtrSize*8 "-bit)")
-
 global SCRIPT_VERSION := 20240312.23
 global iniFile := A_ScriptDir "\configs\configs.ini"
 global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang"
@@ -27,6 +27,7 @@ global MCversion
 global offsetsX, offsetsZ, offsetsScreen
 global lastRestart
 global timer1
+global loggedIDs := {}
 global screenClicks := [], worldcreationClicks := []
 global MCInstances := [], replacementInstances := [], queuedInstances := []
 global resetDll := DllCall("LoadLibrary", "Str", "functions/reset.dll", "Ptr")

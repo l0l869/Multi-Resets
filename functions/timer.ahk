@@ -226,6 +226,11 @@ Class Timer
         this.autoSplit := autoSplit
 
         this.hFamily := Gdip_FontFamilyCreate(this.font)
+        if (!this.hFamily && this.font) {
+            LogF("ERR", "Failed to create font family """ this.font """; gdipLastError: " gdipLastError, A_ThisFunc ":FontFamilyFail:" this.font)
+            setting["map"]["tFont"]["rootDiv"]["style"]["background-color"] := "rgba(255,0,0,0.25)"
+        } else
+            setting["map"]["tFont"]["rootDiv"]["style"]["background-color"] := ""
         this.hFont := Gdip_FontCreate(this.hFamily, this.fontSize)
         this.hFormat := Gdip_StringFormatCreate(0x4000)
 
