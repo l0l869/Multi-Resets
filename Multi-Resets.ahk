@@ -16,18 +16,18 @@ SetMouseDelay, -1
 EnvGet, A_LocalAppData, LocalAppData
 Process, Priority,, High 
 
-global SCRIPT_VERSION := 20240312.23
+global SCRIPT_VERSION := 20240328.20
 global iniFile := A_ScriptDir "\configs\configs.ini"
 global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang"
 
 EnvGet, threadCount, NUMBER_OF_PROCESSORS
 global threadCount
+global loggedIDs := {}
 global scaleBy := A_ScreenDPI / 96, workArea := GetWorkArea()
 global MCversion
 global offsetsX, offsetsZ, offsetsAutoSplit, offsetsScreen
 global lastRestart
 global timer1
-global loggedIDs := {}
 global MCInstances := [], replacementInstances := [], queuedInstances := []
 global resetDll := DllCall("LoadLibrary", "Str", "functions/reset.dll", "Ptr")
 global gameScript := LoadFile("functions/game.ahk")
