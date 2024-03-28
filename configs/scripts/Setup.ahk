@@ -1,4 +1,4 @@
-; might wanna rewrite this whole thing, however it does the job
+﻿; might wanna rewrite this whole thing, however it does the job
 
 #SingleInstance, Force
 SetBatchLines, -1
@@ -211,21 +211,3 @@ FinishSetup() {
 
 #If WinActive("Minecraft")
     Tab::AssignButton()
-
-; metaData := CLICK_DATA_VERSION "," layoutDimensions "," mcVersion "," A_ScreenDPI
-; clickDataString := ""
-; for k, click in clickData
-;     clickDataString .= click "`n"
-
-; dataDir := A_WorkingDir "/clicks"
-; if !FileExist(dataDir)
-;     FileCreateDir, %dataDir%
-
-; clickDataFile := dataDir "/[" metaData "].txt"
-; if FileExist(clickDataFile) {
-;     txt := FileOpen(clickDataFile, "w")
-;     txt.write(clickDataString)
-;     txt.close()
-; } else {
-;     FileAppend, %clickDataString%, %clickDataFile%
-; }
