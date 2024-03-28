@@ -47,15 +47,11 @@ LaunchInstance(index) {
 }
 
 ResizeInstance(instance, index) {
-    VarSetCapacity(workArea, 16, 0)
-    DllCall("SystemParametersInfo", "UInt", 0x0030, "UInt", 0, "UPtr", &rect, "UInt", 0)
-    workAreaWidth := NumGet(&rect, 8, "Int")
-    workAreaHeight := NumGet(&rect, 12, "Int")
-    LogF("INF", "Working Area: " workAreaWidth "x" workAreaHeight ", DPI Scale: " A_ScreenDPI, A_ThisFunc ":WorkArea")
+    workArea := GetWorkArea()
 
     dim := StrSplit(layoutDimensions, ",")
-    width := workAreaWidth / dim[1]
-    height := workAreaHeight / dim[2]
+    width := workArea[1] / dim[1]
+    height := workArea[2] / dim[2]
 
     positionIndex := Mod(index - 1, dim[1] * dim[2]) + 1
     x := Mod(positionIndex, dim[1])
@@ -90,6 +86,15 @@ SaveInstance(instance) {
 SuspendInstances(instances) {
     for k, instance in instances
         SuspendProcess(instance.pid)
+}
+
+GetWorkArea() {
+    VarSetCapacity(workArea, 16, 0)
+    DllCall("SystemParametersInfo", "UInt", 0x0030, "UInt", 0, "UPtr", &rect, "UInt", 0)
+    workAreaWidth := NumGet(&rect, 8, "Int")
+    workAreaHeight := NumGet(&rect, 12, "Int")
+    LogF("INF", "Working Area: " workAreaWidth "x" workAreaHeight ", Screen DPI: " A_ScreenDPI, A_ThisFunc ":WorkArea")
+    return [workAreaWidth, workAreaHeight]
 }
 
 GetWindowDimensions(Window) {

@@ -1,4 +1,4 @@
-﻿; might wanna rewrite this whole thing, however it does the job
+; might wanna rewrite this whole thing, however it does the job
 
 #SingleInstance, Force
 SetBatchLines, -1
@@ -13,7 +13,8 @@ global IDENTIFIERS := ["Play","Heart","SaveAndQuit","CreateNew","CreateNewWorld"
 global clickData := []
 global screenClicks := []
 global worldcreationClicks := []
-global layoutDimensions, hwnd, win, mouseX, mouseY, atMouseColour, btnName
+global layoutDimensions, hwnd, workAreaWidth, workAreaHeight, win, mouseX, mouseY, atMouseColour, btnName
+global mcVersion
 
 MsgBox % "Tab: Assign`n" "Shift + Esc: Finish Setup"
 
@@ -24,18 +25,46 @@ while WinExist("Minecraft")
 Run, shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App
 WinWait, Minecraft
 hwnd := WinExist("Minecraft")
-IniRead, layoutDimensions, configs.ini, Macro, layoutDimensions
-dim := StrSplit(layoutDimensions, ",")
-height := (A_ScreenHeight-40*scaleBy)/dim[2]
-width := A_ScreenWidth/dim[1]
-WinMove, % "ahk_id " hwnd,, (A_ScreenWidth-width-8)/2, (A_ScreenHeight-height+16)/2-40, width+16, height+8
 
-global textMouseToolTip, textMouseColourTip, textButtonList
+IniRead, layoutDimensions, configs.ini, Macro, layoutDimensions
+VarSetCapacity(workArea, 16, 0)
+DllCall("SystemParametersInfo", "UInt", 0x0030, "UInt", 0, "UPtr", &rect, "UInt", 0)
+workAreaWidth := NumGet(&rect, 8, "Int")
+workAreaHeight := NumGet(&rect, 12, "Int")
+dim := StrSplit(layoutDimensions, ",")
+width := workAreaWidth / dim[1]
+height := workAreaHeight / dim[2]
+WinRestore, % "ahk_id " hwnd
+WinMove, % "ahk_id " hwnd,, (workAreaWidth-width-8)/2, (workAreaHeight-height)/2, width+16, height+8
+
+mcVersion := GetMinecraftVersion()
+
+GetMinecraftVersion() {
+    Process, Exist, Minecraft.Windows.exe
+    pid := ErrorLevel
+
+    hProcess := DllCall("OpenProcess", "UInt", 0x10|0x400, "Int", 0, "UInt", pid)
+    if (ErrorLevel || !hProcess)
+        msgbox % "Failed to open process."
+
+    VarSetCapacity(lpFilename, 2048 * (A_IsUnicode ? 2 : 1)) 
+    DllCall("psapi\GetModuleFileNameEx"
+            , "Ptr", hProcess
+            , "Ptr", hModule
+            , "Str", lpFilename
+            , "Uint", 2048 / (A_IsUnicode ? 2 : 1))
+
+    DllCall("CloseHandle", hProcess)
+    FileGetVersion, version, %lpFilename%
+    return version
+}
+
+
+global textMouseToolTip, textMouseColourTip
 Gui, Setup:Show, % "x0 y0 w" A_ScreenWidth " h" A_ScreenHeight
 Gui, Setup:Font, % "s25 cFFFFFF q4", Mojangles
 Gui, Setup:Add , Text, x0 y0 w500 h150 vtextMouseToolTip
 Gui, Setup:Add , Text, x0 y0 w200 h100 vtextMouseColourTip
-Gui, Setup:Add , Text, x0 y0 w550 h300 vtextButtonList
 Gui, Setup:         +AlwaysOnTop -Border -Caption +LastFound +ToolWindow
 Gui, Setup:Color  , 000001
 WinSet, TransColor, 000001
@@ -44,7 +73,6 @@ Gui, Setup:Show   , x0 y0
 global isShown := false
 SetTimer, updateSetupWindow, 8
 SetTimer, getWindowPosition, 1000
-Gosub, updateTextButtonList
 
 
 getWindowPosition:
@@ -89,65 +117,17 @@ updateTextMouseTip:
     currentType := !clickData[currentID] && IDENTIFIERS[currentID] ? "Identifier" : "Button"
     GuiControl, Setup:    , textMouseToolTip, % "X:" Floor(mouseX-win.x1) " Y:" Floor(mouseY-win.y1) "`n" currentType ": " btnName "`nColour: "
     GuiControl, Setup:    , textMouseColourTip, % atMouseColour
-
-    if (mouseX < 600 && mouseY < 350)
-        GuiControl, Setup:Move, textButtonList, % "y" A_ScreenHeight-300
-    else
-        GuiControl, Setup:Move, textButtonList, % "y" 0
 return
 
-updateTextButtonList:
-    LoadButtons()
-    buttonListString := ""
-    for k, btn in screenClicks {
-        paddingLength := 15-StrLen(btn.btn)
-        padding := ""
-        loop, %paddingLength%
-            padding .= " "
-        buttonListString .= btn.btn "" padding ": X:" btn.x " Y:" btn.y " pX:" btn.px " pY:" btn.py " Colour: " btn.colour "`n"
-    }
-    for k, btn in worldcreationClicks
-        buttonListString .=  "WorldCreation" A_index " : X:" btn.x " Y:" btn.y "`n"
-
-    Gui       , Setup:Font, % "s13 cFFFFFF q4", Consolas
-    GuiControl, Setup:Font, textButtonList
-    GuiControl, Setup:    , textButtonList, % buttonListString
-return
 
 GetWindowDimensions(Window) {
     WinGetPos, winX, winY, winWidth, winHeight, %Window%
-
     return { x1    : winX + 8  * scaleBy
             ,y1    : winY + 30 * scaleBy
             ,x2    : winX + 8  * scaleBy + winWidth  - 16 * scaleBy
             ,y2    : winY + 30 * scaleBy + winHeight - 38 * scaleBy
             ,width : winWidth  - 16 * scaleBy
             ,height: winHeight - 38 * scaleBy }
-}
-
-LoadButtons() {
-    screenClicks := []
-    worldcreationClicks := []
-
-    clicksFile := FileOpen("clicks.txt", "r")
-    clicksArray := StrSplit(clicksFile.read(), "`n")
-
-    if (SubStr(clicksArray[1], 1, 1) == "#")
-        clicksArray.RemoveAt(1)
-    else
-        return
-
-    for k, click in clicksArray {
-        clickObj := StrSplit(click,",")
-        if !clickObj.count()
-            continue
-
-        if (clickObj[6])
-            screenClicks.push({btn:clickObj[1], x:clickObj[2], y:clickObj[3], px:clickObj[4], py:clickObj[5], colour:clickObj[6]})
-        else
-            worldcreationClicks.push({x:clickObj[2], y:clickObj[3]})
-    }
-    clicksFile.close()
 }
 
 AssignButton() {
@@ -178,12 +158,49 @@ FinishSetup() {
         ExitApp
     }
 
-    clickDataString := "#" CLICK_DATA_VERSION "," layoutDimensions "`n"
+    metaData := "#" CLICK_DATA_VERSION "," layoutDimensions "," mcVersion "," workAreaWidth "," workAreaHeight "," A_ScreenDPI "`n"
+    
+    FileRead, fileClickData, clicks.txt
     for k, click in clickData
         clickDataString .= click "`n"
+    clickDataString := metaData . clickDataString
+
+    fileClickDataLines := StrSplit(fileClickData, "`n")
+    start := ""
+    allClickData := []
+    for k, line in fileClickDataLines {
+        if !line
+            continue
+
+        if (SubStr(line, 1, 1) == "#") {
+            if start
+                allClickData.push(start)
+            start := line "`n"
+            continue
+        }
+
+        if start
+            start .= line "`n"
+    }
+    if start
+        allClickData.push(start)
+
+    updateExisting := false
+    for k, data in allClickData
+        if (SubStr(data, 1, StrLen(metaData)) == metaData)
+            allClickData[k] := clickDataString, updateExisting := true, break
+    if !updateExisting
+        allClickData.push(clickDataString)
+
+    allClickDataString := ""
+    for k, data in allClickData
+        allClickDataString .= data "`n"
     txt := FileOpen("clicks.txt", "w")
-    txt.write(clickDataString)
+    txt.write(allClickDataString)
     txt.close()
+
+    setupDataValue := StrReplace(layoutDimensions, ",", "x") ", " mcVersion
+    IniWrite, %setupDataValue%, configs.ini, Other, setupData
 
     if WinExist("Multi-Resets")
         Run, %A_WorkingDir%/../Multi-Resets.ahk
@@ -194,3 +211,21 @@ FinishSetup() {
 
 #If WinActive("Minecraft")
     Tab::AssignButton()
+
+; metaData := CLICK_DATA_VERSION "," layoutDimensions "," mcVersion "," A_ScreenDPI
+; clickDataString := ""
+; for k, click in clickData
+;     clickDataString .= click "`n"
+
+; dataDir := A_WorkingDir "/clicks"
+; if !FileExist(dataDir)
+;     FileCreateDir, %dataDir%
+
+; clickDataFile := dataDir "/[" metaData "].txt"
+; if FileExist(clickDataFile) {
+;     txt := FileOpen(clickDataFile, "w")
+;     txt.write(clickDataString)
+;     txt.close()
+; } else {
+;     FileAppend, %clickDataString%, %clickDataFile%
+; }

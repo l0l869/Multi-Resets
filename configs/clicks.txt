@@ -1,7 +1,0 @@
-#3,2,2
-Play,,,0,0,0xFFFFFF
-Heart,,,0,0,0xFF1313
-SaveAndQuit,0,0,0,0,0x4AEDD1
-CreateNew,0,0,0,0,0x0E3F7D
-CreateNewWorld,0,0,0,0,0xC6C6C6
-WorldCreation,,,0,0,0x7EB1FF

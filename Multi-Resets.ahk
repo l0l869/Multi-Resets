@@ -22,13 +22,12 @@ global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d
 
 EnvGet, threadCount, NUMBER_OF_PROCESSORS
 global threadCount
-global scaleBy := A_ScreenDPI / 96
+global scaleBy := A_ScreenDPI / 96, workArea := GetWorkArea()
 global MCversion
 global offsetsX, offsetsZ, offsetsScreen
 global lastRestart
 global timer1
 global loggedIDs := {}
-global screenClicks := [], worldcreationClicks := []
 global MCInstances := [], replacementInstances := [], queuedInstances := []
 global resetDll := DllCall("LoadLibrary", "Str", "functions/reset.dll", "Ptr")
 global gameScript := LoadFile("functions/game.ahk")

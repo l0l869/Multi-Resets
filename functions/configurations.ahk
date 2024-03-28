@@ -10,6 +10,8 @@ IniRead, resettimerKey, %iniFile%, Hotkeys, ResetTimer
 
 global timerPreview := new Timer()
 
+global clickData := {}, screenClicks := [], worldcreationClicks := []
+
 
 global resetMode, minCoords, maxCoords, originDistance, queueLimit, resetSeed, autoRestart, seamlessRestarts
      , resetThreshold, numInstances, layoutDimensions, keyDelay, switchDelay, clickDuration
@@ -17,7 +19,7 @@ global resetMode, minCoords, maxCoords, originDistance, queueLimit, resetSeed, a
 global timerActive, tAnchor, tOffsetX, tOffsetY, tFont, tFontSize, tFontColour1, tFontColour2, tOutlineWidth
      , tOutlineColour, tGradientAngle, tAnimationType, tAnimationSpeed, tDecimalPlaces, tAutoSplit, remindShowPacks, tPreview
 
-global resetMethod, readScreenMemory, coopMode, threadsUsage, hideOnMinimise, isBored
+global resetMethod, setupData, readScreenMemory, coopMode, threadsUsage, hideOnMinimise, isBored
 
 macroSection := [new Setting("resetMode", "Reset Mode", "Macro", 1, "select", ["auto", "cumulative", "setSeed", "manual"], "The type of resetting", [Func("OptResetModeHandler")])
                 ,new Setting("minCoords", "Min Coordinate", "Macro", 1, "inputNumber", 700, "The minimum x-coordinate the macro auto-resets for", [Func("OptResetModeHandler"), "getSpawnChance();"])
@@ -53,6 +55,7 @@ timerSection := [new Setting("timerActive", "Timer", "Timer", 1, "checkbox", tru
                 ,new Setting("tPreview", "Show Preview", "Timer", 4, "checkbox", false, "", [Func("TimerSettingHandler"), Func("TimerPreviewHandler")])]
 
 otherSection := [new Setting("resetMethod", "Reset Method", "Other", 1, "select", ["setupless", "setup"], "The method the macro uses to figure out where to click", [Func("OptResetMethodHandler")])
+                ,new Setting("setupData", "Setup Data", "Other", 1, "select", LoadClickData(), "", [Func("OptResetMethodHandler")])
                 ,new Setting("readScreenMemory", "Read Screen Memory", "Other", 1, "checkbox", false, "Reads the game memory to get the current screen, relies on setup click data for the clicks", 0)
                 ,new Setting("coopMode", "Coop Mode", "Other", 1, "checkbox", false, "Prevents the 0/8 bug", 0)
                 ,new Setting("threadsUsage", "Threads Utilisation", "Other", 2, "inputNumber", 0.8, "The percentage of CPU threads the instances will utilise during resets", 0)
@@ -284,7 +287,9 @@ class Setting {
 
     GetIniValue() {
         IniRead, value, %iniFile%, % this.section, % this.id
-        if (value == "ERROR") {
+        if (value == "ERROR" || !value) {
+            if value is number ; only allow empty strings
+                return 0
             if (this.section == "Timer") { ; backwards compatibility, i know this looks bad
                 oldID := RegExReplace(this.id, "^.(.)", "$1")
                 IniRead, value, %iniFile%, % this.section, % oldID
@@ -299,7 +304,7 @@ class Setting {
 
             value := this.default.count() ? this.default[1] : this.default
             IniWrite, %value%, %iniFile%, % this.section, % this.id
-            LogF("WAR", "Invalid value for " this.id ". Setting to default: " value)
+            LogF("WAR", "Invalid value for """ this.id """. Setting to default: " value)
         }
         if (this.type == "checkbox" && value == "false") ;more backwards compatibility
             value := false
@@ -418,9 +423,27 @@ TimerPreviewHandler() {
 }
 
 OptResetMethodHandler() {
-    if (resetMethod == "setup" && !worldcreationClicks.count()) {
-        f := Func("LoadClickData")
-        SetTimer, %f%, -500
+    if (resetMethod == "setup")
+        Setting["map"]["setupData"]["rootDiv"]["style"]["display"] := "flex"
+    else
+        Setting["map"]["setupData"]["rootDiv"]["style"]["display"] := "none"
+
+    if setupData {
+        if !clickData[setupData]
+            return LogF("WAR", "No setup data", A_ThisFunc ":NoSetupData")
+
+        screenClicks := clickData[setupData]["screenClicks"]
+        worldcreationClicks := clickData[setupData]["worldcreationClicks"]
+
+        if (clickData[setupData]["metadata"]["clickVersion"] < 3)
+            return
+
+        if (clickData[setupData]["metadata"]["dpi"] != A_ScreenDPI)
+            LogF("WAR", "Screen DPI does not match with setup data", A_ThisFunc ":" setupData ":DifferentScreenDPI")
+
+        setupWorkArea := clickData[setupData]["metadata"]["workArea"]
+        if (setupWorkArea[1] != workArea[1] || setupWorkArea[2] != workArea[2])
+            LogF("WAR", "Working area does not match with setup data", A_ThisFunc ":" setupData ":DifferentWorkArea")
     }
 }
 
@@ -450,54 +473,50 @@ MergeConfigs(source, destination) {
 }
 
 LoadClickData() {
-    screenClicks := []
-    worldcreationClicks := []
+    FileRead, clickFileData, configs/clicks.txt
+    clicksArray := StrSplit(clickFileData, "`n")
 
-    clicksFile := FileOpen("configs/clicks.txt", "r")
-    clicksArray := StrSplit(clicksFile.read(), "`n")
+    if !clickFileData
+        return ["none"]
 
-    metaData := StrSplit(clicksArray[1], ",")
-
-    if (SubStr(metaData[1], 1, 1) == "#") {
-        clicksArray.RemoveAt(1)
-    } else if (SubStr(clicksArray[1], 1, 5) == "Heart") {
-        Msgbox,4,, % "Outdated click data.`n" "V1.0+ uses identifiers to determine the current button to click, rather than using the colour of the text on the button.`n`n" "Yes: Do the setup`n" "No: Opt in for setupless resets"
-        IfMsgBox, Yes
-            Run, configs\scripts\Setup.ahk    
-        IfMsgBox, No
-            Setting["map"]["resetMethod"].UpdateSettingValue("setupless")
-        
-        return
-    }
-
-    clickDataVersion := StrReplace(metaData[1], "#")
-    if (clickDataVersion == 1) {
-        Msgbox,4,, % "V2 Click Data Update:`n- Macro can now look for the " """Play""" " button`n- Necessary for seamless restarts`n`nRedo the setup?"
-        IfMsgBox, Yes
-            Run, configs\scripts\Setup.ahk    
-    } else if (clickDataVersion == 2) {
-        Msgbox,4,, % "V3 Click Data Update:`n- Clicks the seed box for the reset mode " """Set Seed""" "`n`nRedo the setup?"
-        IfMsgBox, Yes
-            Run, configs\scripts\Setup.ahk
-    }
-
-    for k, click in clicksArray {
-        clickObj := StrSplit(click, ",")
-        if !clickObj.count()
+    currentV := ""
+    for k, line in clicksArray {
+        if (SubStr(line, 1, 1) == "#") {
+            metadata := StrSplit(line, ",")
+            clickVersion := StrReplace(metadata[1], "#")
+            if (clickVersion < 3)
+                currentV := metadata[2] "x" metadata[3] " (Old Data)"
+            else
+                currentV := metadata[2] "x" metadata[3] ", " metadata[4]
+            clickData[currentV] := {}
+            clickData[currentV]["raw"] := []
+            clickData[currentV]["metadata"] := {clickVersion: clickVersion
+                                              , layoutDimensions: [metadata[2], metadata[3]]
+                                              , mcVersion: metadata[4]
+                                              , workArea: [metadata[5], metadata[6]]
+                                              , dpi: metadata[7]}
             continue
+        }
 
-        if (clickObj[6])
-            screenClicks.push({btn:clickObj[1], x:clickObj[2], y:clickObj[3], px:clickObj[4], py:clickObj[5], colour:clickObj[6]})
-        else
-            worldcreationClicks.push({x:clickObj[2], y:clickObj[3], isSeedClick: clickObj[7] == "Seed"})
+        if currentV
+            clickData[currentV]["raw"].push(line)
     }
-    clicksFile.close()
-
-    if !worldcreationClicks.count() {
-        MsgBox,4,, % "Insufficient Click Data. Do you want to do the setup?"
-        IfMsgBox, Yes
-            Run, configs\scripts\Setup.ahk
-
-        return
+    for k, clickV in clickData {
+        clickV["screenClicks"] := []
+        clickV["worldcreationClicks"] := []
+        for k, click in clickV["raw"] {
+            clickObj := StrSplit(click, ",")
+            if !clickObj.count()
+                continue
+    
+            if (clickObj[6])
+                clickV["screenClicks"].push({btn:clickObj[1], x:clickObj[2], y:clickObj[3], px:clickObj[4], py:clickObj[5], colour:clickObj[6]})
+            else
+                clickV["worldcreationClicks"].push({x:clickObj[2], y:clickObj[3], isSeedClick: clickObj[7] == "Seed"})
+        }
     }
+    clickDataOptions := []
+    for option, value in clickData
+        clickDataOptions.push(option)
+    return clickDataOptions
 }
