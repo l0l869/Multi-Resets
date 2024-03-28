@@ -176,14 +176,12 @@ Class Timer
     }
 
     CheckAutoSplit() {
-        baseOffset := ""
-        if (MCversion == "1.16.10.2")
-            baseOffset := 0x036AB670
-        else if (MCversion == "1.16.1.2")
-            baseOffset := 0x036A4B00
+        if !offsetsAutoSplit
+            return
 
-        instanceProc := MCInstances[this.currentInstance].proc
-        if (baseOffset && instanceProc.read(instanceProc.baseAddress + baseOffset, "Char", 0x28, 0x198, 0x10, 0x150, 0x798) == 2) {
+        proc := MCInstances[this.currentInstance].proc
+        value := ReadMemoryValue(proc, "Char", offsetsAutoSplit*)
+        if (value == 2 || value == 3) {
             this.stop()
             if remindShowPacks {
                 Sleep, 1000
