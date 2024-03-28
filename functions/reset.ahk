@@ -166,7 +166,14 @@ IterateReset(instance) {
                     if (queuedInstances.count() >= queueLimit)
                         Gosub, StopReset
                     return
-                case "setSeed": return RunInstance(instance)
+                case "setSeed":
+                    if (setSeedMouseMove != "0,0") {
+                        point := StrSplit(setSeedMouseMove)
+                        WinActivate, ahk_class Shell_TrayWnd
+                        Sleep, 20
+                        MouseMove, % point[1], % point[2]
+                    }
+                    return RunInstance(instance)
                 case "manual": return instance.isResetting := (instance.isResetting ? -2 : 0)
             }
             return RunInstance(instance)

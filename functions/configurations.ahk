@@ -13,7 +13,7 @@ global timerPreview := new Timer()
 global clickData := {}, screenClicks := [], worldcreationClicks := []
 
 
-global resetMode, minCoords, maxCoords, originDistance, queueLimit, resetSeed, autoRestart, seamlessRestarts
+global resetMode, minCoords, maxCoords, originDistance, queueLimit, resetSeed, setSeedMouseMove, autoRestart, seamlessRestarts
      , resetThreshold, numInstances, layoutDimensions, keyDelay, switchDelay, clickDuration
 
 global timerActive, tAnchor, tOffsetX, tOffsetY, tFont, tFontSize, tFontColour1, tFontColour2, tOutlineWidth
@@ -26,7 +26,8 @@ macroSection := [new Setting("resetMode", "Reset Mode", "Macro", 1, "select", ["
                 ,new Setting("maxCoords", "Max Coordinate", "Macro", 1, "inputNumber", 1800, "The maximum x-coordinate the macro auto-resets for", [Func("OptResetModeHandler"), "getSpawnChance();"])
                 ,new Setting("originDistance", "Distance from 0,0 (1.19.50)", "Macro", 1, "inputNumber", 400, "The minimum number of blocks from world origin", [Func("OptResetModeHandler")])
                 ,new Setting("queueLimit", "Queue Limit", "Macro", 1, "inputNumber", 100, "Limits the number of queued instances", [Func("OptResetModeHandler")])
-                ,new Setting("resetSeed", "Seed", "Macro", 1, "select", {dir: "configs/seeds.txt", val: [564030617, 2425564754069582094, -990909152419832232, 1078231915]}, "", [Func("OptResetModeHandler")])
+                ,new Setting("resetSeed", "Seed", "Macro", 1, "select", GetSeedsFromFile(), "", [Func("OptResetModeHandler")])
+                ,new Setting("setSeedMouseMove", "Move Cursor", "Macro", 1, "inputText", "0,0", "Moves your cursor to a point (x,y) on your screen. Set to 0,0 to omit.", [Func("OptResetModeHandler")])
                 ,new Setting("autoRestart", "Auto Restart", "Macro", 2, "checkbox", false, "Automatically restarts instances`nDeprecated: Use 'Block Marketplace' to prevent the buildup of lag.", [Func("AutoRestartHandler")])
                 ,new Setting("seamlessRestarts", "Seamless", "Macro", 2, "checkbox", false, "Opens instances in the background before restarting", [Func("AutoRestartHandler")])
                 ,new Setting("resetThreshold", "Reset Threshold", "Macro", 2, "inputNumber", 120, "Number of resets accumulated between instances to initiate an automatic restart", [Func("AutoRestartHandler")])
@@ -72,7 +73,7 @@ class Setting {
         this.section := section
         this.subsection := subsection
         this.type := type
-        this.default := this.ParseDefaultValue(default)
+        this.default := default
         this.hint := hint
         this.method := method ? method : []
 
@@ -84,16 +85,6 @@ class Setting {
     Init() {
         this.CreateSetting()
         this.UpdateSettingValue(this.value)
-    }
-
-    ParseDefaultValue(value) {
-        if value.HasKey("dir") {
-            FileRead, fileData, % value.dir
-            if ErrorLevel
-                return value.val, LogF("ERR", "Couldn't load file: """ value.dir """; A_LastError: " A_LastError)
-            return StrSplit(fileData, ",")
-        }
-        return value
     }
 
     CreateSetting() {
@@ -363,6 +354,7 @@ OptResetModeHandler() {
             Setting["map"]["originDistance"]["rootDiv"]["style"]["display"] := "flex"
             Setting["map"]["queueLimit"]["rootDiv"]["style"]["display"] := "flex"
             Setting["map"]["resetSeed"]["rootDiv"]["style"]["display"] := "none"
+            Setting["map"]["setSeedMouseMove"]["rootDiv"]["style"]["display"] := "none"
 
         case "auto":
             Setting["map"]["minCoords"]["rootDiv"]["style"]["display"] := "flex"
@@ -370,6 +362,7 @@ OptResetModeHandler() {
             Setting["map"]["originDistance"]["rootDiv"]["style"]["display"] := "flex"
             Setting["map"]["queueLimit"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["resetSeed"]["rootDiv"]["style"]["display"] := "none"
+            Setting["map"]["setSeedMouseMove"]["rootDiv"]["style"]["display"] := "none"
 
         case "manual":
             Setting["map"]["minCoords"]["rootDiv"]["style"]["display"] := "none"
@@ -377,6 +370,7 @@ OptResetModeHandler() {
             Setting["map"]["originDistance"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["queueLimit"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["resetSeed"]["rootDiv"]["style"]["display"] := "none"
+            Setting["map"]["setSeedMouseMove"]["rootDiv"]["style"]["display"] := "none"
 
         case "setSeed":
             Setting["map"]["minCoords"]["rootDiv"]["style"]["display"] := "none"
@@ -384,6 +378,7 @@ OptResetModeHandler() {
             Setting["map"]["originDistance"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["queueLimit"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["resetSeed"]["rootDiv"]["style"]["display"] := "flex"
+            Setting["map"]["setSeedMouseMove"]["rootDiv"]["style"]["display"] := "flex"
     }
 }
 
@@ -470,6 +465,15 @@ MergeConfigs(source, destination) {
     FileCopy, %source%\attempts.txt, %destination%, 1
     FileCopy, %source%\clicks.txt, %destination%, 1
     FileCopy, %source%\seeds.txt, %destination%, 1
+}
+
+GetSeedsFromFile() {
+    FileRead, fileData, configs/seeds.txt
+    if ErrorLevel {
+        LogF("ERR", "Couldn't load file: ""configs/seeds.txt""; A_LastError: " A_LastError)
+        return [564030617, 2425564754069582094, -990909152419832232, 1078231915]
+    }
+    return StrSplit(fileData, ",")
 }
 
 LoadClickData() {
