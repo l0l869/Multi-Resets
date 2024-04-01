@@ -1,3 +1,11 @@
+SetBatchLines, -1
+SetWinDelay, -1
+SetWorkingDir, %A_ScriptDir%
+SendMode, Input
+SetMouseDelay, -1
+EnvGet, A_LocalAppData, LocalAppData
+Process, Priority,, High
+
 LogF("INF", "Initialising (" A_AhkVersion " " A_PtrSize*8 "-bit)")
 
 #NoEnv
@@ -7,14 +15,6 @@ LogF("INF", "Initialising (" A_AhkVersion " " A_PtrSize*8 "-bit)")
 #Include, functions/timer.ahk
 #Include, functions/updater.ahk
 #Include, functions/loadfile.ahk
-
-SetBatchLines, -1
-SetWinDelay, -1
-SetWorkingDir, %A_ScriptDir%
-SendMode, Input
-SetMouseDelay, -1
-EnvGet, A_LocalAppData, LocalAppData
-Process, Priority,, High 
 
 global SCRIPT_VERSION := 20240328.20
 global iniFile := A_ScriptDir "\configs\configs.ini"
