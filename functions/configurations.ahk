@@ -27,7 +27,7 @@ macroSection := [new Setting("resetMode", "Reset Mode", "Macro", 1, "select", ["
                 ,new Setting("originDistance", "Distance from 0,0 (1.19.50)", "Macro", 1, "inputNumber", 400, "The minimum number of blocks from world origin", [Func("OptResetModeHandler")])
                 ,new Setting("queueLimit", "Queue Limit", "Macro", 1, "inputNumber", 100, "Limits the number of queued instances", [Func("OptResetModeHandler")])
                 ,new Setting("resetSeed", "Seed", "Macro", 1, "select", GetSeedsFromFile(), "", [Func("OptResetModeHandler")])
-                ,new Setting("setSeedMouseMove", "Move Cursor", "Macro", 1, "inputText", "0,0", "Moves your cursor to a point (x,y) on your screen. Set to 0,0 to omit.", [Func("OptResetModeHandler")])
+                ,new Setting("setSeedMouseMove", "Move Cursor", "Macro", 1, "inputCoords", "0,0", "Moves your cursor to a point (x,y) on your screen. Set to 0,0 to omit.", [Func("OptResetModeHandler")])
                 ,new Setting("autoRestart", "Auto Restart", "Macro", 2, "checkbox", false, "Automatically restarts instances`nDeprecated: Use 'Block Marketplace' to prevent the buildup of lag.", [Func("AutoRestartHandler")])
                 ,new Setting("seamlessRestarts", "Seamless", "Macro", 2, "checkbox", false, "Opens instances in the background before restarting", [Func("AutoRestartHandler")])
                 ,new Setting("resetThreshold", "Reset Threshold", "Macro", 2, "inputNumber", 120, "Number of resets accumulated between instances to initiate an automatic restart", [Func("AutoRestartHandler")])
@@ -150,6 +150,33 @@ class Setting {
 
                 div.appendChild(h3)
                 div.appendChild(input)
+                this.rootDiv.appendChild(div)
+
+            case "inputCoords":
+                this.attributeType := "value"
+
+                div := WB.document.createElement("div")
+
+                h3 := WB.document.createElement("h3")
+                h3.innerText := this.name
+
+                inputX := WB.document.createElement("input")
+                inputX.id := this.id "x"
+                inputX.oninput := ObjBindMethod(this, "EventHandler")
+                inputX.type := "text"
+                this.elementX := this.element := inputX
+
+                inputY := WB.document.createElement("input")
+                inputY.id := this.id "y"
+                inputY.oninput := ObjBindMethod(this, "EventHandler")
+                inputY.type := "text"
+                this.elementY := inputY
+
+                this.method.InsertAt(1, ObjBindMethod(this, "InputCoordsHandler"))
+
+                div.appendChild(h3)
+                div.appendChild(inputX)
+                div.appendChild(inputY)
                 this.rootDiv.appendChild(div)
             
             case "inputColour":
@@ -320,6 +347,16 @@ class Setting {
         filteredInput := RegExReplace(this.value, "[^\d.]",, hasChanged)
         if hasChanged
             this.UpdateSettingValue(filteredInput)
+    }
+
+    InputCoordsHandler() { ; should probably change the "this.element" way of things
+        if (array := StrSplit(this.value, ","))[2] { ; lets hope no one types a comma
+            this.elementX["value"] := array[1]
+            this.elementY["value"] := array[2]
+        } else {
+            this.elementX["value"] := this.elementX["value"] "," this.elementY["value"]
+            this.EventHandler()
+        }
     }
 
     InputFontHandler() {

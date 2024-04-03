@@ -1,4 +1,4 @@
-﻿Reset:
+Reset:
     hasExited := ExitIfRunning()
 
     if (resetMode == "manual") {
@@ -168,7 +168,7 @@ IterateReset(instance) {
                     return
                 case "setSeed":
                     if (setSeedMouseMove != "0,0") {
-                        point := StrSplit(setSeedMouseMove)
+                        point := StrSplit(setSeedMouseMove, ",")
                         WinActivate, ahk_class Shell_TrayWnd
                         Sleep, 20
                         MouseMove, % point[1], % point[2]
