@@ -1,4 +1,4 @@
-LaunchInstance(index) {
+﻿LaunchInstance(index) {
     usedPIDs := GetMinecraftProcesses()
     usedHWNDs := []
     WinGet, var, List, Minecraft
@@ -170,6 +170,54 @@ ConfigureMinecraftPointers() {
         default:
             Msgbox, Auto-reset is not supported for this version: %MCversion%.
             LogF("INF", "Auto-reset not supported")
+    }
+}
+
+CheckMinecraftSettings() {
+    txtOptions := minecraftDir "\minecraftpe\options.txt"
+    if !FileExist(txtOptions)
+        return LogF("WAR", "File doesn't exist at """ txtOptions """", A_ThisFunc ":NoOptionsFile")
+
+    optionsToUpdate := {}
+    FileRead, settingsData, %txtOptions%
+    RegExMatch(settingsData, "(gfx_fullscreen:)\K.*", gfx_fullscreen)
+    RegExMatch(settingsData, "(screen_animations:)\K.*", screen_animations)
+    RegExMatch(settingsData, "(gfx_guiscale_offset:)\K.*", gfx_guiscale_offset)
+    RegExMatch(settingsData, "(gfx_safe_zone_x:)\K.*", gfx_safe_zone_x)
+    RegExMatch(settingsData, "(gfx_safe_zone_y:)\K.*", gfx_safe_zone_y)
+
+    if gfx_fullscreen {
+        LogF("WAR", "gfx_fullscreen is enabled", A_ThisFunc ":gfx_fullscreen")
+        optionsToUpdate["gfx_fullscreen"] := 0
+    }
+
+    if screen_animations {
+        LogF("WAR", "screen_animations is enabled", A_ThisFunc ":screen_animations")
+        optionsToUpdate["screen_animations"] := 0
+    }
+
+    if gfx_guiscale_offset
+        LogF("WAR", "gfx_guiscale_offset is enabled; setupless will not work", A_ThisFunc ":gfx_guiscale_offset")
+
+    if (gfx_safe_zone_x + gfx_safe_zone_y - 2) ; gfx_safe_zone_x != 1 || gfx_safe_zone_y != 1
+        LogF("WAR", "gfx_safe_zone is set; setupless will not work", A_ThisFunc ":gfx_safe_zone")
+    
+    if optionsToUpdate.count() {
+        optionsToUpdateString := ""
+        for option, value in optionsToUpdate
+            optionsToUpdateString .= option " = " value "`n"
+        MsgBox, 4,, % "Apply Minecraft settings to suit Multi-Resets?`n`n" optionsToUpdateString
+        IfMsgBox, No
+            return
+
+        for option, value in optionsToUpdate
+            settingsData := RegExReplace(settingsData, "(" option ":)\K.*", value)
+        txt := FileOpen(txtOptions, "w")
+        txt.write(settingsData)
+        txt.close()
+
+        if WinExist("Minecraft")
+            MsgBox, % "Restart Minecraft to apply."
     }
 }
 

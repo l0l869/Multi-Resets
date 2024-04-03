@@ -31,7 +31,7 @@ global timer1
 global MCInstances := [], replacementInstances := [], queuedInstances := []
 global resetDll := DllCall("LoadLibrary", "Str", "functions/reset.dll", "Ptr")
 global gameScript := LoadFile("functions/game.ahk")
-DllCall("gdi32\AddFontResource", "Str", A_ScriptDir "\assets\Mojangles.ttf")
+; DllCall("gdi32\AddFontResource", "Str", A_ScriptDir "\assets\Mojangles.ttf") causes weird problems
 
 Menu, Tray, Icon, assets/_Icon.ico
 Menu, Tray, Add, MC Directory, OpenMinecraftDir
@@ -43,6 +43,7 @@ Gui, Main:Add, ActiveX, vWB x0 y0 w600 h400, shell.explorer
 InitGui()
 Gui, Main:Show, % "w" 600/scaleBy " h" 400/scaleBy, Multi-Resets
 
+CheckMinecraftSettings()
 latestFetchedVersion := FetchUpdates()
 
 Hotkey, IfWinActive, Minecraft
@@ -206,7 +207,7 @@ MainGuiClose:
     timer1 := ""
     timerPreview := ""
     DllCall("FreeLibrary", "UPtr", resetDll)
-    DllCall("gdi32\RemoveFontResource", "Str", A_ScriptDir "\assets\Mojangles.ttf")
+    ; DllCall("gdi32\RemoveFontResource", "Str", A_ScriptDir "\assets\Mojangles.ttf")
     LogF("INF", "App Exit")
     ExitApp
 
