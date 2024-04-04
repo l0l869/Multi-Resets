@@ -16,7 +16,7 @@ LogF("INF", "Initialising (" A_AhkVersion " " A_PtrSize*8 "-bit)")
 #Include, functions/updater.ahk
 #Include, functions/loadfile.ahk
 
-global SCRIPT_VERSION := 20240328.20
+global SCRIPT_VERSION := 20240404.22
 global iniFile := A_ScriptDir "\configs\configs.ini"
 global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang"
 
