@@ -350,7 +350,8 @@ class Setting {
     }
 
     InputCoordsHandler() { ; should probably change the "this.element" way of things
-        if (array := StrSplit(this.value, ","))[2] { ; lets hope no one types a comma
+        array := StrSplit(this.value, ",")
+        if array.HasKey(2) { ; lets hope no one types a comma
             this.elementX["value"] := array[1]
             this.elementY["value"] := array[2]
         } else {
