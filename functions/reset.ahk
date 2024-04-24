@@ -256,7 +256,7 @@ IterateReset(instance) {
 }
 
 ShouldAutoReset(instance) {
-    if (MCversion == "1.19.50.2") {
+    if offsetsZ {
         startTick := A_TickCount
         while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
             if (A_TickCount - startTick > 2000)

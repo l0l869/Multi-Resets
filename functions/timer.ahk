@@ -279,7 +279,7 @@ WaitForMovement(instance) {
     while (timer1.currentInstance && instance.isResetting == -1) {
         newCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
         hasInputted := (GetKeyState("W") || GetKeyState("A") || GetKeyState("S") || GetKeyState("D") || GetKeyState("Space")) && WinActive("Minecraft")
-        if (newCoord && (xCoord != newCoord || hasInputted)) {
+        if ((xCoord != newCoord && newCoord) || hasInputted) {
             timer1.start()
             break
         }
