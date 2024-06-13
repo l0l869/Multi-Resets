@@ -1,4 +1,4 @@
-﻿; might wanna rewrite this whole thing, however it does the job
+; might wanna rewrite this whole thing, however it does the job
 
 #SingleInstance, Force
 SetBatchLines, -1
@@ -110,8 +110,8 @@ updateTextMouseTip:
         default: atMouseColour := atMouseRawColour
     }
 
-    GuiControl, Setup:Move, textMouseToolTip  , % "x" mouseX "y" mouseY
-    GuiControl, Setup:Move, textMouseColourTip, % "x" mouseX+135 "y" mouseY+75
+    GuiControl, Setup:Move, textMouseToolTip  , % "x" mouseX+10 "y" mouseY
+    GuiControl, Setup:Move, textMouseColourTip, % "x" mouseX+145 "y" mouseY+75
     Gui       , Setup:Font, % "s" 25 " q4" " c" atMouseColour, Mojangles
     GuiControl, Setup:Font, textMouseColourTip
     currentType := !clickData[currentID] && IDENTIFIERS[currentID] ? "Identifier" : "Button"
