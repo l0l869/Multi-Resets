@@ -11,7 +11,7 @@ if A_Args[1] {
     silent := true
     blockMarketplace := A_Args[1] == 1 ? true : false
 } else {
-    MsgBox, 4, Block Marketplace, % "Yes: Block Marketplace`nNo: Allow Marketplace"
+    MsgBox, 4, Block Marketplace, % "Yes: Block Marketplace`nNo: Allow Marketplace`n`nNote: Some versions of Minecraft, if it cannot connect to the marketplace, will give a ""Cauldron"" error when logging in."
     IfMsgBox, Yes
         blockMarketplace := true
     IfMsgBox, No
