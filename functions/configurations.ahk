@@ -41,7 +41,7 @@ timerSection := [new Setting("timerActive", "Timer", "Timer", 1, "checkbox", tru
                 ,new Setting("tAnchor", "Anchor", "Timer", 2, "select", ["TopLeft", "TopRight", "BottomLeft", "BottomRight"], "Where the timer is relatively positioned on the instance", [Func("TimerSettingHandler")])
                 ,new Setting("tOffsetX", "Offset-X", "Timer", 2, "inputNumber", 25, "Offset from the anchor point", [Func("TimerSettingHandler")])
                 ,new Setting("tOffsetY", "Offset-Y", "Timer", 2, "inputNumber", 25, "Offset from the anchor point", [Func("TimerSettingHandler")])
-                ,new Setting("tFont", "Font", "Timer", 3, "inputFont", "Mojangles", "Any font installed", [Func("TimerSettingHandler")])
+                ,new Setting("tFont", "Font", "Timer", 3, "inputFont", "Arial", "Any font installed", [Func("TimerSettingHandler")])
                 ,new Setting("tFontSize", "Size", "Timer", 3, "inputNumber", 50, "", [Func("TimerSettingHandler")])
                 ,new Setting("tFontColour1", "Colour 1", "Timer", 3, "inputColour", "0xFFFFFFFF", "Hexadecimal Colour (0xAARRGGBB)", [Func("TimerSettingHandler")])
                 ,new Setting("tFontColour2", "Colour 2", "Timer", 3, "inputColour", "0xFF737373", "Hexadecimal Colour (0xAARRGGBB)", [Func("TimerSettingHandler")])
