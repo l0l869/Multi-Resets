@@ -19,7 +19,7 @@ global resetMode, minCoords, maxCoords, originDistance, queueLimit, resetSeed, s
 global timerActive, tAnchor, tOffsetX, tOffsetY, tFont, tFontSize, tFontColour1, tFontColour2, tOutlineWidth
      , tOutlineColour, tGradientAngle, tAnimationType, tAnimationSpeed, tDecimalPlaces, tAutoSplit, remindShowPacks, tPreview
 
-global resetMethod, setupData, readScreenMemory, coopMode, threadsUsage, hideOnMinimise, isBored
+global resetMethod, setupData, coopMode, findCoordsTextOnly, readScreenMemory, threadsUsage, hideOnMinimise, isBored
 
 macroSection := [new Setting("resetMode", "Reset Mode", "Macro", 1, "select", ["auto", "cumulative", "setSeed", "manual"], "The type of resetting", [Func("OptResetModeHandler")])
                 ,new Setting("minCoords", "Min Coordinate", "Macro", 1, "inputNumber", 700, "The minimum x-coordinate the macro auto-resets for", [Func("OptResetModeHandler"), "getSpawnChance();"])
@@ -57,8 +57,9 @@ timerSection := [new Setting("timerActive", "Timer", "Timer", 1, "checkbox", tru
 
 otherSection := [new Setting("resetMethod", "Reset Method", "Other", 1, "select", ["setupless", "setup"], "The method the macro uses to figure out where to click", [Func("OptResetMethodHandler")])
                 ,new Setting("setupData", "Setup Data", "Other", 1, "select", LoadClickData(), "", [Func("OptResetMethodHandler")])
-                ,new Setting("readScreenMemory", "Read Screen Memory", "Other", 1, "checkbox", false, "Reads the game memory to get the current screen, relies on setup click data for the clicks", 0)
                 ,new Setting("coopMode", "Coop Mode", "Other", 1, "checkbox", false, "Prevents the 0/8 bug", 0)
+                ,new Setting("findCoordsTextOnly", "Read Coordinates Text Only", "Other", 1, "checkbox", false, "Reads the ""Show Coordinates"" text only; does not attempt to read the game memory", 0)
+                ,new Setting("readScreenMemory", "Read Screen Memory", "Other", 1, "checkbox", false, "Reads the game memory to get the current screen, relies on setup click data for the clicks [Not Recommended]", 0)
                 ,new Setting("threadsUsage", "Threads Utilisation", "Other", 2, "inputNumber", 0.8, "The percentage of CPU threads the instances will utilise during resets", 0)
                 ,new Setting("hideOnMinimise", "Minimise to Tray", "Other", 3, "checkbox", false, "When the GUI is minimised, the taskbar icon will disappear to the tray", 0)
                 ,new Setting("isBored", "are u bored?", "Other", 5, "checkbox", false, "fun lil game to play while resetting", 0)]

@@ -24,7 +24,7 @@ EnvGet, threadCount, NUMBER_OF_PROCESSORS
 global threadCount
 global loggedIDs := {}
 global scaleBy := A_ScreenDPI / 96, workArea := GetWorkArea()
-global MCversion
+global MCversion, isPre11830
 global offsetsX, offsetsZ, offsetsAutoSplit, offsetsScreen
 global lastRestart
 global timer1

@@ -149,10 +149,11 @@ IterateReset(instance) {
             return instance.isResetting := (instance.isResetting ? 3 : 0)
 
         case "Heart":
-            Send, {Esc}
-            Sleep, 100
-            if (instance.isResetting == 1)
+            if (instance.isResetting == 1) {
+                Send, {Esc}
+                Sleep, 100
                 return instance.isResetting := 2
+            }
 
             switch (resetMode) {
                 case "auto":
@@ -256,27 +257,49 @@ IterateReset(instance) {
 }
 
 ShouldAutoReset(instance) {
-    if offsetsZ {
-        startTick := A_TickCount
-        while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
-            if (A_TickCount - startTick > 2000)
-                return true, LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
+    if isPre11830 {
+        xCoord := 0
 
-        startTick := A_TickCount
-        while !zCoord := ReadMemoryValue(instance.proc, "Float", offsetsZ*)
-            if (A_TickCount - startTick > 2000)
-                return true, LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
+        if offsetsX && !findCoordsTextOnly {
+            startTick := A_TickCount
+            while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
+                if (A_TickCount - startTick > 1000)
+                    LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
+        }
+        if !xCoord {
+            VarSetCapacity(coordinates, 12)
+            if !DllCall("reset\GetShownCoordinates", "Ptr", instance.hwnd, "UPtr", &coordinates)
+                return true, LogF("INF", "Couldn't get player coordinates on screen.")
+            xCoord := NumGet(coordinates, 0, "Int")
+        }
 
-        if (Sqrt(xCoord**2 + zCoord**2) < originDistance)
+        if (xCoord < minCoords || xCoord > maxCoords)
             return true
     }
     else {
-        startTick := A_TickCount
-        while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
-            if (A_TickCount - startTick > 2000)
-                return true, LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
+        xCoord := zCoord := 0
 
-        if (xCoord < minCoords || xCoord > maxCoords)
+        if offsetsZ && !findCoordsTextOnly {
+            startTick := A_TickCount
+            while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
+                if (A_TickCount - startTick > 1000)
+                    LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
+
+            startTick := A_TickCount
+            while !zCoord := ReadMemoryValue(instance.proc, "Float", offsetsZ*)
+                if (A_TickCount - startTick > 500)
+                    LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
+        }
+        if !xCoord || !zCoord {
+            VarSetCapacity(coordinates, 12)
+            if !DllCall("reset\GetShownCoordinates", "Ptr", instance.hwnd, "UPtr", &coordinates)
+                return true, LogF("INF", "Couldn't get player coordinates on screen.")
+            xCoord := NumGet(coordinates, 0, "Int")
+            zCoord := NumGet(coordinates, 8, "Int")
+        }
+
+
+        if (Sqrt(xCoord**2 + zCoord**2) < originDistance)
             return true
     }
 }
@@ -398,8 +421,11 @@ GetCurrentClick(instance, method) {
             case 4: currentScreen := "WorldCreation"
             case 5: currentScreen := "Play"
         }
-        if (currentScreen == "SaveAndQuit" && instance.isResetting == 6) ; if it skips checking coords
+        if (currentScreen == "SaveAndQuit" && instance.isResetting == 6) { ; if it skips checking coords
             currentScreen := "Heart"
+            Send, {Esc}
+            Sleep, 100
+        }
     } else { 
         currentScreen := GetCurrentScreen(instance)
         switch currentScreen {
@@ -465,8 +491,11 @@ GetCurrentScreen(instance) {
         instance.clicksAllowed := true
     }
 
-    if (currentScreen == "SaveAndQuit" && instance.isResetting == 6) ; if it skips checking coords
+    if (currentScreen == "SaveAndQuit" && instance.isResetting == 6) { ; if it skips checking coords 
         currentScreen := "Heart"
+        Send, {Esc}
+        Sleep, 100
+    }
 
     return currentScreen
 }

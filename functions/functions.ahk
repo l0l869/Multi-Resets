@@ -149,7 +149,8 @@ GetMinecraftVersion() {
 
 ConfigureMinecraftPointers() {
     offsetsX := offsetsZ := offsetsAutoSplit := offsetsScreen := ""
-    switch GetMinecraftVersion() {
+
+    switch MCversion := GetMinecraftVersion() {
         case "1.19.50.2": offsetsX          := [0x048E3910, 0x10, 0x128, 0x0, 0xF8, 0x398, 0x18, 0x0, 0x8] 
                           offsetsZ          := [0x048E3910, 0x10, 0x128, 0x0, 0xF8, 0x398, 0x18, 0x0, 0x10]
                         ;   offsetsAutoSplit  := [0x04974880, 0x0, 0x28, 0xA0]
@@ -171,9 +172,9 @@ ConfigureMinecraftPointers() {
                           offsetsScreen     := [0x01F2F5F8, 0xD0, 0x58]
 
         default:
-            Msgbox, Auto-reset is not supported for this version: %MCversion%.
-            LogF("INF", "Auto-reset not supported")
+            LogF("INF", "Auto-reset through memory is not supported")
     }
+    isPre11830 := VerCompare(MCversion, "1.18.30") < 0
 }
 
 CheckMinecraftSettings() {
