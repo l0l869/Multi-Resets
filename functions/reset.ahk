@@ -241,6 +241,13 @@ IterateReset(instance) {
                 if (click.isSeedClick && resetMode != "setSeed")
                     continue
 
+                if (click.colour && awaitWcColour) {
+                    pixelColour := 0
+                    while (pixelColour != click.colour) {
+                        PixelGetColor, pixelColour, instance.x1+click.x, instance.y1+click.y, RGB
+                    }
+                }
+
                 Sleep, %keyDelay%
                 if isBored
                     gameScript.AllowClick({x:instance.x1+click.x,y:instance.y1+click.y})

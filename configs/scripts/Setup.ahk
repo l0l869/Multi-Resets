@@ -6,7 +6,7 @@ SetWorkingDir, % A_ScriptDir "/../"
 CoordMode, Mouse, Screen
 CoordMode, Pixel, Screen
 
-global CLICK_DATA_VERSION := 3
+global CLICK_DATA_VERSION := 4
 global scaleBy := A_ScreenDPI / 96
 global currentID := 1
 global IDENTIFIERS := ["Play","Heart","SaveAndQuit","CreateNew","CreateNewWorld","WorldCreation"]
@@ -23,6 +23,7 @@ while WinExist("Minecraft")
     WinClose
 
 Run, shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App
+SetTitleMatchMode, 1
 WinWait, Minecraft
 hwnd := WinExist("Minecraft")
 
@@ -107,6 +108,8 @@ updateTextMouseTip:
         case 0x037300: atMouseColour := 0x7F7F7F
         case 0xFFFFFF: atMouseColour := 0x4C4C4C
         case 0x4E8836: atMouseColour := 0x808080
+        case 0xB1B2B5: atMouseColour := 0xD0D1D4
+        case 0x2A641C: atMouseColour := 0x3C8527
         default: atMouseColour := atMouseRawColour
     }
 
@@ -116,7 +119,7 @@ updateTextMouseTip:
     GuiControl, Setup:Font, textMouseColourTip
     currentType := !clickData[currentID] && IDENTIFIERS[currentID] ? "Identifier" : "Button"
     GuiControl, Setup:    , textMouseToolTip, % "X:" Floor(mouseX-win.x1) " Y:" Floor(mouseY-win.y1) "`n" currentType ": " btnName "`nColour: "
-    GuiControl, Setup:    , textMouseColourTip, % atMouseColour
+    GuiControl, Setup:    , textMouseColourTip, % atMouseColour . (atMouseColour != atMouseRawColour ? "*" : "")
 return
 
 
@@ -146,7 +149,7 @@ AssignButton() {
         if (currentID == IDENTIFIERS.MaxIndex()+1) ; first world creation click is seed
             clickData[currentID] := "WorldCreation," Floor(mouseX-win.x1) "," Floor(mouseY-win.y1) ",,,,Seed"
         else
-            clickData[currentID] := "WorldCreation," Floor(mouseX-win.x1) "," Floor(mouseY-win.y1)
+            clickData[currentID] := "WorldCreation," Floor(mouseX-win.x1) "," Floor(mouseY-win.y1) "," atMouseColour
         currentID++
         click
     }
@@ -186,9 +189,12 @@ FinishSetup() {
         allClickData.push(start)
 
     updateExisting := false
-    for k, data in allClickData
-        if (SubStr(data, 1, StrLen(metaData)) == metaData)
+    for k, data in allClickData {
+        meta1 := RegExReplace(data, "^#\d+,") ; remove version for comparison
+        meta2 := RegExReplace(metaData, "^#\d+,")
+        if (meta1 == meta2)
             allClickData[k] := clickDataString, updateExisting := true, break
+    }
     if !updateExisting
         allClickData.push(clickDataString)
 

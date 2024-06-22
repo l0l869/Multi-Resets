@@ -59,6 +59,7 @@ otherSection := [new Setting("resetMethod", "Reset Method", "Other", 1, "select"
                 ,new Setting("setupData", "Setup Data", "Other", 1, "select", LoadClickData(), "", [Func("OptResetMethodHandler")])
                 ,new Setting("coopMode", "Coop Mode", "Other", 1, "checkbox", false, "Prevents the 0/8 bug", 0)
                 ,new Setting("findCoordsTextOnly", "Read Coordinates Text Only", "Other", 1, "checkbox", false, "Reads the ""Show Coordinates"" text only; does not attempt to read the game memory", 0)
+                ,new Setting("awaitWcColour", "Wait for World Creation Colours", "Other", 1, "checkbox", false, "Waits for the new World Creation UI to load", 0)
                 ,new Setting("readScreenMemory", "Read Screen Memory", "Other", 1, "checkbox", false, "Reads the game memory to get the current screen, relies on setup click data for the clicks [Not Recommended]", 0)
                 ,new Setting("threadsUsage", "Threads Utilisation", "Other", 2, "inputNumber", 0.8, "The percentage of CPU threads the instances will utilise during resets", 0)
                 ,new Setting("hideOnMinimise", "Minimise to Tray", "Other", 3, "checkbox", false, "When the GUI is minimised, the taskbar icon will disappear to the tray", 0)
@@ -555,7 +556,7 @@ LoadClickData() {
             if (clickObj[6])
                 clickV["screenClicks"].push({btn:clickObj[1], x:clickObj[2], y:clickObj[3], px:clickObj[4], py:clickObj[5], colour:clickObj[6]})
             else
-                clickV["worldcreationClicks"].push({x:clickObj[2], y:clickObj[3], isSeedClick: clickObj[7] == "Seed"})
+                clickV["worldcreationClicks"].push({x:clickObj[2], y:clickObj[3], colour:clickObj[4], isSeedClick: clickObj[7] == "Seed"})
         }
     }
     clickDataOptions := []
