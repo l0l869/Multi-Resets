@@ -16,7 +16,7 @@ LogF("INF", "Initialising (" A_AhkVersion " " A_PtrSize*8 "-bit)")
 #Include, functions/updater.ahk
 #Include, functions/loadfile.ahk
 
-global SCRIPT_VERSION := 20240404.22
+global SCRIPT_VERSION := 20240622.21
 global iniFile := A_ScriptDir "\configs\configs.ini"
 global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang"
 
@@ -61,8 +61,8 @@ Hotkey, %restartKey%, Restart
 RCtrl::Goto, MainGuiClose
 return
 
-#Include functions/memory.ahk
-#Include functions/functions.ahk
+#Include, functions/memory.ahk
+#Include, functions/functions.ahk
 
 InitGui() {
     WB.Silent := true
@@ -211,4 +211,4 @@ MainGuiClose:
     LogF("INF", "App Exit")
     ExitApp
 
-#Include functions/reset.ahk
+#Include, functions/reset.ahk

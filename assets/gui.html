@@ -440,9 +440,6 @@
             <hr>
 
             <br>
-            <p>Supported auto-reset versions: 1.19.50, 1.19.0, 1.16.221, 1.16.10, 1.16.1, 1.16.0.58, 1.16.0.57, 1.16.0.51, 1.14.60, 1.2.13</p>
-
-            <br>
             <h3>Reset Methods</h3>
             <ul>
                 <li>Setup</li>
@@ -496,6 +493,28 @@
             <br>
             <br>
             <h1>Version History</h1>
+
+            <br>
+            <h2>v1.6</h2>
+            <ul>
+                <li>Auto-reset is now supported across all versions</li>
+                <ul>
+                    <li>By reading the player coordinates text (Mojangles) instead of memory</li>
+                </ul>
+                <li>Added basic manual reset mode</li>
+                <ul>
+                    <li>Renamed the original manual mode to "Manual Wall"</li>
+                </ul>
+                <li>Support versions with the window title: "Minecraft: Windows 10 Edtition"</li>
+                <li>Added option to wait for the clicks' pixel colour in world creation</li>
+                <ul>
+                    <li>Useful for the new World Creation UI</li>
+                </ul>
+                <li>Fixed flickering of windows during setup</li>
+                <li>Fixed GUI text scaling on different screen DPIs</li>
+                <li>Fixed auto-split not starting in certain scenarios</li>
+                <li>Removed auto-split for 1.19.50 as it never worked in the first place</li>
+            </ul>
 
             <br>
             <h2>v1.5.1</h2>
