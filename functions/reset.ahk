@@ -1,7 +1,7 @@
 Reset:
     hasExited := ExitIfRunning()
 
-    if (resetMode == "manual") {
+    if (resetMode == "manualWall") {
         if !hasExited
             for k, instance in MCInstances
                 if (instance.isResetting <= 0)
@@ -24,7 +24,7 @@ return
 StopReset:
     isResetting := IsResettingInstances()
 
-    if (resetMode == "manual" && !isResetting) {
+    if (resetMode == "manualWall" && !isResetting) {
         EnterHoveredInstance()
         return
     }
@@ -175,7 +175,8 @@ IterateReset(instance) {
                         MouseMove, % point[1], % point[2]
                     }
                     return RunInstance(instance)
-                case "manual": return instance.isResetting := (instance.isResetting ? -2 : 0)
+                case "manual": return RunInstance(instance)
+                case "manualWall": return instance.isResetting := (instance.isResetting ? -2 : 0)
             }
             return RunInstance(instance)
 

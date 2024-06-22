@@ -21,7 +21,7 @@ global timerActive, tAnchor, tOffsetX, tOffsetY, tFont, tFontSize, tFontColour1,
 
 global resetMethod, setupData, coopMode, findCoordsTextOnly, readScreenMemory, threadsUsage, hideOnMinimise, isBored
 
-macroSection := [new Setting("resetMode", "Reset Mode", "Macro", 1, "select", ["auto", "cumulative", "setSeed", "manual"], "The type of resetting", [Func("OptResetModeHandler")])
+macroSection := [new Setting("resetMode", "Reset Mode", "Macro", 1, "select", ["auto", "cumulative", "setSeed", "manual", "manualWall"], "The type of resetting", [Func("OptResetModeHandler")])
                 ,new Setting("minCoords", "Min Coordinate", "Macro", 1, "inputNumber", 700, "The minimum x-coordinate the macro auto-resets for", [Func("OptResetModeHandler"), "getSpawnChance();"])
                 ,new Setting("maxCoords", "Max Coordinate", "Macro", 1, "inputNumber", 1800, "The maximum x-coordinate the macro auto-resets for", [Func("OptResetModeHandler"), "getSpawnChance();"])
                 ,new Setting("originDistance", "Distance from 0,0 (1.19.50)", "Macro", 1, "inputNumber", 400, "The minimum number of blocks from world origin", [Func("OptResetModeHandler")])
@@ -403,7 +403,7 @@ OptResetModeHandler() {
             Setting["map"]["resetSeed"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["setSeedMouseMove"]["rootDiv"]["style"]["display"] := "none"
 
-        case "manual":
+        case "manual", "manualWall":
             Setting["map"]["minCoords"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["maxCoords"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["originDistance"]["rootDiv"]["style"]["display"] := "none"
