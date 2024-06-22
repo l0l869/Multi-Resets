@@ -272,7 +272,7 @@ ShouldAutoReset(instance) {
             startTick := A_TickCount
             while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
                 if (A_TickCount - startTick > 1000)
-                    LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
+                    LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError), break
         }
         if !xCoord {
             VarSetCapacity(coordinates, 12)
@@ -291,12 +291,12 @@ ShouldAutoReset(instance) {
             startTick := A_TickCount
             while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
                 if (A_TickCount - startTick > 1000)
-                    LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
+                    LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError), break
 
             startTick := A_TickCount
             while !zCoord := ReadMemoryValue(instance.proc, "Float", offsetsZ*)
                 if (A_TickCount - startTick > 500)
-                    LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
+                    LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError), break
         }
         if !xCoord || !zCoord {
             VarSetCapacity(coordinates, 12)
