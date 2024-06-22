@@ -7,6 +7,7 @@ LaunchInstance(index) {
 
     WinActivate, ahk_class Shell_TrayWnd
     Run, shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App
+    SetTitleMatchMode, 1
     WinWaitActive, Minecraft
 
     PIDs := GetExcludedFromList(GetMinecraftProcesses(), usedPIDs)
@@ -248,9 +249,11 @@ CloseInstances() {
     replacementInstances := []
     queuedInstances := []
 
-    SetTitleMatchMode, 3
-    while WinExist("Minecraft")
+    Process, Exist, Minecraft.Windows.exe
+    while ErrorLevel {
         Process, Close, Minecraft.Windows.exe
+        Process, Exist, Minecraft.Windows.exe
+    }
 }
 
 OpenMinecraftDir() {
