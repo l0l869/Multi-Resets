@@ -296,28 +296,23 @@
     </style>
 
     <script>
-
         document.onselectstart =
         document.oncontextmenu =
         document.ondragstart =
         function () {
             return window.event && event.srcElement.tagName == "INPUT" || false;
         };
-        function openTab(event, tab) {
-            var i, tabcontent, tabbuttons;
+        document.addEventListener('wheel', function(e) {
+            if (e.ctrlKey) 
+                e.preventDefault();
+        }, { passive: false });
 
+        function openTab(event, tab) {
             tabcontent = document.getElementsByClassName("tab-content");
             for (i = 0; i < tabcontent.length; i++) {
                 tabcontent[i].style.display = "none";
             }
-
-            tabbuttons = document.getElementsByClassName("sidebar_button");
-            for (i = 0; i < tabbuttons.length; i++) {
-                tabbuttons[i].className = tabbuttons[i].className.replace(" active", "");
-            }
-
             document.getElementById(tab).style.display = "block";
-            event.currentTarget.className += " active";
         }
         let timeoutId;
         function getSpawnChance() {
@@ -364,7 +359,7 @@
             </div>
 
             <button id="info-button" onclick="openTab(event, 'Info')">(i)</button>
-            <p style="color: lightgrey; position: absolute; bottom: -1px; left: 2px; cursor: default;">v1.5.1</p>
+            <p style="color: lightgrey; position: absolute; bottom: -1px; left: 2px; cursor: default;">v1.6</p>
         </div>
 
         <div id="Macro" class="tab-content" style="display: block;">
