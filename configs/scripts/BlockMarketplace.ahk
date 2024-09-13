@@ -20,8 +20,8 @@ if A_Args[1] {
 blockMarketplaceT := blockMarketplace ? "True" : "False"
 
 getRuleCmd := "Get-NetFirewallRule -DisplayName 'Minecraft Marketplace' -ErrorAction SilentlyContinue"
-setRuleCmd := "Set-NetFirewallRule -DisplayName 'Minecraft Marketplace' -Direction Outbound -RemoteAddress '20.112.54.230-20.120.128.232' -Action Block -Enabled " blockMarketplaceT
-newRuleCmd := "New-NetFirewallRule -DisplayName 'Minecraft Marketplace' -Direction Outbound -RemoteAddress '20.112.54.230-20.120.128.232' -Action Block -Enabled " blockMarketplaceT
+setRuleCmd := "Set-NetFirewallRule -DisplayName 'Minecraft Marketplace' -Direction Outbound -RemoteAddress '20.112.54.230-20.120.129.75' -Action Block -Enabled " blockMarketplaceT
+newRuleCmd := "New-NetFirewallRule -DisplayName 'Minecraft Marketplace' -Direction Outbound -RemoteAddress '20.112.54.230-20.120.129.75' -Action Block -Enabled " blockMarketplaceT
 
 DetectHiddenWindows, On
 Run, %ComSpec%,, Hide, cPID
