@@ -271,13 +271,17 @@ ShouldAutoReset(instance) {
         if offsetsX && !findCoordsTextOnly {
             startTick := A_TickCount
             while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
-                if (A_TickCount - startTick > 1000)
-                    LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError), break
+                if (A_TickCount - startTick > 500) {
+                    LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
+                    break
+                }
         }
         if !xCoord {
             VarSetCapacity(coordinates, 12)
-            if !DllCall("reset\GetShownCoordinates", "Ptr", instance.hwnd, "UPtr", &coordinates)
-                return true, LogF("INF", "Couldn't get player coordinates on screen.")
+            if !DllCall("reset\GetShownCoordinates", "Ptr", instance.hwnd, "UPtr", &coordinates) {
+                LogF("INF", "Couldn't get player coordinates on screen.")
+                return true
+            }
             xCoord := NumGet(coordinates, 0, "Int")
         }
 
@@ -290,18 +294,24 @@ ShouldAutoReset(instance) {
         if offsetsZ && !findCoordsTextOnly {
             startTick := A_TickCount
             while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
-                if (A_TickCount - startTick > 1000)
-                    LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError), break
+                if (A_TickCount - startTick > 500) {
+                    LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
+                    break
+                }
 
             startTick := A_TickCount
             while !zCoord := ReadMemoryValue(instance.proc, "Float", offsetsZ*)
-                if (A_TickCount - startTick > 500)
-                    LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError), break
+                if (A_TickCount - startTick > 100) {
+                    LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
+                    break
+                }
         }
         if !xCoord || !zCoord {
             VarSetCapacity(coordinates, 12)
-            if !DllCall("reset\GetShownCoordinates", "Ptr", instance.hwnd, "UPtr", &coordinates)
-                return true, LogF("INF", "Couldn't get player coordinates on screen.")
+            if !DllCall("reset\GetShownCoordinates", "Ptr", instance.hwnd, "UPtr", &coordinates) {
+                LogF("INF", "Couldn't get player coordinates on screen.")
+                return true
+            }
             xCoord := NumGet(coordinates, 0, "Int")
             zCoord := NumGet(coordinates, 8, "Int")
         }
