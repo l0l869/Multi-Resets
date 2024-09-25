@@ -30,7 +30,7 @@ int GetMCScale(int w, int h, bool applyDPI = false, int dpiScale = 1) {
 std::vector<int> GenerateKMPTable(const std::vector<bool>& pattern) {
     std::vector<int> table(pattern.size(), 0);
     int j = 0;
-    for (int i = 1; i < pattern.size(); ++i) {
+    for (size_t i = 1; i < pattern.size(); ++i) {
         if (pattern[i] == pattern[j]) {
             table[i] = ++j;
         } else {
@@ -49,10 +49,10 @@ std::pair<int, int> KMPMatch(const std::vector<std::vector<bool>>& vector, const
     int patternWidth = pattern.size();
     std::vector<int> table = GenerateKMPTable(pattern);
 
-    for (int y = 0; y < vector.size(); ++y) {
+    for (size_t y = 0; y < vector.size(); ++y) {
         const auto& row = vector[y];
         int j = 0;
-        for (int i = 0; i < row.size();) {
+        for (size_t i = 0; i < row.size();) {
             if (pattern[j] == row[i]) {
                 ++i;
                 ++j;
@@ -151,7 +151,7 @@ extern "C" __declspec(dllexport) int GetCurrentClick(HWND hwnd, int dpiScale, in
 
     int pIndex = -1;
     std::pair<int, int> result = {-1, -1};
-    for (int i = 0; i < textPatterns.size(); i++) {
+    for (size_t i = 0; i < textPatterns.size(); i++) {
         result = KMPMatch(foundPixels, textPatterns[i]);
 
         if (result.first != -1) {
@@ -240,11 +240,13 @@ extern "C" __declspec(dllexport) int GetShownCoordinates(HWND hwnd, Vec3* coordi
             case 0b0110000: digit = 9; break;
             case 0b0001000: isSigned = true; break;
             case 0b0000011: 
-                if (isSigned) coords[coordIndex] *= -1; isSigned = false;
-                if (++coordIndex > 2) startTextX = searchWidth; 
+                if (isSigned) coords[coordIndex] *= -1;
+                if (++coordIndex > 2) startTextX = searchWidth;
+                isSigned = false;
                 break;
-            default: 
-                if (coordIndex == 2 && isSigned) coords[coordIndex] *= -1; isSigned = false;
+            default:
+                if (coordIndex >= 2) startTextX = searchWidth;
+                if (isSigned) coords[coordIndex] *= -1;
                 break;
         }
         if (digit != -1)
