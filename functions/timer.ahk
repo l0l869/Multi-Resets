@@ -62,7 +62,7 @@ Class Timer
     }
 
     start() {
-        this.startTick := this.QPC()
+        this.startTick := this.QPC() - this.elapsedTick
 
         if this.tickFunction
             return
@@ -111,7 +111,8 @@ Class Timer
 
         if (this.animationSpeed) {
             if (this.animationType == "panoramic") {
-                gPan := Mod(A_TickCount/this.animationSpeed, textSize[3]*4)
+                noPaddingLength := textSize[3] - (this.padding.left + this.padding.right)
+                gPan := Mod(noPaddingLength*A_TickCount/(this.animationSpeed*1000), noPaddingLength)
             } else {
                 rotationScaler := A_TickCount/(this.animationSpeed*1000)
                 gAngle := 360*rotationScaler
