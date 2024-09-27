@@ -1,22 +1,26 @@
 LaunchInstance(index) {
-    usedPIDs := GetMinecraftProcesses()
-    usedHWNDs := []
+    existingPIDs := GetMinecraftProcesses()
+    existingHWNDs := []
     WinGet, var, List, Minecraft
     Loop, % var
-        usedHWNDs.push(var%A_Index%)
+        existingHWNDs.push(var%A_Index%)
 
     WinActivate, ahk_class Shell_TrayWnd
     Run, shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App
     SetTitleMatchMode, 1
     WinWaitActive, Minecraft
 
-    PIDs := GetExcludedFromList(GetMinecraftProcesses(), usedPIDs)
-    pid := PIDs[1]
-    mcHwnds := []
+    PIDs := GetMinecraftProcesses()
+    filteredPIDs := GetExcludedFromList(PIDs, existingPIDs)
+    pid := filteredPIDs[1]
+
+    HWNDs := []
     WinGet, var, List, Minecraft
     Loop, % var
-        mcHwnds.push(var%A_Index%)
-    hwnd := GetExcludedFromList(mcHwnds, usedHWNDs)[1]
+        HWNDs.push(var%A_Index%)
+    filteredHWNDs := GetExcludedFromList(HWNDs, existingHWNDs)
+    hwnd := filteredHWNDs[1]
+
     proc := new _ClassMemory("ahk_pid " pid, "PROCESS_VM_READ")
 
     instance := { hwnd: hwnd
@@ -32,8 +36,7 @@ LaunchInstance(index) {
     threadsMask := (2 ** Ceil(threadCount * threadsUsage)) - 1
     SetAffinity(pid, threadsMask)
 
-
-    if (PIDs.count() > 1 || !pid) {
+    if (filteredPIDs.count() > 1 || !pid) {
         if (!IsMultiRegistered()) {
             MsgBox, 4,, % "Error: Multi-instance is not registered.`nDo you want to register multi?"
             IfMsgBox, Yes
@@ -42,6 +45,10 @@ LaunchInstance(index) {
         }
         MsgBox, % "Error: Failed to get process ID."
         LogF("ERR", "Failed to get process ID")
+    }
+    if (filteredHWNDs.count() > 1 || !hwnd) {
+        MsgBox, % "Error: Failed to get window handle."
+        LogF("ERR", "Failed to get window handle")
     }
 
     return instance
@@ -128,7 +135,7 @@ GetMinecraftProcesses() {
         if (processName == "Minecraft.Windows.exe")
             list.push(processID)
 
-        tPtr += (A_PtrSize = 4 ? 16 : 24) 
+        tPtr += (A_PtrSize == 4 ? 16 : 24)
     }
     DllCall("Wtsapi32\WTSFreeMemory","Ptr", pPtr)      
   
