@@ -106,6 +106,7 @@ class Setting {
                 
                 h3 := WB.document.createElement("h3")
                 h3.innerText := this.name
+                h3.onclick := Func("RunJS").bind("document.getElementById(""" this.id """).click()")
 
                 div.appendChild(checkbox)
                 div.appendChild(h3)
@@ -346,8 +347,8 @@ class Setting {
     }
 
     InputNumberHandler() {
-        filteredInput := RegExReplace(this.value, "[^\d.]",, hasChanged)
-        if hasChanged
+        RegExMatch(this.value, "-?[\d.]+", filteredInput)
+        if (this.value != filteredInput)
             this.UpdateSettingValue(filteredInput)
     }
 
@@ -473,12 +474,17 @@ OptResetMethodHandler() {
         if (clickData[setupData]["metadata"]["clickVersion"] < 3)
             return
 
-        if (clickData[setupData]["metadata"]["dpi"] != A_ScreenDPI)
+        if (clickData[setupData]["metadata"]["dpi"] != A_ScreenDPI) {
             LogF("WAR", "Screen DPI does not match with setup data", A_ThisFunc ":" setupData ":DifferentScreenDPI")
+            warningColour := "rgba(255,255,0,0.25)"
+        }
 
         setupWorkArea := clickData[setupData]["metadata"]["workArea"]
-        if (setupWorkArea[1] != workArea[1] || setupWorkArea[2] != workArea[2])
+        if (setupWorkArea[1] != workArea[1] || setupWorkArea[2] != workArea[2]) {
             LogF("WAR", "Working area does not match with setup data", A_ThisFunc ":" setupData ":DifferentWorkArea")
+            warningColour := "rgba(255,255,0,0.25)"
+        }
+        Setting["map"]["setupData"]["rootDiv"]["style"]["background-color"] := warningColour
     }
 }
 
@@ -510,7 +516,7 @@ MergeConfigs(source, destination) {
 GetSeedsFromFile() {
     FileRead, fileData, configs/seeds.txt
     if ErrorLevel {
-        LogF("ERR", "Couldn't load file: ""configs/seeds.txt""; A_LastError: " A_LastError)
+        LogF("WAR", "Couldn't read file: ""configs/seeds.txt""; A_LastError: " A_LastError ". Using fallback values...")
         return [564030617, 2425564754069582094, -990909152419832232, 1078231915]
     }
     return StrSplit(fileData, ",")
