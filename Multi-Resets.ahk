@@ -24,6 +24,9 @@ EnvGet, threadCount, NUMBER_OF_PROCESSORS
 global threadCount
 global loggedIDs := {}
 global scaleBy := A_ScreenDPI / 96, workArea := GetWorkArea()
+global SM_CXFRAME := DllCall("GetSystemMetrics", "Int", 32)
+global SM_CYFRAME := DllCall("GetSystemMetrics", "Int", 33)
+global SM_CYCAPTION := DllCall("GetSystemMetrics", "Int", 4)
 global MCversion, isPre11830
 global offsetsX, offsetsZ, offsetsAutoSplit, offsetsScreen
 global lastRestart

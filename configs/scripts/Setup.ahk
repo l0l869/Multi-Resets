@@ -7,7 +7,6 @@ CoordMode, Mouse, Screen
 CoordMode, Pixel, Screen
 
 global CLICK_DATA_VERSION := 4
-global scaleBy := A_ScreenDPI / 96
 global currentID := 1
 global IDENTIFIERS := ["Play","Heart","SaveAndQuit","CreateNew","CreateNewWorld","WorldCreation"]
 global clickData := []
@@ -15,6 +14,9 @@ global screenClicks := []
 global worldcreationClicks := []
 global layoutDimensions, hwnd, workAreaWidth, workAreaHeight, win, mouseX, mouseY, atMouseColour, btnName
 global mcVersion
+global SM_CXFRAME := DllCall("GetSystemMetrics", "Int", 32)
+global SM_CYFRAME := DllCall("GetSystemMetrics", "Int", 33)
+global SM_CYCAPTION := DllCall("GetSystemMetrics", "Int", 4)
 
 MsgBox % "Tab: Assign`n" "Shift + Esc: Finish Setup"
 
@@ -36,7 +38,7 @@ dim := StrSplit(layoutDimensions, ",")
 width := workAreaWidth / dim[1]
 height := workAreaHeight / dim[2]
 WinRestore, % "ahk_id " hwnd
-WinMove, % "ahk_id " hwnd,, (workAreaWidth-width-8)/2, (workAreaHeight-height)/2, width+16, height+8
+WinMove, % "ahk_id " hwnd,, (workAreaWidth-width-SM_CXFRAME)/2, (workAreaHeight-height)/2, width+SM_CXFRAME*2, height+SM_CYFRAME
 
 mcVersion := GetMinecraftVersion()
 
@@ -124,13 +126,20 @@ return
 
 
 GetWindowDimensions(Window) {
+    WinGet, style, Style, %Window%
+    if (isFullscreen := !(style & 0x20800000))
+        return {}
+    
     WinGetPos, winX, winY, winWidth, winHeight, %Window%
-    return { x1    : winX + 8  * scaleBy
-            ,y1    : winY + 30 * scaleBy
-            ,x2    : winX + 8  * scaleBy + winWidth  - 16 * scaleBy
-            ,y2    : winY + 30 * scaleBy + winHeight - 38 * scaleBy
-            ,width : winWidth  - 16 * scaleBy
-            ,height: winHeight - 38 * scaleBy }
+    if (isMaximised := style & 0x1000000)
+        winY := 0, winHeight -= SM_CYFRAME
+
+    return { x1    : winX + SM_CXFRAME
+           , y1    : winY + SM_CYFRAME + SM_CYCAPTION
+           , x2    : winX + winWidth  - SM_CXFRAME
+           , y2    : winY + winHeight - SM_CYFRAME
+           , width : winWidth  - SM_CXFRAME*2
+           , height: winHeight - SM_CYFRAME*2 - SM_CYCAPTION}
 }
 
 AssignButton() {

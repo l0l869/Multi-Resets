@@ -58,7 +58,7 @@ ResizeInstance(instance, index) {
     x := Mod(positionIndex, dim[1])
     y := Floor((positionIndex - 1) / dim[1])
     WinRestore, % "ahk_id " instance.hwnd
-    WinMove, % "ahk_id " instance.hwnd,, width*x-8, height*y, width+16, height+8
+    WinMove, % "ahk_id " instance.hwnd,, width*x-SM_CXFRAME, height*y, width+SM_CXFRAME*2, height+SM_CYFRAME
 
     winDimensions := GetWindowDimensions("ahk_id " instance.hwnd)
     instance.x1     := winDimensions.x1
@@ -104,13 +104,15 @@ GetWindowDimensions(Window) {
         return {}
 
     WinGetPos, winX, winY, winWidth, winHeight, %Window%
+    if (isMaximised := style & 0x1000000)
+        winY := 0, winHeight -= SM_CYFRAME
 
-    return { x1    : winX + 8  * scaleBy
-           , y1    : winY + 30 * scaleBy
-           , x2    : winX + 8  * scaleBy + winWidth  - 16 * scaleBy
-           , y2    : winY + 30 * scaleBy + winHeight - 38 * scaleBy
-           , width : winWidth  - 16 * scaleBy
-           , height: winHeight - 38 * scaleBy }
+    return { x1    : winX + SM_CXFRAME
+           , y1    : winY + SM_CYFRAME + SM_CYCAPTION
+           , x2    : winX + winWidth  - SM_CXFRAME
+           , y2    : winY + winHeight - SM_CYFRAME
+           , width : winWidth  - SM_CXFRAME*2
+           , height: winHeight - SM_CYFRAME*2 - SM_CYCAPTION}
 }
 
 GetMinecraftProcesses() {
@@ -228,11 +230,11 @@ CheckMinecraftSettings() {
 
 GetMCScale(w, h, applyDPI:=false) {
     if applyDPI {
-        w += 16*scaleBy
-        h += 38*scaleBy
+        w += SM_CXFRAME*2
+        h += SM_CYFRAME*2 + SM_CYCAPTION
     }
-    x := Floor((w-394+0.8) / 375.3333 + 1) ; approximate
-    y := (h-290-1) // 250 + 1
+    x := 1 + (w-394+0.8) // 375.3333 ; approximate
+    y := 1 + (h-290-1  ) // 250
 
     return x < y ? x : y
 }
