@@ -101,7 +101,6 @@ Class Timer
         CreateRectF(RectF, 0, 0, A_ScreenWidth, A_ScreenHeight)
         textSize := StrSplit(Gdip_MeasureString(this.G, text, this.hFont, this.hFormat, RectF), "|")
         textPosition := this.GetAnchorPosition(textSize[3], textSize[4])
-        CreateRectF(RectF, textPosition.x, textPosition.y, textSize[3], textSize[4])
 
         x1 := textPosition.x
         y1 := textPosition.y
@@ -119,12 +118,30 @@ Class Timer
             }
         }
 
+        midX := ((x2-this.padding.right ) + (x1+this.padding.left))/2 + gPan
+        midY := ((y2-this.padding.bottom) + (y1+this.padding.top ))/2 + gPan
+        tx := textSize[3]/2 - this.padding.left
+        ty := textSize[4]   - (this.padding.top + this.padding.bottom)
+        m1 := Tan(Mod(gAngle,    360) * 0.01745329252)
+        m2 := Tan(Mod(gAngle+90, 360) * 0.01745329252)
+        gAngle := Mod(gAngle, 360)
+
+        if (Mod(gAngle//90, 2) == 0) 
+            gx := (-m2*tx + ty/2) / (m1-m2)
+        else 
+            gx := (-m2*tx - ty/2) / (m1-m2)
+        gy := m1 * gx
+
+        if (gAngle < 90 || gAngle >= 270) {
+            gx *= -1
+            gy *= -1
+        }
+
         Gdip_DeleteBrush(this.pBrush)
-        this.pBrush := Gdip_CreateLinearGrBrush(textPosition.x+gPan, textPosition.y, x2+gPan, y2, this.fontColour1, this.fontColour2)
-        Gdip_RotateLinearGrBrushAtCenter(this.pBrush, gAngle)
+        this.pBrush := Gdip_CreateLinearGrBrush(midX+gx, midY+gy, midX-gx, midY-gy, this.fontColour1, this.fontColour2)
 
         Gdip_GraphicsClear(this.G)
-        options := "x" textPosition.x " y" textPosition.y " w100p h100p c" this.pBrush " ow" this.outlineWidth " oc" this.outlineColour " s" this.fontSize " r4"
+        options := "x" x1 " y" y1 " w100p h100p c" this.pBrush " ow" this.outlineWidth " oc" this.outlineColour " s" this.fontSize " r4"
         Gdip_TextToGraphics(this.G, text, options, this.font, A_ScreenWidth, A_ScreenHeight)
         UpdateLayeredWindow(this.hwnd, this.hdc, 0,0, A_ScreenWidth, A_ScreenHeight)
     }
@@ -160,17 +177,17 @@ Class Timer
         switch (this.anchor)
         {
             case "TopLeft":
-                anchorX := win.x1 + this.offsetX
-                anchorY := win.y1 + this.offsetY
+                anchorX := win.x1              + this.offsetX + this.outlineWidth/2 - this.padding.left
+                anchorY := win.y1              + this.offsetY + this.outlineWidth/2 - this.padding.top
             case "TopRight": 
-                anchorX := win.x2 - textWidth - this.offsetX
-                anchorY := win.y1 + this.offsetY
+                anchorX := win.x2 - textWidth  - this.offsetX - this.outlineWidth/2 + this.padding.right
+                anchorY := win.y1              + this.offsetY + this.outlineWidth/2 - this.padding.top
             case "BottomLeft":
-                anchorX := win.x1 + this.offsetX
-                anchorY := win.y2 - textHeight - this.offsetY
+                anchorX := win.x1              + this.offsetX + this.outlineWidth/2 - this.padding.left
+                anchorY := win.y2 - textHeight - this.offsetY - this.outlineWidth/2 + this.padding.bottom
             case "BottomRight":
-                anchorX := win.x2 - textWidth - this.offsetX
-                anchorY := win.y2 - textHeight - this.offsetY
+                anchorX := win.x2 - textWidth  - this.offsetX - this.outlineWidth/2 + this.padding.right
+                anchorY := win.y2 - textHeight - this.offsetY - this.outlineWidth/2 + this.padding.bottom
         }
         return {x: anchorX, y: anchorY}
     }
@@ -231,6 +248,9 @@ Class Timer
             setting["map"]["tFont"]["rootDiv"]["style"]["background-color"] := ""
         this.hFont := Gdip_FontCreate(this.hFamily, this.fontSize)
         this.hFormat := Gdip_StringFormatCreate(0x4000)
+
+        ; these are approximate values based on the Mojangles font
+        this.padding := {top: this.fontSize/5, left: this.fontSize/4.7, right: this.fontSize/4.3, bottom: this.fontSize/3.1}
 
         if !this.tickFunction
             this.reset()
