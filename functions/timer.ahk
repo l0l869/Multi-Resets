@@ -109,25 +109,20 @@ Class Timer
         gAngle := this.gradientAngle
         gPan := 0
 
-        if (this.animationSpeed) {
-            if (this.animationType == "panoramic") {
-                noPaddingLength := textSize[3] - (this.padding.left + this.padding.right)
-                gPan := Mod(noPaddingLength*A_TickCount/(this.animationSpeed*1000), noPaddingLength)
-            } else {
-                rotationScaler := A_TickCount/(this.animationSpeed*1000)
-                gAngle := 360*rotationScaler
-            }
+        if (this.animationSpeed && this.animationType == "rotatory") {
+            rotationScaler := Mod(A_TickCount/this.animationSpeed, 1000)/1000
+            gAngle := 360*rotationScaler
         }
 
-        midX := ((x2-this.padding.right ) + (x1+this.padding.left))/2 + gPan
-        midY := ((y2-this.padding.bottom) + (y1+this.padding.top ))/2 + gPan
+        midX := (x2-this.padding.right  + x1+this.padding.left)/2
+        midY := (y2-this.padding.bottom + y1+this.padding.top )/2
         tx := textSize[3]/2 - this.padding.left
         ty := textSize[4]   - (this.padding.top + this.padding.bottom)
         m1 := Tan(Mod(gAngle,    360) * 0.01745329252)
         m2 := Tan(Mod(gAngle+90, 360) * 0.01745329252)
         gAngle := Mod(gAngle, 360)
 
-        if (Mod(gAngle//90, 2) == 0) 
+        if (Mod(gAngle//90, 2) == 0)
             gx := (-m2*tx + ty/2) / (m1-m2)
         else 
             gx := (-m2*tx - ty/2) / (m1-m2)
@@ -138,6 +133,15 @@ Class Timer
             gy *= -1
         }
 
+        if (this.animationSpeed && this.animationType == "panoramic") {
+            gPan := Mod(A_TickCount/this.animationSpeed, 1000)/1000
+            gLength := Sqrt(gx**2 + gy**2)*4
+            halfLength := gLength/2
+            slopeFactor := Sqrt(1 + m1**2)
+            midX += gLength   /slopeFactor*gPan - halfLength
+            midY += gLength*m1/slopeFactor*gPan - halfLength
+        }
+        
         Gdip_DeleteBrush(this.pBrush)
         this.pBrush := Gdip_CreateLinearGrBrush(midX+gx, midY+gy, midX-gx, midY-gy, this.fontColour1, this.fontColour2)
 
