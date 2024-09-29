@@ -57,13 +57,12 @@ LaunchInstance(index) {
 ResizeInstance(instance, index) {
     workArea := GetWorkArea()
 
-    dim := StrSplit(layoutDimensions, ",")
-    width := workArea[1] / dim[1]
-    height := workArea[2] / dim[2]
+    width := workArea[1] / layoutDimensions.x
+    height := workArea[2] / layoutDimensions.y
 
-    positionIndex := Mod(index - 1, dim[1] * dim[2]) + 1
-    x := Mod(positionIndex, dim[1])
-    y := Floor((positionIndex - 1) / dim[1])
+    positionIndex := Mod(index - 1, layoutDimensions.x * layoutDimensions.y) + 1
+    x := Mod(positionIndex, layoutDimensions.x)
+    y := Floor((positionIndex - 1) / layoutDimensions.x)
     WinRestore, % "ahk_id " instance.hwnd
     WinMove, % "ahk_id " instance.hwnd,, width*x-SM_CXFRAME, height*y, width+SM_CXFRAME*2, height+SM_CYFRAME
 
@@ -190,7 +189,7 @@ ConfigureMinecraftPointers() {
 CheckMinecraftSettings() {
     txtOptions := minecraftDir "\minecraftpe\options.txt"
     if !FileExist(txtOptions)
-        return LogF("WAR", "File doesn't exist at """ txtOptions """", A_ThisFunc ":NoOptionsFile")
+        return LogF("WAR", "File doesn't exist at """ txtOptions """; Unable to check MC settings", A_ThisFunc ":NoOptionsFile")
 
     optionsToUpdate := {}
     FileRead, settingsData, %txtOptions%
@@ -406,7 +405,7 @@ GetSpawnChance(min, max) {
 }
 
 LogF(type, msg, id:=0) {
-    static cleared
+    static cleared, loggedIDs := {}
     if !cleared {
         cleared := true
         FileDelete, assets/log.txt

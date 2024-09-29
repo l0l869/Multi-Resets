@@ -106,7 +106,7 @@ Class Timer
         y1 := textPosition.y
         x2 := textPosition.x + textSize[3]
         y2 := textPosition.y + textSize[4]
-        gAngle := this.gradientAngle
+        gAngle := Mod(this.gradientAngle, 360)
         gPan := 0
 
         if (this.animationSpeed && this.animationType == "rotatory") {
@@ -118,9 +118,8 @@ Class Timer
         midY := (y2-this.padding.bottom + y1+this.padding.top )/2
         tx := textSize[3]/2 - this.padding.left
         ty := textSize[4]   - (this.padding.top + this.padding.bottom)
-        m1 := Tan(Mod(gAngle,    360) * 0.01745329252)
+        m1 := Tan(gAngle              * 0.01745329252)
         m2 := Tan(Mod(gAngle+90, 360) * 0.01745329252)
-        gAngle := Mod(gAngle, 360)
 
         if (Mod(gAngle//90, 2) == 0)
             gx := (-m2*tx + ty/2) / (m1-m2)
@@ -261,9 +260,6 @@ Class Timer
             this.reset()
     }
 }
-
-global FuncUpdateMainTimer := Func("UpdateMainTimer")
-SetTimer, %FuncUpdateMainTimer%, 500
 
 UpdateMainTimer() {
     if !timerActive {

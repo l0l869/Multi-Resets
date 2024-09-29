@@ -50,7 +50,7 @@ Restart:
         MCInstances[A_Index] := LaunchInstance(A_Index)
     ConfigureMinecraftPointers()
     lastRestart := UpdateResetAttempts(0)
-    LogF("INF", "Launched " numInstances " Instances with " layoutDimensions " layout")
+    LogF("INF", "Launched " numInstances " Instances with " layoutDimensions.x "," layoutDimensions.y " layout")
 return
 
 StartTimer:
@@ -107,10 +107,10 @@ ResetInstances() {
         }
 
         for k, instance in MCInstances {
-            if !WinExist("ahk_id " instance.hwnd) { ; if crashes
+            if !WinExist("ahk_id " instance.hwnd) {
                 MCInstances[k] := LaunchInstance(k)
                 MCInstances[k].isResetting := 1
-                LogF("WAR", "Instance #" k " crashed, relaunching...")
+                LogF("WAR", "Instance #" k " not found, relaunching...")
             }
 
             if (instance.isResetting <= 0)
@@ -168,11 +168,10 @@ IterateReset(instance) {
                         Gosub, StopReset
                     return
                 case "setSeed":
-                    if (setSeedMouseMove != "0,0") {
-                        point := StrSplit(setSeedMouseMove, ",")
+                    if (setSeedMouseMove.x || setSeedMouseMove.y) {
                         WinActivate, ahk_class Shell_TrayWnd
                         Sleep, 20
-                        MouseMove, % point[1], % point[2]
+                        MouseMove, % setSeedMouseMove.x, % setSeedMouseMove.y
                     }
                     return RunInstance(instance)
                 case "manual": return RunInstance(instance)
@@ -272,14 +271,14 @@ ShouldAutoReset(instance) {
             startTick := A_TickCount
             while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
                 if (A_TickCount - startTick > 500) {
-                    LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
+                    LogF("WAR", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
                     break
                 }
         }
         if !xCoord {
             VarSetCapacity(coordinates, 12)
             if !DllCall("reset\GetShownCoordinates", "Ptr", instance.hwnd, "UPtr", &coordinates) {
-                LogF("INF", "Couldn't get player coordinates on screen.")
+                LogF("WAR", "Couldn't get player coordinates on screen.")
                 return true
             }
             xCoord := NumGet(coordinates, 0, "Int")
@@ -295,21 +294,21 @@ ShouldAutoReset(instance) {
             startTick := A_TickCount
             while !xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
                 if (A_TickCount - startTick > 500) {
-                    LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
+                    LogF("WAR", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
                     break
                 }
 
             startTick := A_TickCount
             while !zCoord := ReadMemoryValue(instance.proc, "Float", offsetsZ*)
                 if (A_TickCount - startTick > 100) {
-                    LogF("INF", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
+                    LogF("WAR", "Timed Out: Couldn't get player coordinates from memory. A_LastError: " A_LastError)
                     break
                 }
         }
         if !xCoord || !zCoord {
             VarSetCapacity(coordinates, 12)
             if !DllCall("reset\GetShownCoordinates", "Ptr", instance.hwnd, "UPtr", &coordinates) {
-                LogF("INF", "Couldn't get player coordinates on screen.")
+                LogF("WAR", "Couldn't get player coordinates on screen.")
                 return true
             }
             xCoord := NumGet(coordinates, 0, "Int")
@@ -467,7 +466,7 @@ GetCurrentScreen(instance) {
         while !valueUI := ReadMemoryValue(instance.proc, "Int", offsetsScreen*) {
             if (A_TickCount-startTick > 3000) {
                 MsgBox, % "failed to get current screen from memory: " valueUI
-                LogF("ERR", "Timed Out: Failed to get current screen from memory")
+                LogF("WAR", "Timed Out: Failed to get current screen from memory")
                 Exit
             }
         }

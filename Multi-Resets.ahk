@@ -6,6 +6,7 @@ SetMouseDelay, -1
 EnvGet, A_LocalAppData, LocalAppData
 Process, Priority,, High
 
+initTick := A_TickCount
 LogF("INF", "Initialising (" A_AhkVersion " " A_PtrSize*8 "-bit)")
 
 #NoEnv
@@ -22,7 +23,6 @@ global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d
 
 EnvGet, threadCount, NUMBER_OF_PROCESSORS
 global threadCount
-global loggedIDs := {}
 global scaleBy := A_ScreenDPI / 96, workArea := GetWorkArea()
 global SM_CXFRAME := DllCall("GetSystemMetrics", "Int", 32)
 global SM_CYFRAME := DllCall("GetSystemMetrics", "Int", 33)
@@ -45,9 +45,12 @@ global WB, GuiHwnd
 Gui, Main:Add, ActiveX, vWB x0 y0 w600 h400, shell.explorer
 InitGui()
 Gui, Main:Show, % "w" 600/scaleBy " h" 400/scaleBy, Multi-Resets
+LogF("INF", "Initialised (" A_TickCount-initTick "ms)")
 
 CheckMinecraftSettings()
-latestFetchedVersion := FetchUpdates()
+
+global FuncUpdateMainTimer := Func("UpdateMainTimer")
+SetTimer, %FuncUpdateMainTimer%, 500
 
 Hotkey, IfWinActive, Minecraft
 Hotkey, %resetKey%, Reset
@@ -86,7 +89,6 @@ InitGui() {
     DllCall(flushMenuThemes)
 
     InitGuiElements()
-    LogF("INF", "Initialised")
 }
 
 Gui_UpdateProgress(show, percent := 0, text := "", buttonFunc := "") {

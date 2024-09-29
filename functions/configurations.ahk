@@ -32,7 +32,7 @@ macroSection := [new Setting("resetMode", "Reset Mode", "Macro", 1, "select", ["
                 ,new Setting("seamlessRestarts", "Seamless", "Macro", 2, "checkbox", false, "Opens instances in the background before restarting", [Func("AutoRestartHandler")])
                 ,new Setting("resetThreshold", "Reset Threshold", "Macro", 2, "inputNumber", 120, "Number of resets accumulated between instances to initiate an automatic restart", [Func("AutoRestartHandler")])
                 ,new Setting("numInstances", "Number of Instances", "Macro", 3, "inputNumber", 4, "", 0)
-                ,new Setting("layoutDimensions", "Layout", "Macro", 3, "inputText", "2,2", "The arrangement of instances (x, y)", 0)
+                ,new Setting("layoutDimensions", "Layout", "Macro", 3, "inputCoords", "2,2", "The arrangement of instances (x, y)", 0)
                 ,new Setting("keyDelay", "Key Delay", "Macro", 4, "inputNumber", 50, "The delay between world creation clicks", 0)
                 ,new Setting("switchDelay", "Switch Delay", "Macro", 4, "inputNumber", 0, "The delay resetting in-between instances", 0)
                 ,new Setting("clickDuration", "Click Duration", "Macro", 4, "inputNumber", 30, "How long each mouse click is held down for; helps to register clicks", 0)]
@@ -136,6 +136,8 @@ class Setting {
                 this.rootDiv.appendChild(div)
 
             case "inputNumber", "inputText":
+                if (this.type == "inputNumber")
+                    this.InputRetriever := ObjBindMethod(this, "InputNumberRetriever")
                 this.attributeType := "value"
 
                 div := WB.document.createElement("div")
@@ -147,8 +149,6 @@ class Setting {
                 input.id := this.id
                 input.oninput := ObjBindMethod(this, "EventHandler")
                 input.type := "text"
-                if (this.type == "inputNumber")
-                    this.method.InsertAt(1, ObjBindMethod(this, "InputNumberHandler"))
                 this.element := input
 
                 div.appendChild(h3)
@@ -156,6 +156,7 @@ class Setting {
                 this.rootDiv.appendChild(div)
 
             case "inputCoords":
+                this.InputRetriever := ObjBindMethod(this, "InputCoordsRetriever")
                 this.attributeType := "value"
 
                 div := WB.document.createElement("div")
@@ -167,15 +168,13 @@ class Setting {
                 inputX.id := this.id "x"
                 inputX.oninput := ObjBindMethod(this, "EventHandler")
                 inputX.type := "text"
-                this.elementX := this.element := inputX
+                this.elementX := inputX
 
                 inputY := WB.document.createElement("input")
                 inputY.id := this.id "y"
                 inputY.oninput := ObjBindMethod(this, "EventHandler")
                 inputY.type := "text"
                 this.elementY := inputY
-
-                this.method.InsertAt(1, ObjBindMethod(this, "InputCoordsHandler"))
 
                 div.appendChild(h3)
                 div.appendChild(inputX)
@@ -260,6 +259,8 @@ class Setting {
                 }
                 this.rootDiv.appendChild(select)
         }
+        if (!this.InputRetriever)
+            this.InputRetriever := ObjBindMethod(this, "DefaultInputRetriever")
 
         if (this.hint) {
             hint := WB.document.createElement("span")
@@ -308,7 +309,14 @@ class Setting {
 
     GetIniValue() {
         IniRead, value, %iniFile%, % this.section, % this.id
-        if (value == "ERROR" || !value) {
+
+        if (this.type == "inputCoords") {
+            values := StrSplit(value, ",")
+            valid := StrLen(values[1]) && StrLen(values[2])
+            if !valid
+                value := ""
+        }
+        if (!value || value == "ERROR") {
             if value is number ; only allow empty strings
                 return 0
             if (this.section == "Timer") { ; backwards compatibility, i know this looks bad
@@ -326,41 +334,69 @@ class Setting {
             value := this.default.count() ? this.default[1] : this.default
             IniWrite, %value%, %iniFile%, % this.section, % this.id
             LogF("WAR", "Invalid value for """ this.id """. Setting to default: " value)
-        }
-        if (this.type == "checkbox" && value == "false") ;more backwards compatibility
+        } else if (this.type == "checkbox" && value == "false") { ; more backwards compatibility
             value := false
+        }
+
         return value
     }
 
-    UpdateSettingValue(value) {
-        this.element[this.attributeType] := value ? "" value : 0
-        this.EventHandler()
+    UpdateSettingValue(value, invokeEventHandler:=true) {
+        if (this.type == "inputCoords") {
+            values := StrSplit(value, ",")
+            this.elementX["value"] := values[1]
+            this.elementY["value"] := values[2]
+        } else {
+            this.element[this.attributeType] := value ? "" value : 0
+        }
+
+        if invokeEventHandler
+            this.EventHandler()
+    }
+
+    DefaultInputRetriever() {
+        return this.element[this.attributeType]
+    }
+
+    InputNumberRetriever() {
+        input := this.DefaultInputRetriever()
+        
+        RegExMatch(input, "-?[\d.]+", filteredInput)
+        if (input != filteredInput)
+            this.UpdateSettingValue(filteredInput, false)
+
+        return filteredInput
+    }
+
+    InputCoordsRetriever() {
+        inputX := this.elementX["value"]
+        inputY := this.elementY["value"]
+        RegExMatch(inputX, "-?[\d.]+", filteredInputX)
+        RegExMatch(inputY, "-?[\d.]+", filteredInputY)
+        filteredInput := filteredInputX "," filteredInputY
+
+        if (inputX != filteredInputX || inputY != filteredInputY)
+            this.UpdateSettingValue(filteredInput, false)
+
+        return {string: filteredInput, object: {x: filteredInputX, y: filteredInputY}}
     }
 
     EventHandler() {
-        this.value := this.element[this.attributeType]
+        input := this.InputRetriever.call()
+        globalVar := this.id
+        
+        if IsObject(input) {
+            this.value := input.string
+            (%globalVar%) := input.object
+        } else {
+            this.value := input
+            (%globalVar%) := input
+        }
+
         IniWrite, % this.value, %iniFile%, % this.section, % this.id
-        globalVar := this.id, (%globalVar%) := this.value
 
         for k, func in this.method
             IsObject(func) ? func.call() : RunJS(func)
-    }
-
-    InputNumberHandler() {
-        RegExMatch(this.value, "-?[\d.]+", filteredInput)
-        if (this.value != filteredInput)
-            this.UpdateSettingValue(filteredInput)
-    }
-
-    InputCoordsHandler() { ; should probably change the "this.element" way of things
-        array := StrSplit(this.value, ",")
-        if array.HasKey(2) { ; lets hope no one types a comma
-            this.elementX["value"] := array[1]
-            this.elementY["value"] := array[2]
-        } else {
-            this.elementX["value"] := this.elementX["value"] "," this.elementY["value"]
-            this.EventHandler()
-        }
     }
 
     InputFontHandler() {
