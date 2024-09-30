@@ -31,8 +31,7 @@ global clickDuration   , new Setting("clickDuration", "Click Duration", "Macro",
 
 global timerActive    , new Setting("timerActive", "Timer", "Timer", 1, "checkbox", true, "", [Func("TimerSettingHandler")])
 global tAnchor        , new Setting("tAnchor", "Anchor", "Timer", 2, "select", ["TopLeft", "TopRight", "BottomLeft", "BottomRight"], "Where the timer is relatively positioned on the instance", [Func("TimerSettingHandler")])
-global tOffsetX       , new Setting("tOffsetX", "Offset-X", "Timer", 2, "inputNumber", 25, "Offset from the anchor point", [Func("TimerSettingHandler")])
-global tOffsetY       , new Setting("tOffsetY", "Offset-Y", "Timer", 2, "inputNumber", 25, "Offset from the anchor point", [Func("TimerSettingHandler")])
+global tOffset        , new Setting("tOffset", "Offset", "Timer", 2, "inputCoords", "25,25", "Offset from the anchor point", [Func("TimerSettingHandler")])
 global tFont          , new Setting("tFont", "Font", "Timer", 3, "inputFont", "Arial", "Any font installed", [Func("TimerSettingHandler")])
 global tFontSize      , new Setting("tFontSize", "Size", "Timer", 3, "inputNumber", 50, "", [Func("TimerSettingHandler")])
 global tFontColour1   , new Setting("tFontColour1", "Colour 1", "Timer", 3, "inputColour", "0xFFFFFFFF", "Hexadecimal Colour (0xAARRGGBB)", [Func("TimerSettingHandler")])
@@ -459,8 +458,9 @@ AutoRestartHandler() {
 }
 
 TimerSettingHandler() {
-    timerOptions := [tAnchor, tOffsetX, tOffsetY, tFont, tFontSize, tFontColour1, tFontColour2, tGradientAngle
-                    , tAnimationType, tAnimationSpeed, tOutlineWidth, tOutlineColour, tDecimalPlaces, 0, tAutoSplit]
+    tRefreshRate := 0
+    timerOptions := [tAnchor, tOffset, tFont, tFontSize, tFontColour1, tFontColour2, tGradientAngle
+                    , tAnimationType, tAnimationSpeed, tOutlineWidth, tOutlineColour, tDecimalPlaces, tRefreshRate, tAutoSplit]
     if !timer1
         timer1 := new Timer(timerOptions*)
     else

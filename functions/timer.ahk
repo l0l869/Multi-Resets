@@ -109,8 +109,8 @@ Class Timer
         gAngle := Mod(this.gradientAngle, 360)
         gPan := 0
 
-        if (this.animationSpeed && this.animationType == "rotatory") {
-            rotationScaler := Mod(A_TickCount/this.animationSpeed, 1000)/1000
+        if (this.animationLength && this.animationType == "rotatory") {
+            rotationScaler := Mod(A_TickCount/this.animationLength, 1000)/1000
             gAngle := 360*rotationScaler
         }
 
@@ -132,8 +132,8 @@ Class Timer
             gy *= -1
         }
 
-        if (this.animationSpeed && this.animationType == "panoramic") {
-            gPan := Mod(A_TickCount/this.animationSpeed, 1000)/1000
+        if (this.animationLength && this.animationType == "panoramic") {
+            gPan := Mod(A_TickCount/this.animationLength, 1000)/1000
             gLength := Sqrt(gx**2 + gy**2)*4
             halfLength := gLength/2
             slopeFactor := Sqrt(1 + m1**2)
@@ -181,17 +181,17 @@ Class Timer
         switch (this.anchor)
         {
             case "TopLeft":
-                anchorX := win.x1              + this.offsetX + this.outlineWidth/2 - this.padding.left
-                anchorY := win.y1              + this.offsetY + this.outlineWidth/2 - this.padding.top
+                anchorX := win.x1              + this.offset.x + this.outlineWidth/2 - this.padding.left
+                anchorY := win.y1              + this.offset.y + this.outlineWidth/2 - this.padding.top
             case "TopRight": 
-                anchorX := win.x2 - textWidth  - this.offsetX - this.outlineWidth/2 + this.padding.right
-                anchorY := win.y1              + this.offsetY + this.outlineWidth/2 - this.padding.top
+                anchorX := win.x2 - textWidth  - this.offset.x - this.outlineWidth/2 + this.padding.right
+                anchorY := win.y1              + this.offset.y + this.outlineWidth/2 - this.padding.top
             case "BottomLeft":
-                anchorX := win.x1              + this.offsetX + this.outlineWidth/2 - this.padding.left
-                anchorY := win.y2 - textHeight - this.offsetY - this.outlineWidth/2 + this.padding.bottom
+                anchorX := win.x1              + this.offset.x + this.outlineWidth/2 - this.padding.left
+                anchorY := win.y2 - textHeight - this.offset.y - this.outlineWidth/2 + this.padding.bottom
             case "BottomRight":
-                anchorX := win.x2 - textWidth  - this.offsetX - this.outlineWidth/2 + this.padding.right
-                anchorY := win.y2 - textHeight - this.offsetY - this.outlineWidth/2 + this.padding.bottom
+                anchorX := win.x2 - textWidth  - this.offset.x - this.outlineWidth/2 + this.padding.right
+                anchorY := win.y2 - textHeight - this.offset.y - this.outlineWidth/2 + this.padding.bottom
         }
         return {x: anchorX, y: anchorY}
     }
@@ -222,22 +222,21 @@ Class Timer
         this.UpdateTimerText(this.FormatTime(this.elapsedTick))
     }
 
-    setSettings(anchor, offsetX, offsetY, font, fontSize, fontColour1, fontColour2, gradientAngle, animationType 
-                , animationSpeed, outlineWidth, outlineColour, decimalPlaces, refreshRate, autoSplit) {
+    setSettings(anchor, offset, font, fontSize, fontColour1, fontColour2, gradientAngle, animationType 
+                , animationLength, outlineWidth, outlineColour, decimalPlaces, refreshRate, autoSplit) {
         Gdip_DeleteFontFamily(this.hFamily)
         Gdip_DeleteFont(this.hFont)
         Gdip_DeleteStringFormat(this.hFormat)
         
         this.anchor := anchor
-        this.offsetX := offsetX
-        this.offsetY := offsetY
+        this.offset := offset
         this.font := font
         this.fontSize := fontSize
         this.fontColour1 := InStr(fontColour1, "0x") ? fontColour1 : "0x" fontColour1
         this.fontColour2 := InStr(fontColour2, "0x") ? fontColour2 : "0x" fontColour2
         this.gradientAngle := gradientAngle
         this.animationType := animationType
-        this.animationSpeed := animationSpeed
+        this.animationLength := animationLength
         this.outlineWidth := outlineWidth
         this.outlineColour := StrReplace(outlineColour, "0x", "")
         this.decimalPlaces := decimalPlaces
