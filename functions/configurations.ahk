@@ -12,58 +12,50 @@ global timerPreview := new Timer()
 
 global clickData := {}, screenClicks := [], worldcreationClicks := []
 
+; i'll put all these definitions in a separate formatted file some day
+global resetMode       , new Setting("resetMode", "Reset Mode", "Macro", 1, "select", ["auto", "cumulative", "setSeed", "manual", "manualWall"], "The type of resetting", [Func("OptResetModeHandler")])
+global minCoords       , new Setting("minCoords", "Min Coordinate", "Macro", 1, "inputNumber", 700, "The minimum x-coordinate the macro auto-resets for", [Func("OptResetModeHandler"), "getSpawnChance();"])
+global maxCoords       , new Setting("maxCoords", "Max Coordinate", "Macro", 1, "inputNumber", 1800, "The maximum x-coordinate the macro auto-resets for", [Func("OptResetModeHandler"), "getSpawnChance();"])
+global originDistance  , new Setting("originDistance", "Distance from 0,0 (1.19.50)", "Macro", 1, "inputNumber", 400, "The minimum number of blocks from world origin", [Func("OptResetModeHandler")])
+global queueLimit      , new Setting("queueLimit", "Queue Limit", "Macro", 1, "inputNumber", 100, "Limits the number of queued instances", [Func("OptResetModeHandler")])
+global resetSeed       , new Setting("resetSeed", "Seed", "Macro", 1, "select", GetSeedsFromFile(), "", [Func("OptResetModeHandler")])
+global setSeedMouseMove, new Setting("setSeedMouseMove", "Move Cursor", "Macro", 1, "inputCoords", "0,0", "Moves your cursor to a point (x,y) on your screen. Set to 0,0 to omit.", [Func("OptResetModeHandler")])
+global autoRestart     , new Setting("autoRestart", "Auto Restart", "Macro", 2, "checkbox", false, "Automatically restarts instances`nDeprecated: Use 'Block Marketplace' to prevent the buildup of lag.", [Func("AutoRestartHandler")])
+global seamlessRestarts, new Setting("seamlessRestarts", "Seamless", "Macro", 2, "checkbox", false, "Opens instances in the background before restarting", [Func("AutoRestartHandler")])
+global resetThreshold  , new Setting("resetThreshold", "Reset Threshold", "Macro", 2, "inputNumber", 120, "Number of resets accumulated between instances to initiate an automatic restart", [Func("AutoRestartHandler")])
+global numInstances    , new Setting("numInstances", "Number of Instances", "Macro", 3, "inputNumber", 4, "", 0)
+global layoutDimensions, new Setting("layoutDimensions", "Layout", "Macro", 3, "inputCoords", "2,2", "The arrangement of instances (x, y)", 0)
+global keyDelay        , new Setting("keyDelay", "Key Delay", "Macro", 4, "inputNumber", 50, "The delay between world creation clicks", 0)
+global switchDelay     , new Setting("switchDelay", "Switch Delay", "Macro", 4, "inputNumber", 0, "The delay resetting in-between instances", 0)
+global clickDuration   , new Setting("clickDuration", "Click Duration", "Macro", 4, "inputNumber", 30, "How long each mouse click is held down for; helps to register clicks", 0)
 
-global resetMode, minCoords, maxCoords, originDistance, queueLimit, resetSeed, setSeedMouseMove, autoRestart, seamlessRestarts
-     , resetThreshold, numInstances, layoutDimensions, keyDelay, switchDelay, clickDuration
+global timerActive    , new Setting("timerActive", "Timer", "Timer", 1, "checkbox", true, "", [Func("TimerSettingHandler")])
+global tAnchor        , new Setting("tAnchor", "Anchor", "Timer", 2, "select", ["TopLeft", "TopRight", "BottomLeft", "BottomRight"], "Where the timer is relatively positioned on the instance", [Func("TimerSettingHandler")])
+global tOffsetX       , new Setting("tOffsetX", "Offset-X", "Timer", 2, "inputNumber", 25, "Offset from the anchor point", [Func("TimerSettingHandler")])
+global tOffsetY       , new Setting("tOffsetY", "Offset-Y", "Timer", 2, "inputNumber", 25, "Offset from the anchor point", [Func("TimerSettingHandler")])
+global tFont          , new Setting("tFont", "Font", "Timer", 3, "inputFont", "Arial", "Any font installed", [Func("TimerSettingHandler")])
+global tFontSize      , new Setting("tFontSize", "Size", "Timer", 3, "inputNumber", 50, "", [Func("TimerSettingHandler")])
+global tFontColour1   , new Setting("tFontColour1", "Colour 1", "Timer", 3, "inputColour", "0xFFFFFFFF", "Hexadecimal Colour (0xAARRGGBB)", [Func("TimerSettingHandler")])
+global tFontColour2   , new Setting("tFontColour2", "Colour 2", "Timer", 3, "inputColour", "0xFF737373", "Hexadecimal Colour (0xAARRGGBB)", [Func("TimerSettingHandler")])
+global tOutlineWidth  , new Setting("tOutlineWidth", "Outline Width", "Timer", 3, "inputNumber", 10, "", [Func("TimerSettingHandler")])
+global tOutlineColour , new Setting("tOutlineColour", "Outline Colour", "Timer", 3, "inputColour", "0xFF000000", "Hexadecimal Colour (0xAARRGGBB)", [Func("TimerSettingHandler")])
+global tGradientAngle , new Setting("tGradientAngle", "Gradient Angle", "Timer", 3, "inputNumber", 60, "", [Func("TimerSettingHandler")])
+global tAnimationType , new Setting("tAnimationType", "Animation Type", "Timer", 3, "select", ["rotatory", "panoramic"], "How the timer's colours are animated", [Func("TimerSettingHandler")])
+global tAnimationSpeed, new Setting("tAnimationSpeed", "Animation Length", "Timer", 3, "inputNumber", 0, "", [Func("TimerSettingHandler")])
+global tDecimalPlaces , new Setting("tDecimalPlaces", "Decimals", "Timer", 3, "select", [0, 1, 2, 3], "", [Func("TimerSettingHandler")])
+global tAutoSplit     , new Setting("tAutoSplit", "Auto Split", "Timer", 4, "checkbox", true, "Automatically stops the timer when credits roll", [Func("TimerSettingHandler")])
+global remindShowPacks, new Setting("remindShowPacks", "Remind: Show Packs", "Timer", 4, "checkbox", false, "After a completion, you can be reminded of", [Func("TimerSettingHandler")])
+global tPreview       , new Setting("tPreview", "Show Preview", "Timer", 4, "checkbox", false, "", [Func("TimerSettingHandler"), Func("TimerPreviewHandler")])
 
-global timerActive, tAnchor, tOffsetX, tOffsetY, tFont, tFontSize, tFontColour1, tFontColour2, tOutlineWidth
-     , tOutlineColour, tGradientAngle, tAnimationType, tAnimationSpeed, tDecimalPlaces, tAutoSplit, remindShowPacks, tPreview
-
-global resetMethod, setupData, coopMode, findCoordsTextOnly, awaitWcColour, readScreenMemory, threadsUsage, hideOnMinimise, isBored
-
-macroSection := [new Setting("resetMode", "Reset Mode", "Macro", 1, "select", ["auto", "cumulative", "setSeed", "manual", "manualWall"], "The type of resetting", [Func("OptResetModeHandler")])
-                ,new Setting("minCoords", "Min Coordinate", "Macro", 1, "inputNumber", 700, "The minimum x-coordinate the macro auto-resets for", [Func("OptResetModeHandler"), "getSpawnChance();"])
-                ,new Setting("maxCoords", "Max Coordinate", "Macro", 1, "inputNumber", 1800, "The maximum x-coordinate the macro auto-resets for", [Func("OptResetModeHandler"), "getSpawnChance();"])
-                ,new Setting("originDistance", "Distance from 0,0 (1.19.50)", "Macro", 1, "inputNumber", 400, "The minimum number of blocks from world origin", [Func("OptResetModeHandler")])
-                ,new Setting("queueLimit", "Queue Limit", "Macro", 1, "inputNumber", 100, "Limits the number of queued instances", [Func("OptResetModeHandler")])
-                ,new Setting("resetSeed", "Seed", "Macro", 1, "select", GetSeedsFromFile(), "", [Func("OptResetModeHandler")])
-                ,new Setting("setSeedMouseMove", "Move Cursor", "Macro", 1, "inputCoords", "0,0", "Moves your cursor to a point (x,y) on your screen. Set to 0,0 to omit.", [Func("OptResetModeHandler")])
-                ,new Setting("autoRestart", "Auto Restart", "Macro", 2, "checkbox", false, "Automatically restarts instances`nDeprecated: Use 'Block Marketplace' to prevent the buildup of lag.", [Func("AutoRestartHandler")])
-                ,new Setting("seamlessRestarts", "Seamless", "Macro", 2, "checkbox", false, "Opens instances in the background before restarting", [Func("AutoRestartHandler")])
-                ,new Setting("resetThreshold", "Reset Threshold", "Macro", 2, "inputNumber", 120, "Number of resets accumulated between instances to initiate an automatic restart", [Func("AutoRestartHandler")])
-                ,new Setting("numInstances", "Number of Instances", "Macro", 3, "inputNumber", 4, "", 0)
-                ,new Setting("layoutDimensions", "Layout", "Macro", 3, "inputCoords", "2,2", "The arrangement of instances (x, y)", 0)
-                ,new Setting("keyDelay", "Key Delay", "Macro", 4, "inputNumber", 50, "The delay between world creation clicks", 0)
-                ,new Setting("switchDelay", "Switch Delay", "Macro", 4, "inputNumber", 0, "The delay resetting in-between instances", 0)
-                ,new Setting("clickDuration", "Click Duration", "Macro", 4, "inputNumber", 30, "How long each mouse click is held down for; helps to register clicks", 0)]
-
-timerSection := [new Setting("timerActive", "Timer", "Timer", 1, "checkbox", true, "", [Func("TimerSettingHandler")])
-                ,new Setting("tAnchor", "Anchor", "Timer", 2, "select", ["TopLeft", "TopRight", "BottomLeft", "BottomRight"], "Where the timer is relatively positioned on the instance", [Func("TimerSettingHandler")])
-                ,new Setting("tOffsetX", "Offset-X", "Timer", 2, "inputNumber", 25, "Offset from the anchor point", [Func("TimerSettingHandler")])
-                ,new Setting("tOffsetY", "Offset-Y", "Timer", 2, "inputNumber", 25, "Offset from the anchor point", [Func("TimerSettingHandler")])
-                ,new Setting("tFont", "Font", "Timer", 3, "inputFont", "Arial", "Any font installed", [Func("TimerSettingHandler")])
-                ,new Setting("tFontSize", "Size", "Timer", 3, "inputNumber", 50, "", [Func("TimerSettingHandler")])
-                ,new Setting("tFontColour1", "Colour 1", "Timer", 3, "inputColour", "0xFFFFFFFF", "Hexadecimal Colour (0xAARRGGBB)", [Func("TimerSettingHandler")])
-                ,new Setting("tFontColour2", "Colour 2", "Timer", 3, "inputColour", "0xFF737373", "Hexadecimal Colour (0xAARRGGBB)", [Func("TimerSettingHandler")])
-                ,new Setting("tOutlineWidth", "Outline Width", "Timer", 3, "inputNumber", 10, "", [Func("TimerSettingHandler")])
-                ,new Setting("tOutlineColour", "Outline Colour", "Timer", 3, "inputColour", "0xFF000000", "Hexadecimal Colour (0xAARRGGBB)", [Func("TimerSettingHandler")])
-                ,new Setting("tGradientAngle", "Gradient Angle", "Timer", 3, "inputNumber", 60, "", [Func("TimerSettingHandler")])
-                ,new Setting("tAnimationType", "Animation Type", "Timer", 3, "select", ["rotatory", "panoramic"], "How the timer's colours are animated", [Func("TimerSettingHandler")])
-                ,new Setting("tAnimationSpeed", "Animation Length", "Timer", 3, "inputNumber", 0, "", [Func("TimerSettingHandler")])
-                ,new Setting("tDecimalPlaces", "Decimals", "Timer", 3, "select", [0, 1, 2, 3], "", [Func("TimerSettingHandler")])
-                ,new Setting("tAutoSplit", "Auto Split", "Timer", 4, "checkbox", true, "Automatically stops the timer when credits roll", [Func("TimerSettingHandler")])
-                ,new Setting("remindShowPacks", "Remind: Show Packs", "Timer", 4, "checkbox", false, "After a completion, you can be reminded of", [Func("TimerSettingHandler")])
-                ,new Setting("tPreview", "Show Preview", "Timer", 4, "checkbox", false, "", [Func("TimerSettingHandler"), Func("TimerPreviewHandler")])]
-
-otherSection := [new Setting("resetMethod", "Reset Method", "Other", 1, "select", ["setupless", "setup"], "The method the macro uses to figure out where to click", [Func("OptResetMethodHandler")])
-                ,new Setting("setupData", "Setup Data", "Other", 1, "select", LoadClickData(), "", [Func("OptResetMethodHandler")])
-                ,new Setting("coopMode", "Coop Mode", "Other", 1, "checkbox", false, "Prevents the 0/8 bug", 0)
-                ,new Setting("findCoordsTextOnly", "Read Coordinates Text Only", "Other", 1, "checkbox", false, "Reads the ""Show Coordinates"" text only; does not attempt to read the game memory", 0)
-                ,new Setting("awaitWcColour", "Wait for World Creation Colours", "Other", 1, "checkbox", false, "Waits for the World Creation clicks' colour; useful for allowing the new World Creation UI to load", 0)
-                ,new Setting("readScreenMemory", "Read Screen Memory", "Other", 1, "checkbox", false, "Reads the game memory to get the current screen, relies on setup click data for the clicks [Not Recommended]", 0)
-                ,new Setting("threadsUsage", "Threads Utilisation", "Other", 2, "inputNumber", 0.8, "The percentage of CPU threads the instances will utilise during resets", 0)
-                ,new Setting("hideOnMinimise", "Minimise to Tray", "Other", 3, "checkbox", false, "When the GUI is minimised, the taskbar icon will disappear to the tray", 0)
-                ,new Setting("isBored", "are u bored?", "Other", 5, "checkbox", false, "fun lil game to play while resetting", 0)]
+global resetMethod       , new Setting("resetMethod", "Reset Method", "Other", 1, "select", ["setupless", "setup"], "The method the macro uses to figure out where to click", [Func("OptResetMethodHandler")])
+global setupData         , new Setting("setupData", "Setup Data", "Other", 1, "select", LoadClickData(), "", [Func("OptResetMethodHandler")])
+global coopMode          , new Setting("coopMode", "Coop Mode", "Other", 1, "checkbox", false, "Prevents the 0/8 bug", 0)
+global findCoordsTextOnly, new Setting("findCoordsTextOnly", "Read Coordinates Text Only", "Other", 1, "checkbox", false, "Reads the ""Show Coordinates"" text only; does not attempt to read the game memory", 0)
+global awaitWcColour     , new Setting("awaitWcColour", "Wait for World Creation Colours", "Other", 1, "checkbox", false, "Waits for the World Creation clicks' colour; useful for allowing the new World Creation UI to load", 0)
+global readScreenMemory  , new Setting("readScreenMemory", "Read Screen Memory", "Other", 1, "checkbox", false, "Reads the game memory to get the current screen, relies on setup click data for the clicks [Not Recommended]", 0)
+global threadsUsage      , new Setting("threadsUsage", "Threads Utilisation", "Other", 2, "inputNumber", 0.8, "The percentage of CPU threads the instances will utilise during resets", 0)
+global hideOnMinimise    , new Setting("hideOnMinimise", "Minimise to Tray", "Other", 3, "checkbox", false, "When the GUI is minimised, the taskbar icon will disappear to the tray", 0)
+global isBored           , new Setting("isBored", "are u bored?", "Other", 5, "checkbox", false, "fun lil game to play while resetting", 0)
 
 class Setting {
     static map := {}
@@ -386,9 +378,10 @@ class Setting {
         globalVar := this.id
         
         if IsObject(input) {
-            this.value := input.string
+            this.value := Trim(input.string)
             (%globalVar%) := input.object
         } else {
+            input := Trim(input)
             this.value := input
             (%globalVar%) := input
         }
