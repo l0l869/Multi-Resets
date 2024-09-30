@@ -242,7 +242,12 @@ IterateReset(instance) {
 
                 if (click.colour && awaitWcColour) {
                     pixelColour := 0
+                    endTick := A_TickCount+5000
                     while (pixelColour != click.colour) {
+                        if (A_TickCount > endTick) {
+                            LogF("WAR", "Timed Out: Assuming enough time has passed; clicking.")
+                            break
+                        }
                         PixelGetColor, pixelColour, instance.x1+click.x, instance.y1+click.y, RGB
                     }
                 }
