@@ -100,9 +100,9 @@ SuspendInstances(instances) {
 
 GetWorkArea() {
     VarSetCapacity(workArea, 16, 0)
-    DllCall("SystemParametersInfo", "UInt", 0x0030, "UInt", 0, "UPtr", &rect, "UInt", 0)
-    workAreaWidth := NumGet(&rect, 8, "Int")
-    workAreaHeight := NumGet(&rect, 12, "Int")
+    DllCall("SystemParametersInfo", "UInt", 0x0030, "UInt", 0, "UPtr", &workArea, "UInt", 0)
+    workAreaWidth := NumGet(&workArea, 8, "Int")
+    workAreaHeight := NumGet(&workArea, 12, "Int")
     LogF("INF", "Working Area: " workAreaWidth "x" workAreaHeight ", Screen DPI: " A_ScreenDPI, A_ThisFunc ":WorkArea")
     return [workAreaWidth, workAreaHeight]
 }
@@ -407,8 +407,8 @@ GetSpawnChance(min, max) {
     return Floor(totalInRange/total*100*100)/100
 }
 
-LogF(type, msg, id:=0) {
-    static cleared, loggedIDs := {}
+LogF(level, msg, id:=0) {
+    static cleared, logText, loggedIDs := {}, guiLogQueue := []
     if !cleared {
         cleared := true
         FileDelete, assets/log.txt
@@ -418,7 +418,25 @@ LogF(type, msg, id:=0) {
             return
         loggedIDs[id] := true
     }
-    FileAppend, [%A_Hour%:%A_Min%:%A_Sec%] [%type%] %msg%`n, assets/log.txt
+
+    out := "[" A_Hour ":" A_Min ":" A_Sec "] [" level "] " msg "`n"
+    FileAppend, %out%, assets/log.txt
+
+    if !logText { ; so goofy
+        logText := WB.document.getElementById("logText")
+        if !logText
+            guiLogQueue.push(out)
+    }
+    if logText {
+        logText["value"] .= out
+        if guiLogQueue {
+            missedLogs := ""
+            for k, log in guiLogQueue
+                missedLogs .= log
+            logText["value"] := missedLogs . logText["value"]
+            guiLogQueue := []
+        }
+    }
 }
 
 GetFontNames(charset) {

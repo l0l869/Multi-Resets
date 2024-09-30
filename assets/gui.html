@@ -300,7 +300,7 @@
         document.oncontextmenu =
         document.ondragstart =
         function () {
-            return window.event && event.srcElement.tagName == "INPUT" || false;
+            return window.event && (event.srcElement.tagName == "INPUT" || event.srcElement.tagName === "TEXTAREA");
         };
         document.addEventListener('wheel', function(e) {
             if (e.ctrlKey) 
@@ -390,7 +390,9 @@
             <div class="tab-content__row 4">
                 <button onclick="AHK('Gui_Setup')">Setup</button>
             </div>
-
+            <div class="tab-content__row 4">
+                <button onclick="openTab(event, 'LogTab')">Logs</button>
+            </div>
         </div>
 
         <div id="WorldBopper" class="tab-content" style="display: none;">
@@ -426,6 +428,22 @@
             </div>
             <div class="tab-content__row">
                 <button class="caution" style="color: red;" onclick="AHK('WorldBopper', 'da', document.getElementById('bopName').value, document.getElementById('bopDays').value)">Delete ALL Worlds (Fast)</button>
+            </div>
+        </div>
+
+        <div id="LogTab" class="tab-content" style="display: none;">
+            <h2>Log</h2>
+            <hr>
+            <textarea readonly id="logText" style="
+            width: 100%; height: 290px; 
+            margin-top: 10px; 
+            background-color: rgb(75, 75, 75);
+            color: white;
+            border: none;
+            font-size: 12px;
+            font-family: Consolas, Courier New;"></textarea>
+            <div class="tab-content__row">
+                <button onclick="document.getElementById('logText').select(); document.execCommand('copy');">Copy</button>
             </div>
         </div>
 
