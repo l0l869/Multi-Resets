@@ -17,7 +17,7 @@ LogF("INF", "Initialising (" A_AhkVersion " " A_PtrSize*8 "-bit)")
 #Include, functions/updater.ahk
 #Include, functions/loadfile.ahk
 
-global SCRIPT_VERSION := 20240622.21
+global SCRIPT_VERSION := 20241002.23
 global iniFile := A_ScriptDir "\configs\configs.ini"
 global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang"
 
@@ -34,7 +34,6 @@ global timer1
 global MCInstances := [], replacementInstances := [], queuedInstances := []
 global resetDll := DllCall("LoadLibrary", "Str", "functions/reset.dll", "Ptr")
 global gameScript := LoadFile("functions/game.ahk")
-; DllCall("gdi32\AddFontResource", "Str", A_ScriptDir "\assets\Mojangles.ttf") causes weird problems
 
 Menu, Tray, Icon, assets/_Icon.ico
 Menu, Tray, Add, MC Directory, OpenMinecraftDir
@@ -212,7 +211,6 @@ MainGuiClose:
     timer1 := ""
     timerPreview := ""
     DllCall("FreeLibrary", "UPtr", resetDll)
-    ; DllCall("gdi32\RemoveFontResource", "Str", A_ScriptDir "\assets\Mojangles.ttf")
     LogF("INF", "App Exit")
     ExitApp
 
