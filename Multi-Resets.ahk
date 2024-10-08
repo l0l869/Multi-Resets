@@ -47,6 +47,7 @@ Gui, Main:Show, % "w" 600/scaleBy " h" 400/scaleBy, Multi-Resets
 LogF("INF", "Initialised (" A_TickCount-initTick "ms)")
 
 CheckMinecraftSettings()
+latestFetchedVersion := FetchUpdates()
 
 global FuncUpdateMainTimer := Func("UpdateMainTimer")
 SetTimer, %FuncUpdateMainTimer%, 500
