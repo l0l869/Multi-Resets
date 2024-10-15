@@ -1,41 +1,32 @@
 LaunchInstance(index) {
     existingPIDs := GetMinecraftProcesses()
-    existingHWNDs := []
-    WinGet, var, List, Minecraft
-    Loop, % var
-        existingHWNDs.push(var%A_Index%)
+    existingHWNDs := GetMinecraftHwnds()
 
-    WinActivate, ahk_class Shell_TrayWnd
     Run, shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App
-    SetTitleMatchMode, 1
-    WinWaitActive, Minecraft
+    timeoutTick := A_TickCount + 5000
+    while !GetExcludedFromList(GetMinecraftHwnds(), existingHWNDs).count() {
+        if (timeoutTick < A_TickCount) {
+            LogF("ERR", "Timed Out: Failed to open an instance.")
+            return {}
+        }
+    }
 
     PIDs := GetMinecraftProcesses()
     filteredPIDs := GetExcludedFromList(PIDs, existingPIDs)
     pid := filteredPIDs[1]
+    if (!pid || filteredPIDs.count() > 1) {
+        LogF("ERR", "Failed to get process ID")
+        MsgBox, % "Error: Failed to get process ID."
+        return {}
+    }
 
-    HWNDs := []
-    WinGet, var, List, Minecraft
-    Loop, % var
-        HWNDs.push(var%A_Index%)
+    HWNDs := GetMinecraftHwnds()
     filteredHWNDs := GetExcludedFromList(HWNDs, existingHWNDs)
     hwnd := filteredHWNDs[1]
-
-    if (filteredPIDs.count() > 1 || !pid) {
-        if !IsMultiRegistered() {
-            MsgBox, 4,, % "Error: Multi-instance is not registered.`nDo you want to register multi?"
-            IfMsgBox, Yes
-                Run, % "configs\scripts\RegisterMulti.ahk 1"
-            exit
-        }
-        MsgBox, % "Error: Failed to get process ID."
-        LogF("ERR", "Failed to get process ID")
-        return
-    }
-    if (filteredHWNDs.count() > 1 || !hwnd) {
-        MsgBox, % "Error: Failed to get window handle."
+    if (!hwnd || filteredHWNDs.count() > 1) {
         LogF("ERR", "Failed to get window handle")
-        return
+        MsgBox, % "Error: Failed to get window handle."
+        return {}
     }
 
     proc := new _ClassMemory("ahk_pid " pid, "PROCESS_VM_READ")
@@ -128,7 +119,7 @@ GetMinecraftProcesses() {
     local tPtr := 0, pPtr := 0, nTTL := 0, processName, processID, list := []
   
     if !DllCall("Wtsapi32\WTSEnumerateProcesses", "Ptr", 0, "Int", 0, "Int", 1, "PtrP", pPtr, "PtrP", nTTL)
-      return "", DllCall("SetLastError", "Int", -1)        
+        return "", DllCall("SetLastError", "Int", -1)        
     
     tPtr := pPtr
     loop, % nTTL {
@@ -142,6 +133,14 @@ GetMinecraftProcesses() {
     DllCall("Wtsapi32\WTSFreeMemory","Ptr", pPtr)      
   
     return list, DllCall("SetLastError", "UInt", nTTL)
+}
+
+GetMinecraftHwnds() {
+    hwnds := []
+    WinGet, var, List, Minecraft
+    Loop, % var
+        hwnds.push(var%A_Index%)
+    return hwnds
 }
 
 GetMinecraftVersion() {
@@ -381,13 +380,27 @@ DateToSeconds(date) {
 }
 
 IsMultiRegistered() {
-    cmd := "(Get-AppxPackage -Name Microsoft.MinecraftUWP).'PackageFullName' > '" A_ScriptDir "\configs\mcpackage.txt'"
-    RunWait, PowerShell.exe -Command &{%cmd%},, Hide
-    FileRead, mcpackage, configs\mcpackage.txt
-    FileDelete, configs\mcpackage.txt
-    mcpackage := Trim(mcpackage, "`r`n")
+    foundPackageName := ""
+    Loop, Reg, % "HKCU\SOFTWARE\Classes\Extensions\ContractId\Windows.Launch\PackageId\", K
+    {
+        if (SubStr(A_LoopRegName, 1, 23) == "Microsoft.MinecraftUWP_") {
+            if foundPackageName
+                break
+            foundPackageName := A_LoopRegName
+        } else if foundPackageName { ; since it iterates alphabetically, we can assume we found the only and correct package name
+            RegRead, multiState, HKCU, % "SOFTWARE\Classes\Extensions\ContractId\Windows.Launch\PackageId\" foundPackageName "\ActivatableClassId\App\CustomProperties", SupportsMultipleInstances
+            return multiState
+        }
+    }
 
-    RegRead, multiState, HKCU, % "SOFTWARE\Classes\Extensions\ContractId\Windows.Launch\PackageId\" mcpackage "\ActivatableClassId\App\CustomProperties", SupportsMultipleInstances
+    ; backup method; slower (~500ms)
+    cmd := "(Get-AppxPackage -Name Microsoft.MinecraftUWP).'PackageFullName' > '" A_ScriptDir "\configs\mc-package-name.txt'"
+    RunWait, PowerShell.exe -Command &{%cmd%},, Hide
+    FileRead, packageName, configs\mc-package-name.txt
+    FileDelete, configs\mc-package-name.txt
+    packageName := Trim(packageName, "`r`n")
+
+    RegRead, multiState, HKCU, % "SOFTWARE\Classes\Extensions\ContractId\Windows.Launch\PackageId\" packageName "\ActivatableClassId\App\CustomProperties", SupportsMultipleInstances
     return multiState
 }
 
@@ -466,4 +479,15 @@ GetExcludedFromList(list, excludeList) {
         returnList.push(item)
     }
     return returnList
+}
+
+CountNonNull(array) {
+    count := 0
+
+    for k, v in array {
+        if ((!IsObject(v) && v) || v.count())
+            count++
+    }
+
+    return count
 }

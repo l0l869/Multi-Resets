@@ -44,13 +44,19 @@ StopReset:
 return
 
 Restart:
-    LogF("INF", "Launching Instances...")
+    if (numInstances > 1 && !IsMultiRegistered()) {
+        MsgBox, 4,, % "Warning: Multi-instance is not registered.`n`nDo you want to register multi?"
+        IfMsgBox, Yes
+            RunWait, % "configs\scripts\RegisterMulti.ahk 1"
+    }
+
+    LogF("INF", "Launching " numInstances " Instances...")
     CloseInstances()
     Loop, %numInstances%
         MCInstances[A_Index] := LaunchInstance(A_Index)
     ConfigureMinecraftPointers()
     lastRestart := UpdateResetAttempts(0)
-    LogF("INF", "Launched " numInstances " Instances with " layoutDimensions.x "," layoutDimensions.y " layout")
+    LogF("INF", "Launched " CountNonNull(MCInstances) " Instances with " layoutDimensions.x "," layoutDimensions.y " layout")
 return
 
 StartTimer:
