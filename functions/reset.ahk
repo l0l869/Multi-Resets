@@ -8,11 +8,13 @@ Reset:
                     instance.isResetting := 1
         ResetInstances()
     } else if (resetMode == "cumulative" && queuedInstances.count()) {
+        Critical, on
         nextInstance := queuedInstances.MaxIndex()
         ResumeProcess(queuedInstances[nextInstance].pid)
         MCInstances.push(queuedInstances[nextInstance])
         queuedInstances.RemoveAt(nextInstance, 1)
         RunInstance(MCInstances[MCInstances.MaxIndex()])
+        Critical, off
     } else {
         for k, instance in MCInstances
             if (instance.isResetting == 0)
@@ -22,6 +24,7 @@ Reset:
 return
 
 StopReset:
+    Critical, On
     isResetting := IsResettingInstances()
 
     if (resetMode == "manualWall" && !isResetting) {
@@ -30,10 +33,8 @@ StopReset:
     }
     
     if isResetting {
-        Critical
         for k, instance in MCInstances
             instance.isResetting := 0
-        Critical, Off
 
         if (resetMode == "cumulative" && queuedInstances.count()) {
             for k, instance in MCInstances
@@ -122,7 +123,10 @@ ResetInstances() {
             if (instance.isResetting <= 0)
                 continue
 
+            Critical, on
             IterateReset(instance)
+            Critical, off
+            Sleep, -1
         }
     }
     gameScript.Hide()
