@@ -174,7 +174,10 @@ IterateReset(instance) {
                         return instance.isResetting := (instance.isResetting ? 1 : 0)
 
                     SaveInstance(instance)
-                    if (queuedInstances.count() >= queueLimit)
+
+                    memory := GlobalMemoryStatusEx()
+                    usedMemory := (memory.TotalPageFile-memory.AvailPageFile)/1000000000
+                    if (queuedInstances.count() >= queueLimit || memoryLimit < usedMemory)
                         Gosub, StopReset
                     return
                 case "setSeed":

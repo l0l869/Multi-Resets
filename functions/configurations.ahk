@@ -18,6 +18,7 @@ global minCoords       , new Setting("minCoords", "Min Coordinate", "Macro", 1, 
 global maxCoords       , new Setting("maxCoords", "Max Coordinate", "Macro", 1, "inputNumber", 1800, "The maximum x-coordinate the macro auto-resets for", [Func("OptResetModeHandler"), "getSpawnChance();"])
 global originDistance  , new Setting("originDistance", "Distance from 0,0 (1.19.50)", "Macro", 1, "inputNumber", 400, "The minimum number of blocks from world origin", [Func("OptResetModeHandler")])
 global queueLimit      , new Setting("queueLimit", "Queue Limit", "Macro", 1, "inputNumber", 100, "Limits the number of queued instances", [Func("OptResetModeHandler")])
+global memoryLimit     , new Setting("memoryLimit", "Committed Memory Limit", "Macro", 1, "inputNumber", 40, "Will stop resetting if the total used memory (GB) exceeds the limit", [Func("OptResetModeHandler")])
 global resetSeed       , new Setting("resetSeed", "Seed", "Macro", 1, "select", GetSeedsFromFile(), "", [Func("OptResetModeHandler")])
 global setSeedMouseMove, new Setting("setSeedMouseMove", "Move Cursor", "Macro", 1, "inputCoords", "0,0", "Moves your cursor to a point (x,y) on your screen. Set to 0,0 to omit.", [Func("OptResetModeHandler")])
 global autoRestart     , new Setting("autoRestart", "Auto Restart", "Macro", 2, "checkbox", false, "Automatically restarts instances`nDeprecated: Use 'Block Marketplace' to prevent the buildup of lag.", [Func("AutoRestartHandler")])
@@ -422,6 +423,7 @@ OptResetModeHandler() {
             Setting["map"]["maxCoords"]["rootDiv"]["style"]["display"] := "flex"
             Setting["map"]["originDistance"]["rootDiv"]["style"]["display"] := "flex"
             Setting["map"]["queueLimit"]["rootDiv"]["style"]["display"] := "flex"
+            Setting["map"]["memoryLimit"]["rootDiv"]["style"]["display"] := "flex"
             Setting["map"]["resetSeed"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["setSeedMouseMove"]["rootDiv"]["style"]["display"] := "none"
 
@@ -430,6 +432,7 @@ OptResetModeHandler() {
             Setting["map"]["maxCoords"]["rootDiv"]["style"]["display"] := "flex"
             Setting["map"]["originDistance"]["rootDiv"]["style"]["display"] := "flex"
             Setting["map"]["queueLimit"]["rootDiv"]["style"]["display"] := "none"
+            Setting["map"]["memoryLimit"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["resetSeed"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["setSeedMouseMove"]["rootDiv"]["style"]["display"] := "none"
 
@@ -438,6 +441,7 @@ OptResetModeHandler() {
             Setting["map"]["maxCoords"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["originDistance"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["queueLimit"]["rootDiv"]["style"]["display"] := "none"
+            Setting["map"]["memoryLimit"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["resetSeed"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["setSeedMouseMove"]["rootDiv"]["style"]["display"] := "none"
 
@@ -446,6 +450,7 @@ OptResetModeHandler() {
             Setting["map"]["maxCoords"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["originDistance"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["queueLimit"]["rootDiv"]["style"]["display"] := "none"
+            Setting["map"]["memoryLimit"]["rootDiv"]["style"]["display"] := "none"
             Setting["map"]["resetSeed"]["rootDiv"]["style"]["display"] := "flex"
             Setting["map"]["setSeedMouseMove"]["rootDiv"]["style"]["display"] := "flex"
     }

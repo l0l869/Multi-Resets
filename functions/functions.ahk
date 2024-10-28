@@ -452,6 +452,18 @@ LogF(level, msg, id:=0) {
     }
 }
 
+GlobalMemoryStatusEx() {
+    static MEMORYSTATUSEX, init := VarSetCapacity(MEMORYSTATUSEX, 64, 0) && NumPut(64, MEMORYSTATUSEX, "UInt")
+    if !DllCall("kernel32.dll\GlobalMemoryStatusEx", "Ptr", &MEMORYSTATUSEX)
+		return DllCall("kernel32.dll\GetLastError")
+
+    return { Lenght:        NumGet(MEMORYSTATUSEX,  0, "UInt"  ), MemoryLoad:    NumGet(MEMORYSTATUSEX,  4, "UInt")
+           , TotalPhys:     NumGet(MEMORYSTATUSEX,  8, "UInt64"), AvailPhys:     NumGet(MEMORYSTATUSEX, 16, "UInt64")
+           , TotalPageFile: NumGet(MEMORYSTATUSEX, 24, "UInt64"), AvailPageFile: NumGet(MEMORYSTATUSEX, 32, "UInt64")
+           , TotalVirtual:  NumGet(MEMORYSTATUSEX, 40, "UInt64"), AvailVirtual:  NumGet(MEMORYSTATUSEX, 48, "UInt64")
+           , AvailExtendedVirtual: NumGet(MEMORYSTATUSEX, 56, "UInt64") }
+}
+
 GetFontNames(charset) {
    hDC := DllCall("GetDC", "UInt", 0, "Ptr")
    VarSetCapacity(LOGFONT, 92, 0)
