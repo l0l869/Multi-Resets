@@ -267,36 +267,32 @@ class Setting {
     InsertToSection() {
         section := WB.document.getElementById(this.section)
         
-        isSubExist := false
-        insertBeforeIndex := 0
+        atSub := 0
+        subExist := false
         count := section["children"].length
         Loop, %count% {
-            element := section["children"][A_Index-1]
+            atIndex := A_Index-1
+            element := section["children"][atIndex]
             atSub := StrSplit(element.className, A_Space)[2]
-            insertBeforeIndex := A_Index == count ? 0 : A_Index-1
-            if !atSub
-                continue
-            else if (atSub == this.subsection)
-                isSubExist := true
-            else if (atSub > this.subsection)
-                break
-        }
-        if (!insertBeforeIndex) {
-            if (!isSubExist) {
+
+            if (!subExist && Floor(atSub) > Floor(this.subsection)) {
+                section.insertBefore(this.rootDiv, element)
                 hr := WB.document.createElement("hr")
-                section.appendChild(hr)
-            }
-            section.appendChild(this.rootDiv)
-        } else {
-            section.insertBefore(this.rootDiv, section.children[insertBeforeIndex])
-            if (!isSubExist) {
-                hr := WB.document.createElement("hr")
-                section.insertBefore(hr, section.children[insertBeforeIndex])
-                ; need to add ending subsection line, e.g. "minimise to tray" 
-                ; hr := WB.document.createElement("hr")
-                ; section.insertBefore(hr, section.children[insertBeforeIndex+2])
+                section.insertBefore(hr, element)
+                return
+            } else if (Floor(atSub) == Floor(this.subsection))
+                subExist := true
+
+            if (subExist && (atSub > this.subsection || !atSub)) {
+                section.insertBefore(this.rootDiv, element)
+                return
             }
         }
+        if !subExist && atSub {
+            hr := WB.document.createElement("hr")
+            section.appendChild(hr, element)
+        }
+        section.appendChild(this.rootDiv)
     }
 
     GetIniValue() {
