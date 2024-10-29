@@ -321,16 +321,20 @@
             document.getElementById(tab).style.display = "block";
         }
         let timeoutId;
-        function getSpawnChance() {
-            guiInitialised = document.getElementById("isBored")
+        function getSpawnChance(version) {
+            guiInitialised = document.getElementById("hideOnMinimise") // not "isBored" because there's a case it doesnt exist: when game.ahk fails to load
             if (!guiInitialised)
                 return
 
-            min = document.getElementById("minCoords").value
-            max = document.getElementById("maxCoords").value
-
-            chance = AHK("GetSpawnChance", min, max)
-            document.getElementById("spawn-chance").innerText = "Chance of Spawn: " + chance + "%"
+            if (version == 119) {
+                distance = document.getElementById("originDistance").value
+                chance = AHK("GetSpawnChance119", distance)
+            } else {
+                min = document.getElementById("minCoords").value
+                max = document.getElementById("maxCoords").value
+                chance = AHK("GetSpawnChance", min, max)
+            }
+            document.getElementById("spawn-chance").innerText = "Chance of Spawn: " + (chance*100).toFixed(2) + "%"
 
             spawnHint = document.getElementById("spawn-hint")
             spawnHint.style.opacity = 1

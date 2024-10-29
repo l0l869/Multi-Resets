@@ -1,4 +1,4 @@
-﻿LaunchInstance(index) {
+LaunchInstance(index) {
     existingPIDs := GetMinecraftProcesses()
     existingHWNDs := GetMinecraftHwnds()
 
@@ -405,10 +405,14 @@ IsMultiRegistered() {
 }
 
 GetSpawnChance(min, max) {
-    if (min > max)
+    static dataArray
+    if !dataArray {
+        FileRead, data, assets/spawn_data.txt
+        dataArray := StrSplit(data, "`r`n")
+    }
+    if (min > max || max < 44)
         return 0
-    FileRead, data, assets/spawn_data.txt
-    dataArray := StrSplit(data, "`n")
+
     total := 9999251
     totalInRange := 0
     iMin := Ceil((min-44)/4)
@@ -417,7 +421,25 @@ GetSpawnChance(min, max) {
     Loop, % it {
         totalInRange += dataArray[iMin+A_Index]
     }
-    return Floor(totalInRange/total*100*100)/100
+    return totalInRange/total
+}
+
+GetSpawnChance119(distance) {
+    static data := {}
+    if !data.HasKey(1) {
+        FileRead, fileData, assets/spawn_data_119.txt
+        dataArray := StrSplit(fileData, "`r`n")
+        count := 100000
+        total := 0
+        for k, v in dataArray {
+            total += v
+            data[k] := (count-total)/count
+        }
+    }
+    if (distance <= 0)
+        return 1
+
+    return data[distance]
 }
 
 LogF(level, msg, id:=0) {
