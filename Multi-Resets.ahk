@@ -3,19 +3,17 @@ SetWinDelay, -1
 SetWorkingDir, %A_ScriptDir%
 SendMode, Input
 SetMouseDelay, -1
+SetControlDelay, -1
 EnvGet, A_LocalAppData, LocalAppData
 Process, Priority,, High
 
-initTick := A_TickCount
+initTick := QPC()
 LogF("INF", "Initialising (" A_AhkVersion " " A_PtrSize*8 "-bit)")
 
 #NoEnv
 #SingleInstance, Force
 #Include, %A_ScriptDir%
 #Include, functions/configurations.ahk
-#Include, functions/timer.ahk
-#Include, functions/updater.ahk
-#Include, functions/loadfile.ahk
 
 global SCRIPT_VERSION := 20241002.23
 global iniFile := A_ScriptDir "\configs\configs.ini"
@@ -34,6 +32,8 @@ global timer1
 global MCInstances := [], replacementInstances := [], queuedInstances := []
 global resetDll := DllCall("LoadLibrary", "Str", "functions/reset.dll", "Ptr")
 global gameScript := LoadFile("functions/game.ahk")
+if !resetDll
+    LogF("WAR", "Failed to load reset.dll; setupless will not work")
 
 Menu, Tray, Icon, assets/_Icon.ico
 Menu, Tray, Add, MC Directory, OpenMinecraftDir
@@ -44,13 +44,13 @@ global WB, GuiHwnd
 Gui, Main:Add, ActiveX, vWB x0 y0 w600 h400, shell.explorer
 InitGui()
 Gui, Main:Show, % "w" 600/scaleBy " h" 400/scaleBy, Multi-Resets
-LogF("INF", "Initialised (" A_TickCount-initTick "ms)")
+LogF("INF", "Initialised (" Floor(QPC()-initTick) "ms)")
 
 CheckMinecraftSettings()
-latestFetchedVersion := FetchUpdates()
+global latestFetchedVersion := FetchUpdates()
 
-global FuncUpdateMainTimer := Func("UpdateMainTimer")
-SetTimer, %FuncUpdateMainTimer%, 500
+global FuncUpdateOverlay := Func("UpdateOverlay")
+SetTimer, %FuncUpdateOverlay%, 0
 
 Hotkey, IfWinActive, Minecraft
 Hotkey, %resetKey%, Reset
@@ -68,13 +68,18 @@ RCtrl::Goto, MainGuiClose
 return
 
 #Include, functions/memory.ahk
+#Include, functions/loadfile.ahk
 #Include, functions/functions.ahk
+#Include, functions/updater.ahk
+#Include, functions/overlay.ahk
+#Include, functions/timer.ahk
 
 InitGui() {
     WB.Silent := true
     WB.Navigate("about:<!DOCTYPE HTML><meta http-equiv='x-ua-compatible' content='IE=Edge'>")
     FileRead, html, assets/gui.html
     WB.Document.write(html)
+    ; WB.Navigate("file:///" A_ScriptDir "\assets\gui.html") 
     WB.Document.parentWindow.AHK := Func("JS_AHK")
     Gui, Main:+HwndGuiHwnd
 
@@ -208,9 +213,6 @@ RestoreGui:
 return
 
 MainGuiClose:
-    SetTimer, %FuncUpdateMainTimer%, Off
-    timer1 := ""
-    timerPreview := ""
     DllCall("FreeLibrary", "UPtr", resetDll)
     LogF("INF", "App Exit")
     ExitApp

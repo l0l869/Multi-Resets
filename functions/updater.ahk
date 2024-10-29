@@ -1,5 +1,3 @@
-global latestFetchedVersion
-
 FetchUpdates() {
     if (!DllCall("Wininet.dll\InternetGetConnectedState", "Str", 0x40, "Int", 0))
         return 0
@@ -52,11 +50,10 @@ FetchUpdates() {
 
 DownloadLatest(latestVersions) {
     Gui_UpdateProgress(true, 0, "Releasing Objects")
-    SetTimer, %FuncUpdateMainTimer%, Off
-    timerPreview.__Delete()
-    timerPreview := ""
+    SetTimer, %FuncUpdateOverlay%, off
     timer1.__Delete()
     timer1 := ""
+    _Overlay.__Delete()
     DllCall("FreeLibrary", "UPtr", resetDll)
 
     Gui_UpdateProgress(true, 25, "Downloading")

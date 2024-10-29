@@ -2,52 +2,26 @@
 
 Class Timer
 {
-    static tInstances := 0 
-
     __New(Settings*) {
-        this.tInstance := Timer.tInstances++
+        this.isShown := false
 
-        tGui := "t" this.tInstance 
-        Gui, %tGui%:+AlwaysOnTop -Border -Caption +LastFound +ToolWindow +E0x80000
-        this.hide()
-
-        Gui, %tGui%:+HwndTimerHwnd
-        this.hwnd := TimerHwnd
-        this.pToken := Gdip_Startup()
-        this.hdc := CreateCompatibleDC()
-        this.hbm := CreateDIBSection(A_ScreenWidth, A_ScreenHeight)
-        this.obm := SelectObject(this.hdc, this.hbm)
-        this.G := Gdip_GraphicsFromHDC(this.hdc)
-        Gdip_SetSmoothingMode(this.G, 4)
-        Gdip_SetTextRenderingHint(this.G, 4)
+        this.hwnd := _Overlay.hwnd
+        this.hdc := _Overlay.hdc
+        this.G := _Overlay.G
 
         this.setSettings(settings*)
         this.reset()
     }
 
     __Delete() {
-        DeleteDC(this.hdc)
-        DeleteObject(this.obm)
-        Gdip_DeleteFontFamily(this.hFamily)
-        Gdip_DeleteFont(this.hFont)
-        Gdip_DeleteStringFormat(this.hFormat)
         Gdip_DeleteBrush(this.pBrush)
-        Gdip_DeleteGraphics(this.G)
-        Gdip_Shutdown(this.pToken)
-        
-        tGui := "t" this.tInstance 
-        Gui, %tGui%:Destroy
     }
 
     show() {
-        tGui := "t" this.tInstance
-        Gui, %tGui%:Show, NA
         this.isShown := true
     }
 
     hide() {
-        tGui := "t" this.tInstance
-        Gui, %tGui%:Hide
         this.isShown := false
     }
 
@@ -57,55 +31,45 @@ Class Timer
         Sleep, 1
         this.startTick := 0
         this.elapsedTick := 0
-
-        this.UpdateTimerText(this.FormatTime(0))
     }
 
     start() {
-        this.startTick := this.QPC() - this.elapsedTick
+        this.startTick := QPC() - this.elapsedTick
 
         if this.tickFunction
             return
-        this.tickFunction := this.Tick.bind(this)
+
+        this.tickFunction := ObjBindMethod(this, "tick")
         tickFunction := this.tickFunction
         SetTimer, % tickFunction, % this.refreshRate
     }
 
     stop() {
         if !this.tickFunction
-            return 1
-        this.elapsedTick := this.QPC() - this.startTick
+            return
+
+        this.elapsedTick := QPC() - this.startTick
         tickFunction := this.tickFunction
         SetTimer, % tickFunction, off
         this.tickFunction:=""
-
-        this.UpdateTimerText(this.FormatTime(this.elapsedTick))
     }
 
-    Tick() {
+    tick() {
         if this.autoSplit
-            this.CheckAutoSplit()
+            this.checkAutoSplit()
 
-        this.elapsedTick := this.QPC() - this.startTick
-        this.UpdateTimerText(this.FormatTime(this.elapsedTick))
+        this.elapsedTick := QPC() - this.startTick
     }
 
-    QPC() {
-        static freq, init := DllCall("QueryPerformanceFrequency", "Int64P", freq)
-        
-        DllCall("QueryPerformanceCounter", "Int64*", count)
-        return Floor((count / freq)*1000)
-    }
+    draw() {
+        if !this.isShown
+            return
 
-    UpdateTimerText(text) {
-        CreateRectF(RectF, 0, 0, A_ScreenWidth, A_ScreenHeight)
-        textSize := StrSplit(Gdip_MeasureString(this.G, text, this.hFont, this.hFormat, RectF), "|")
-        textPosition := this.GetAnchorPosition(textSize[3], textSize[4])
-
-        x1 := textPosition.x
-        y1 := textPosition.y
-        x2 := textPosition.x + textSize[3]
-        y2 := textPosition.y + textSize[4]
+        text := this.formatTime(this.elapsedTick)
+        win := this.currentInstance ? GetWindowDimensions("ahk_id " MCInstances[this.currentInstance].hwnd)
+                                  : WinExist("Minecraft") ? GetWindowDimensions("Minecraft") : {x1: 0, y1: 0, x2: A_ScreenWidth, y2: A_ScreenHeight}
+        pos := _Overlay.getTextPosition(text, this.font, this.fontSize, this.outlineWidth, this.anchor
+              , win.x1, win.y1, win.x2, win.y2, this.offset.x, this.offset.y)
         gAngle := Mod(this.gradientAngle, 360)
         gPan := 0
 
@@ -114,10 +78,10 @@ Class Timer
             gAngle := 360*rotationScaler
         }
 
-        midX := (x2-this.padding.right  + x1+this.padding.left)/2
-        midY := (y2-this.padding.bottom + y1+this.padding.top )/2
-        tx := textSize[3]/2 - this.padding.left
-        ty := textSize[4]   - (this.padding.top + this.padding.bottom)
+        midX := (pos.x2-this.padding.right  + pos.x1+this.padding.left)/2
+        midY := (pos.y2-this.padding.bottom + pos.y1+this.padding.top )/2
+        tx := pos.width/2 - this.padding.left
+        ty := pos.height  - (this.padding.top + this.padding.bottom)
         m1 := Tan(gAngle              * 0.01745329252)
         m2 := Tan(Mod(gAngle+90, 360) * 0.01745329252)
 
@@ -143,60 +107,38 @@ Class Timer
         
         Gdip_DeleteBrush(this.pBrush)
         this.pBrush := Gdip_CreateLinearGrBrush(midX+gx, midY+gy, midX-gx, midY-gy, this.fontColour1, this.fontColour2)
-
-        Gdip_GraphicsClear(this.G)
-        options := "x" x1 " y" y1 " w100p h100p c" this.pBrush " ow" this.outlineWidth " oc" this.outlineColour " s" this.fontSize " r4"
+        options := "x" pos.x1 " y" pos.y1 " w100p h100p c" this.pBrush " ow" this.outlineWidth " oc" this.outlineColour " s" this.fontSize " r4"
         Gdip_TextToGraphics(this.G, text, options, this.font, A_ScreenWidth, A_ScreenHeight)
-        UpdateLayeredWindow(this.hwnd, this.hdc, 0,0, A_ScreenWidth, A_ScreenHeight)
+
+        if this.remindShowPacksTick > A_TickCount {
+            options := "Centre vCentre w100p h100p c" _Overlay.brush.white " ow" this.outlineWidth " ocFF000000 s" this.fontSize " r4"
+            Gdip_TextToGraphics(this.G, "show packs", options, this.font, A_ScreenWidth, A_ScreenHeight)    
+        }
     }
 
-    FormatTime(ms) {
-        milliseconds := Mod(ms,1000)
+    formatTime(ms) {
+        ms := Floor(ms)
         seconds := Mod(ms // 1000,60)
         minutes := ms // 60000
 
-        if (milliseconds == 0)
-            milliseconds := "000"
-        else if (milliseconds < 10)
-            milliseconds := "00" . milliseconds
-        else if (milliseconds < 100)
-            milliseconds := "0" . milliseconds
-        
-        milliseconds := SubStr(milliseconds, 1, this.decimalPlaces)
-        if StrLen(milliseconds)
-            milliseconds := "." milliseconds
+        if this.decimalPlaces {
+            milliseconds := Mod(ms,1000)
+            if (milliseconds == 0)
+                milliseconds := "000"
+            else if (milliseconds < 10)
+                milliseconds := "00" . milliseconds
+            else if (milliseconds < 100)
+                milliseconds := "0" . milliseconds            
+            milliseconds := "." SubStr(milliseconds, 1, this.decimalPlaces)
+        }
         
         if seconds < 10
             seconds := "0" . seconds
 
-        return this.timeDisplayed := minutes ":" seconds . milliseconds
+        return minutes ":" seconds . milliseconds
     }
 
-    GetAnchorPosition(textWidth, textHeight) {
-        if (this.currentInstance)
-            win := GetWindowDimensions("ahk_id " MCInstances[this.currentInstance].hwnd)
-        else
-            win := {x1: 0, y1: 0, x2: A_ScreenWidth, y2: A_ScreenHeight}
-
-        switch (this.anchor)
-        {
-            case "TopLeft":
-                anchorX := win.x1              + this.offset.x + this.outlineWidth/2 - this.padding.left
-                anchorY := win.y1              + this.offset.y + this.outlineWidth/2 - this.padding.top
-            case "TopRight": 
-                anchorX := win.x2 - textWidth  - this.offset.x - this.outlineWidth/2 + this.padding.right
-                anchorY := win.y1              + this.offset.y + this.outlineWidth/2 - this.padding.top
-            case "BottomLeft":
-                anchorX := win.x1              + this.offset.x + this.outlineWidth/2 - this.padding.left
-                anchorY := win.y2 - textHeight - this.offset.y - this.outlineWidth/2 + this.padding.bottom
-            case "BottomRight":
-                anchorX := win.x2 - textWidth  - this.offset.x - this.outlineWidth/2 + this.padding.right
-                anchorY := win.y2 - textHeight - this.offset.y - this.outlineWidth/2 + this.padding.bottom
-        }
-        return {x: anchorX, y: anchorY}
-    }
-
-    CheckAutoSplit() {
+    checkAutoSplit() {
         if !offsetsAutoSplit
             return
 
@@ -206,28 +148,14 @@ Class Timer
             this.stop()
             if remindShowPacks {
                 Sleep, 1000
-                this.RemindShowPacks()
+                this.remindShowPacksTick := A_TickCount+3000
             }
             exit
         }
     }
 
-    RemindShowPacks() {
-        options := "Centre vCentre w100p h100p c" this.pBrush " ow" this.outlineWidth " oc" this.outlineColour " s" this.fontSize " r4"
-        Gdip_TextToGraphics(this.G, "show packs", options, this.font, A_ScreenWidth, A_ScreenHeight)
-        UpdateLayeredWindow(this.hwnd, this.hdc, 0,0, A_ScreenWidth, A_ScreenHeight)
-        Sleep, 3000
-        Gdip_GraphicsClear(this.G)
-        UpdateLayeredWindow(this.hwnd, this.hdc, 0,0, A_ScreenWidth, A_ScreenHeight)
-        this.UpdateTimerText(this.FormatTime(this.elapsedTick))
-    }
-
     setSettings(anchor, offset, font, fontSize, fontColour1, fontColour2, gradientAngle, animationType 
-                , animationLength, outlineWidth, outlineColour, decimalPlaces, refreshRate, autoSplit) {
-        Gdip_DeleteFontFamily(this.hFamily)
-        Gdip_DeleteFont(this.hFont)
-        Gdip_DeleteStringFormat(this.hFormat)
-        
+                , animationLength, outlineWidth, outlineColour, decimalPlaces, refreshRate, autoSplit) {        
         this.anchor := anchor
         this.offset := offset
         this.font := font
@@ -243,50 +171,18 @@ Class Timer
         this.refreshRate := refreshRate
         this.autoSplit := autoSplit
 
-        this.hFamily := Gdip_FontFamilyCreate(this.font)
-        if (!this.hFamily && this.font) {
-            LogF("ERR", "Failed to create font family """ this.font """; gdipLastError: " gdipLastError, A_ThisFunc ":FontFamilyFail:" this.font)
-            setting["map"]["tFont"]["rootDiv"]["style"]["background-color"] := "rgba(255,0,0,0.25)"
-        } else
-            setting["map"]["tFont"]["rootDiv"]["style"]["background-color"] := ""
-        this.hFont := Gdip_FontCreate(this.hFamily, this.fontSize)
-        this.hFormat := Gdip_StringFormatCreate(0x4000)
+        f := _Overlay.fetchFont(this.font, this.fontSize)
+        if (f.fallback && this.font) {
+            this.font := _Overlay.fallbackFont
+            warningColour := "rgba(255,255,0,0.25)"
+        }
+        setting["map"]["tFont"]["rootDiv"]["style"]["background-color"] := warningColour
 
         ; these are approximate values based on the Mojangles font
         this.padding := {top: this.fontSize/5, left: this.fontSize/4.7, right: this.fontSize/4.3, bottom: this.fontSize/3.1}
 
         if !this.tickFunction
             this.reset()
-    }
-}
-
-UpdateMainTimer() {
-    if !timerActive {
-        if timer1.isShown
-            timer1.hide()
-        return
-    }
-
-    instance := MCInstances[timer1.currentInstance]
-    if (!WinExist("ahk_id " instance.hwnd))
-        timer1.currentInstance := 0
-
-    if (instance.isResetting == -1 && !IsResettingInstances() && !timer1.startTick) {
-        WaitForMovement := Func("WaitForMovement").Bind(instance)
-        SetTimer, %WaitForMovement%, -0
-    }
-    
-    if (timer1.isShown) {
-        if (!timer1.currentInstance) {
-            timer1.hide()
-            timer1.reset()
-        } else if (!WinActive("ahk_id " instance.hwnd)) {
-            timer1.hide()
-        }
-    } else {
-        if (WinActive("ahk_id " instance.hwnd)) {
-            timer1.show()
-        }
     }
 }
 

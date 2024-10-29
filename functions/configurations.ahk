@@ -8,11 +8,10 @@ IniRead, starttimerKey, %iniFile%, Hotkeys, StartTimer
 IniRead, stoptimerKey , %iniFile%, Hotkeys, StopTimer
 IniRead, resettimerKey, %iniFile%, Hotkeys, ResetTimer
 
-global timerPreview := new Timer()
-
 global clickData := {}, screenClicks := [], worldcreationClicks := []
 
 ; i'll put all these definitions in a separate formatted file some day
+; also, in the future, should probably implement a way to add other elements like buttons, text, etc...
 global resetMode       , new Setting("resetMode", "Reset Mode", "Macro", 1, "select", ["auto", "cumulative", "setSeed", "manual", "manualWall"], "The type of resetting", [Func("OptResetModeHandler")])
 global minCoords       , new Setting("minCoords", "Min Coordinate", "Macro", 1, "inputNumber", 700, "The minimum x-coordinate the macro auto-resets for", [Func("OptResetModeHandler"), "getSpawnChance();"])
 global maxCoords       , new Setting("maxCoords", "Max Coordinate", "Macro", 1, "inputNumber", 1800, "The maximum x-coordinate the macro auto-resets for", [Func("OptResetModeHandler"), "getSpawnChance();"])
@@ -30,9 +29,17 @@ global keyDelay        , new Setting("keyDelay", "Key Delay", "Macro", 4, "input
 global switchDelay     , new Setting("switchDelay", "Switch Delay", "Macro", 4, "inputNumber", 0, "The delay resetting in-between instances", 0)
 global clickDuration   , new Setting("clickDuration", "Click Duration", "Macro", 4, "inputNumber", 30, "How long each mouse click is held down for; helps to register clicks", 0)
 
-global timerActive    , new Setting("timerActive", "Timer", "Timer", 1, "checkbox", true, "", [Func("TimerSettingHandler")])
-global tAnchor        , new Setting("tAnchor", "Anchor", "Timer", 2, "select", ["TopLeft", "TopRight", "BottomLeft", "BottomRight"], "Where the timer is relatively positioned on the instance", [Func("TimerSettingHandler")])
-global tOffset        , new Setting("tOffset", "Offset", "Timer", 2, "inputCoords", "25,25", "Offset from the anchor point", [Func("TimerSettingHandler")])
+global timerVisibility, new Setting("timerVisibility", "Timer Visibility", "Overlay", 1, "select", ["none", "running", "minecraft", "always"], "", [Func("TimerSettingHandler")])
+global timerAnchor    , new Setting("timerAnchor", "Anchor", "Overlay", 1, "select", ["TopLeft", "TopRight", "BottomLeft", "BottomRight"], "Where the timer is relatively positioned on the instance", [Func("TimerSettingHandler")])
+global timerOffset    , new Setting("timerOffset", "Offset", "Overlay", 1, "inputCoords", "25,25", "Offset from the anchor point", [Func("TimerSettingHandler")])
+global cumulativeVisibility, new Setting("cumulativeVisibility", "Cumulative Visibility", "Overlay", 2, "select", ["none", "minecraft", "always"], "", 0)
+global cumulativeAnchor    , new Setting("cumulativeAnchor", "Anchor", "Overlay", 2, "select", ["TopLeft", "TopRight", "BottomLeft", "BottomRight"], "Where the overlay is relatively positioned on the screen", 0)
+global cumulativeOffset    , new Setting("cumulativeOffset", "Offset", "Overlay", 2, "inputCoords", "0,0", "Offset from the anchor point", 0)
+global attemptsVisibility, new Setting("attemptsVisibility", "Attempts Visibility", "Overlay", 3, "select", ["none", "minecraft", "resetting", "always"], "", 0)
+global attemptsAnchor    , new Setting("attemptsAnchor", "Anchor", "Overlay", 3, "select", ["TopLeft", "TopRight", "BottomLeft", "BottomRight"], "Where the overlay is relatively positioned on the screen", 0)
+global attemptsOffset    , new Setting("attemptsOffset", "Offset", "Overlay", 3, "inputCoords", "0,0", "Offset from the anchor point", 0)
+global overlayScale      , new Setting("overlayScale", "Overlay Scale", "Overlay", 4, "inputNumber", 1, "Scale for the overlay's text", [Func("OptResetModeHandler")])
+
 global tFont          , new Setting("tFont", "Font", "Timer", 3, "inputFont", "Arial", "Any font installed", [Func("TimerSettingHandler")])
 global tFontSize      , new Setting("tFontSize", "Size", "Timer", 3, "inputNumber", 50, "", [Func("TimerSettingHandler")])
 global tFontColour1   , new Setting("tFontColour1", "Colour 1", "Timer", 3, "inputColour", "0xFFFFFFFF", "Hexadecimal Colour (0xAARRGGBB)", [Func("TimerSettingHandler")])
@@ -45,7 +52,6 @@ global tAnimationSpeed, new Setting("tAnimationSpeed", "Animation Length", "Time
 global tDecimalPlaces , new Setting("tDecimalPlaces", "Decimals", "Timer", 3, "select", [0, 1, 2, 3], "", [Func("TimerSettingHandler")])
 global tAutoSplit     , new Setting("tAutoSplit", "Auto Split", "Timer", 4, "checkbox", true, "Automatically stops the timer when credits roll", [Func("TimerSettingHandler")])
 global remindShowPacks, new Setting("remindShowPacks", "Remind: Show Packs", "Timer", 4, "checkbox", false, "After a completion, you can be reminded of", [Func("TimerSettingHandler")])
-global tPreview       , new Setting("tPreview", "Show Preview", "Timer", 4, "checkbox", false, "", [Func("TimerSettingHandler"), Func("TimerPreviewHandler")])
 
 global resetMethod       , new Setting("resetMethod", "Reset Method", "Other", 1, "select", ["setupless", "setup"], "The method the macro uses to figure out where to click", [Func("OptResetMethodHandler")])
 global setupData         , new Setting("setupData", "Setup Data", "Other", 1, "select", LoadClickData(), "", [Func("OptResetMethodHandler")])
@@ -460,32 +466,12 @@ AutoRestartHandler() {
 
 TimerSettingHandler() {
     tRefreshRate := 0
-    timerOptions := [tAnchor, tOffset, tFont, tFontSize, tFontColour1, tFontColour2, tGradientAngle
+    timerOptions := [timerAnchor, timerOffset, tFont, tFontSize, tFontColour1, tFontColour2, tGradientAngle
                     , tAnimationType, tAnimationSpeed, tOutlineWidth, tOutlineColour, tDecimalPlaces, tRefreshRate, tAutoSplit]
     if !timer1
         timer1 := new Timer(timerOptions*)
     else
         timer1.setSettings(timerOptions*)
-    
-    if tPreview {
-        timerPreview.setSettings(timerOptions*)
-        if (!timerPreview.isShown) {
-            timerPreview.show()
-            timerPreview.start()
-        }
-    } else if (!tPreview && timerPreview.isShown) {
-        timerPreview.hide()
-        timerPreview.reset()
-    }
-}
-
-TimerPreviewHandler() {
-    Setting["map"]["tPreview"]["rootDiv"]["className"] := ""
-    Setting["map"]["tPreview"]["rootDiv"]["children"][0]["style"]["display"] := "flex"
-    style := Setting["map"]["tPreview"]["rootDiv"]["style"]
-    style.position := "absolute"
-    style.right := "0px"
-    style.bottom := "0px"
 }
 
 OptResetMethodHandler() {

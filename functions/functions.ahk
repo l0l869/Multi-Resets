@@ -1,4 +1,4 @@
-LaunchInstance(index) {
+﻿LaunchInstance(index) {
     existingPIDs := GetMinecraftProcesses()
     existingHWNDs := GetMinecraftHwnds()
 
@@ -450,6 +450,12 @@ LogF(level, msg, id:=0) {
             guiLogQueue := []
         }
     }
+}
+
+QPC() {
+    static freq, init := DllCall("QueryPerformanceFrequency", "Int64P", freq)
+    DllCall("QueryPerformanceCounter", "Int64*", count)
+    return (count/freq)*1000
 }
 
 GlobalMemoryStatusEx() {
