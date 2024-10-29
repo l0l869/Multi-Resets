@@ -31,7 +31,8 @@ global lastRestart
 global timer1
 global MCInstances := [], replacementInstances := [], queuedInstances := []
 global resetDll := DllCall("LoadLibrary", "Str", "functions/reset.dll", "Ptr")
-global gameScript := LoadFile("functions/game.ahk")
+if FileExist("functions/game.ahk")
+    global gameScript := LoadFile("functions/game.ahk")
 if !resetDll
     LogF("WAR", "Failed to load reset.dll; setupless will not work")
 
@@ -79,7 +80,6 @@ InitGui() {
     WB.Navigate("about:<!DOCTYPE HTML><meta http-equiv='x-ua-compatible' content='IE=Edge'>")
     FileRead, html, assets/gui.html
     WB.Document.write(html)
-    ; WB.Navigate("file:///" A_ScriptDir "\assets\gui.html") 
     WB.Document.parentWindow.AHK := Func("JS_AHK")
     Gui, Main:+HwndGuiHwnd
 

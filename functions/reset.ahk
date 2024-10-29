@@ -358,6 +358,7 @@ ExitIfRunning() {
 RunInstance(instance) {
     if (instance.isResetting == -1)
         return
+    gameScript.Hide()
     SetAffinity(instance.pid, 2**threadCount - 1)
     instance.isResetting := -1
     For k, v in MCInstances {
