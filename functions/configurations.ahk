@@ -15,9 +15,9 @@ global clickData := {}, screenClicks := [], worldcreationClicks := []
 global resetMode       , new Setting("resetMode", "Reset Mode", "Macro", 1, "select", ["auto", "cumulative", "setSeed", "manual", "manualWall"], "The type of resetting", [Func("OptResetModeHandler")])
 global minCoords       , new Setting("minCoords", "Min Coordinate", "Macro", 1, "inputNumber", 700, "The minimum x-coordinate the macro auto-resets for", [Func("OptResetModeHandler"), "getSpawnChance();"])
 global maxCoords       , new Setting("maxCoords", "Max Coordinate", "Macro", 1, "inputNumber", 1800, "The maximum x-coordinate the macro auto-resets for", [Func("OptResetModeHandler"), "getSpawnChance();"])
-global originDistance  , new Setting("originDistance", "Distance from 0,0 (1.19.50)", "Macro", 1, "inputNumber", 400, "The minimum number of blocks from world origin", [Func("OptResetModeHandler"), "getSpawnChance(119);"])
-global queueLimit      , new Setting("queueLimit", "Queue Limit", "Macro", 1, "inputNumber", 100, "Limits the number of queued instances", [Func("OptResetModeHandler")])
-global memoryLimit     , new Setting("memoryLimit", "Committed Memory Limit", "Macro", 1, "inputNumber", 40, "Will stop resetting if the total committed memory (GB) exceeds the limit", [Func("OptResetModeHandler")])
+global originDistance  , new Setting("originDistance", "Distance from 0,0 (1.19.50)", "Macro", 1, "inputNumber", 300, "The minimum number of blocks from world origin", [Func("OptResetModeHandler"), "getSpawnChance(119);"])
+global queueLimit      , new Setting("queueLimit", "Queue Limit", "Macro", 1, "inputNumber", 50, "Limits the number of queued instances", [Func("OptResetModeHandler")])
+global memoryLimit     , new Setting("memoryLimit", "Committed Memory Limit", "Macro", 1, "inputNumber", 35, "Will stop resetting if the total committed memory (GB) exceeds the limit", [Func("OptResetModeHandler")])
 global resetSeed       , new Setting("resetSeed", "Seed", "Macro", 1, "select", GetSeedsFromFile(), "", [Func("OptResetModeHandler")])
 global setSeedMouseMove, new Setting("setSeedMouseMove", "Move Cursor", "Macro", 1, "inputCoords", "0,0", "Moves your cursor to a point (x,y) on your screen. Set to 0,0 to omit.", [Func("OptResetModeHandler")])
 global autoRestart     , new Setting("autoRestart", "Auto Restart", "Macro", 2, "checkbox", false, "Automatically restarts instances`nDeprecated: Use 'Block Marketplace' to prevent the buildup of lag.", [Func("AutoRestartHandler")])
@@ -40,18 +40,18 @@ global attemptsAnchor    , new Setting("attemptsAnchor", "Anchor", "Overlay", 3,
 global attemptsOffset    , new Setting("attemptsOffset", "Offset", "Overlay", 3, "inputCoords", "0,0", "Offset from the anchor point", 0)
 global overlayScale      , new Setting("overlayScale", "Overlay Scale", "Overlay", 4, "inputNumber", 1, "Scale for the overlay's text", [Func("OptResetModeHandler")])
 
-global tFont          , new Setting("tFont", "Font", "Timer", 3, "inputFont", "Arial", "Any font installed", [Func("TimerSettingHandler")])
-global tFontSize      , new Setting("tFontSize", "Size", "Timer", 3, "inputNumber", 50, "", [Func("TimerSettingHandler")])
-global tFontColour1   , new Setting("tFontColour1", "Colour 1", "Timer", 3, "inputColour", "0xFFFFFFFF", "Hexadecimal Colour (0xAARRGGBB)", [Func("TimerSettingHandler")])
-global tFontColour2   , new Setting("tFontColour2", "Colour 2", "Timer", 3, "inputColour", "0xFF737373", "Hexadecimal Colour (0xAARRGGBB)", [Func("TimerSettingHandler")])
-global tOutlineWidth  , new Setting("tOutlineWidth", "Outline Width", "Timer", 3, "inputNumber", 10, "", [Func("TimerSettingHandler")])
-global tOutlineColour , new Setting("tOutlineColour", "Outline Colour", "Timer", 3, "inputColour", "0xFF000000", "Hexadecimal Colour (0xAARRGGBB)", [Func("TimerSettingHandler")])
-global tGradientAngle , new Setting("tGradientAngle", "Gradient Angle", "Timer", 3, "inputNumber", 60, "", [Func("TimerSettingHandler")])
-global tAnimationType , new Setting("tAnimationType", "Animation Type", "Timer", 3, "select", ["rotatory", "panoramic"], "How the timer's colours are animated", [Func("TimerSettingHandler")])
-global tAnimationSpeed, new Setting("tAnimationSpeed", "Animation Length", "Timer", 3, "inputNumber", 0, "", [Func("TimerSettingHandler")])
-global tDecimalPlaces , new Setting("tDecimalPlaces", "Decimals", "Timer", 3, "select", [0, 1, 2, 3], "", [Func("TimerSettingHandler")])
-global tAutoSplit     , new Setting("tAutoSplit", "Auto Split", "Timer", 4, "checkbox", true, "Automatically stops the timer when credits roll", [Func("TimerSettingHandler")])
-global remindShowPacks, new Setting("remindShowPacks", "Remind: Show Packs", "Timer", 4, "checkbox", false, "After a completion, you can be reminded of", [Func("TimerSettingHandler")])
+global tFont           , new Setting("tFont", "Font", "Timer", 1, "inputFont", "Mojangles", "Any font installed", [Func("TimerSettingHandler")])
+global tFontSize       , new Setting("tFontSize", "Size", "Timer", 1, "inputNumber", 50, "", [Func("TimerSettingHandler")])
+global tFontColour1    , new Setting("tFontColour1", "Colour 1", "Timer", 1, "inputColour", "0xFFFFFFFF", "Hexadecimal Colour (0xAARRGGBB)", [Func("TimerSettingHandler")])
+global tFontColour2    , new Setting("tFontColour2", "Colour 2", "Timer", 1, "inputColour", "0xFF888888", "Hexadecimal Colour (0xAARRGGBB)", [Func("TimerSettingHandler")])
+global tGradientAngle  , new Setting("tGradientAngle", "Gradient Angle", "Timer", 1, "inputNumber", 90, "", [Func("TimerSettingHandler")])
+global tOutlineWidth   , new Setting("tOutlineWidth", "Outline Width", "Timer", 2, "inputNumber", 10, "", [Func("TimerSettingHandler")])
+global tOutlineColour  , new Setting("tOutlineColour", "Outline Colour", "Timer", 2, "inputColour", "0xFF000000", "Hexadecimal Colour (0xAARRGGBB)", [Func("TimerSettingHandler")])
+global tAnimationType  , new Setting("tAnimationType", "Animation Type", "Timer", 3, "select", ["rotatory", "panoramic"], "How the timer's colours are animated", [Func("TimerSettingHandler")])
+global tAnimationLength, new Setting("tAnimationLength", "Animation Length", "Timer", 3, "inputNumber", 0, "The time it takes (in seconds) to do a full animation cycle. Set to 0 to disable", [Func("TimerSettingHandler")])
+global tDecimalPlaces  , new Setting("tDecimalPlaces", "Decimals", "Timer", 4, "select", [0, 1, 2, 3], "", [Func("TimerSettingHandler")])
+global tAutoSplit      , new Setting("tAutoSplit", "Auto Split", "Timer", 5, "checkbox", true, "Automatically stops the timer when credits roll", [Func("TimerSettingHandler")])
+global remindShowPacks , new Setting("remindShowPacks", "Remind: Show Packs", "Timer", 5, "checkbox", false, "After a completion, you can be reminded of", [Func("TimerSettingHandler")])
 
 global resetMethod       , new Setting("resetMethod", "Reset Method", "Other", 1, "select", ["setupless", "setup"], "The method the macro uses to figure out where to click", [Func("OptResetMethodHandler")])
 global setupData         , new Setting("setupData", "Setup Data", "Other", 1, "select", LoadClickData(), "", [Func("OptResetMethodHandler")])
@@ -59,7 +59,7 @@ global coopMode          , new Setting("coopMode", "Coop Mode", "Other", 1, "che
 global findCoordsTextOnly, new Setting("findCoordsTextOnly", "Read Coordinates Text Only", "Other", 1, "checkbox", false, "Reads the ""Show Coordinates"" text only; does not attempt to read the game memory", 0)
 global awaitWcColour     , new Setting("awaitWcColour", "Wait for World Creation Colours", "Other", 1, "checkbox", false, "Waits for the World Creation clicks' colour; useful for allowing the new World Creation UI to load", 0)
 global readScreenMemory  , new Setting("readScreenMemory", "Read Screen Memory", "Other", 1, "checkbox", false, "Reads the game memory to get the current screen, relies on setup click data for the clicks [Not Recommended]", 0)
-global threadsUsage      , new Setting("threadsUsage", "Threads Utilisation", "Other", 2, "inputNumber", 0.8, "The percentage of CPU threads the instances will utilise during resets", 0)
+global threadsUsage      , new Setting("threadsUsage", "Threads Utilisation", "Other", 2, "inputNumber", 0.75, "The percentage of CPU threads the instances will utilise during resets", 0)
 global hideOnMinimise    , new Setting("hideOnMinimise", "Minimise to Tray", "Other", 3, "checkbox", false, "When the GUI is minimised, the taskbar icon will disappear to the tray", 0)
 global isBored           , new Setting("isBored", "are u bored?", "Other", 5, "checkbox", false, "fun lil game to play while resetting", 0)
 
@@ -244,7 +244,7 @@ class Setting {
                 select.style.margin := "5px 0px"
                 func1 := Func("RunJS").Bind("document.getElementById('" this.id "').value = document.getElementById('" this.id "-font-list').value.replace(/@/, '');")
                 func2 := ObjBindMethod(this, "EventHandler")
-                select.onchange := Func("CoupleFunctions").Bind(func1, func2) 
+                select.onchange := Func("CoupleFunctions").Bind(func1, func2)
 
                 fonts := GetFontNames(0)
                 for k, font in fonts {
@@ -272,7 +272,7 @@ class Setting {
 
     InsertToSection() {
         section := WB.document.getElementById(this.section)
-        
+
         atSub := 0
         subExist := false
         count := section["children"].length
@@ -294,7 +294,7 @@ class Setting {
                 return
             }
         }
-        if !subExist && atSub {
+        if (!subExist && atSub) {
             hr := WB.document.createElement("hr")
             section.appendChild(hr, element)
         }
@@ -378,7 +378,7 @@ class Setting {
     EventHandler() {
         input := this.InputRetriever.call()
         globalVar := this.id
-        
+
         if IsObject(input) {
             this.value := Trim(input.string)
             (%globalVar%) := input.object
@@ -467,7 +467,7 @@ AutoRestartHandler() {
 TimerSettingHandler() {
     tRefreshRate := 0
     timerOptions := [timerAnchor, timerOffset, tFont, tFontSize, tFontColour1, tFontColour2, tGradientAngle
-                    , tAnimationType, tAnimationSpeed, tOutlineWidth, tOutlineColour, tDecimalPlaces, tRefreshRate, tAutoSplit]
+                    , tAnimationType, tAnimationLength, tOutlineWidth, tOutlineColour, tDecimalPlaces, tRefreshRate, tAutoSplit]
     if !timer1
         timer1 := new Timer(timerOptions*)
     else
@@ -520,7 +520,7 @@ MergeConfigs(source, destination) {
     IniWrite, %starttimerKey%, %newIniFile%, Hotkeys, StartTimer
     IniWrite, %stoptimerKey% , %newIniFile%, Hotkeys, StopTimer
     IniWrite, %resettimerKey%, %newIniFile%, Hotkeys, ResetTimer
-    
+
     for k, v in Setting["map"]
         IniWrite, % v.value, %newIniFile%, % v.section, % v.id
 
