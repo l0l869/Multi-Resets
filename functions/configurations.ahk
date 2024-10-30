@@ -29,7 +29,7 @@ global keyDelay        , new Setting("keyDelay", "Key Delay", "Macro", 4, "input
 global switchDelay     , new Setting("switchDelay", "Switch Delay", "Macro", 4, "inputNumber", 0, "The delay resetting in-between instances", 0)
 global clickDuration   , new Setting("clickDuration", "Click Duration", "Macro", 4, "inputNumber", 30, "How long each mouse click is held down for; helps to register clicks", 0)
 
-global timerVisibility, new Setting("timerVisibility", "Timer Visibility", "Overlay", 1, "select", ["none", "running", "minecraft", "always"], "", [Func("TimerSettingHandler")])
+global timerVisibility, new Setting("timerVisibility", "Timer Visibility", "Overlay", 1, "select", ["none", "running", "minecraft", "preview"], "", [Func("TimerSettingHandler")])
 global timerAnchor    , new Setting("timerAnchor", "Anchor", "Overlay", 1, "select", ["TopLeft", "TopRight", "BottomLeft", "BottomRight"], "Where the timer is relatively positioned on the instance", [Func("TimerSettingHandler")])
 global timerOffset    , new Setting("timerOffset", "Offset", "Overlay", 1, "inputCoords", "25,25", "Offset from the anchor point", [Func("TimerSettingHandler")])
 global cumulativeVisibility, new Setting("cumulativeVisibility", "Cumulative Visibility", "Overlay", 2, "select", ["none", "minecraft", "always"], "", 0)

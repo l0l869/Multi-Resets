@@ -31,7 +31,7 @@ StopReset:
         EnterHoveredInstance()
         return
     }
-    
+
     if isResetting {
         for k, instance in MCInstances
             instance.isResetting := 0
@@ -61,6 +61,7 @@ Restart:
 return
 
 StartTimer:
+    timer1.currentInstance := -1
     timer1.start()
 return
 
@@ -333,7 +334,6 @@ ShouldAutoReset(instance) {
             zCoord := NumGet(coordinates, 8, "Int")
         }
 
-
         if (Sqrt(xCoord**2 + zCoord**2) < originDistance)
             return true
     }
@@ -363,6 +363,7 @@ RunInstance(instance) {
     instance.isResetting := -1
     For k, v in MCInstances {
         if (v.hwnd == instance.hwnd) {
+            timer1.reset()
             timer1.currentInstance := k
             break
         }
@@ -462,7 +463,7 @@ GetCurrentClick(instance, method) {
             Send, {Esc}
             Sleep, 100
         }
-    } else { 
+    } else {
         currentScreen := GetCurrentScreen(instance)
         switch currentScreen {
             case "Play": index := 1
@@ -527,7 +528,7 @@ GetCurrentScreen(instance) {
         instance.clicksAllowed := true
     }
 
-    if (currentScreen == "SaveAndQuit" && instance.isResetting == 6) { ; if it skips checking coords 
+    if (currentScreen == "SaveAndQuit" && instance.isResetting == 6) { ; if it skips checking coords
         currentScreen := "Heart"
         Send, {Esc}
         Sleep, 100

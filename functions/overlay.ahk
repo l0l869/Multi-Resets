@@ -83,12 +83,6 @@ Class _Overlay {
               , width: textSize.width, height: textSize.height}
     }
 
-    clearRectangle(x, y, w, h) {
-        Gdip_SetCompositingMode(this.G, 1)
-        Gdip_FillRectangle(this.G, this.brush.clear, x, y, w, h)
-        Gdip_SetCompositingMode(this.G, 0)
-    }
-
     drawText(text, anchor, offsetX, offsetY, brush, oWidth, oColour, font, size, moreOptions:="") {
         if this.fetchFont(font,size).fallback
             font := this.fallbackFont
@@ -126,7 +120,7 @@ Class _Overlay {
 
         return {hFamily: hFamily, hFont: hFont, fallback: fallback}
     }
-    
+
     flushCache() {
         for k, v in this.cache["hFamily"]
             Gdip_DeleteFontFamily(v)
@@ -145,9 +139,7 @@ UpdateOverlay() {
     
     if (visibility[timerVisibility])
         TimerOverlay.draw()
-    else if timer1.isShown
-        timer1.hide()
-    
+
     if (visibility[attemptsVisibility])
         AttemptsOverlay.draw()
 
@@ -163,7 +155,7 @@ IsOverlayVisible(mode:="") {
         case "running": return timer1.currentInstance && WinActive("Minecraft")
         case "minecraft": return WinActive("Minecraft")
         case "resetting": return IsResettingInstances()
-        case "always": return true
+        case "always", "preview": return true
     }
 
     winActive := WinActive("Minecraft")    
@@ -173,7 +165,7 @@ IsOverlayVisible(mode:="") {
     minecraft := winActive
     resetting := isResetting
 
-    return {None: false, Running: running, Minecraft: minecraft, Resetting: resetting, Always: true}
+    return {None: false, Running: running, Minecraft: minecraft, Resetting: resetting, Preview: true, Always: true}
 }
 
 Class TimerOverlay {
@@ -182,6 +174,17 @@ Class TimerOverlay {
     update() {
         if !timer1.isShown
             timer1.show()
+
+        if (timer1.currentInstance == -1)
+            return this.lastUpdateTick := A_TickCount
+
+        if (timerVisibility == "preview") {
+            if !timer1.tickFunction {
+                timer1.reset()
+                timer1.start()
+            }
+            return this.lastUpdateTick := A_TickCount
+        }
 
         instance := MCInstances[timer1.currentInstance]
         if !WinExist("ahk_id " instance.hwnd)

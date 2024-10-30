@@ -28,16 +28,15 @@ Class Timer
     reset() {
         if this.tickFunction
             this.stop()
-        Sleep, 1
         this.startTick := 0
         this.elapsedTick := 0
     }
 
     start() {
-        this.startTick := QPC() - this.elapsedTick
-
         if this.tickFunction
             return
+
+        this.startTick := QPC() - this.elapsedTick
 
         this.tickFunction := ObjBindMethod(this, "tick")
         tickFunction := this.tickFunction
@@ -51,7 +50,7 @@ Class Timer
         this.elapsedTick := QPC() - this.startTick
         tickFunction := this.tickFunction
         SetTimer, % tickFunction, off
-        this.tickFunction:=""
+        this.tickFunction := ""
     }
 
     tick() {
@@ -66,8 +65,8 @@ Class Timer
             return
 
         text := this.formatTime(this.elapsedTick)
-        win := this.currentInstance ? GetWindowDimensions("ahk_id " MCInstances[this.currentInstance].hwnd)
-                                  : WinExist("Minecraft") ? GetWindowDimensions("Minecraft") : {x1: 0, y1: 0, x2: A_ScreenWidth, y2: A_ScreenHeight}
+        win := this.currentInstance > 0 ? GetWindowDimensions("ahk_id " MCInstances[this.currentInstance].hwnd)
+                                        : WinActive("Minecraft") ? GetWindowDimensions("Minecraft") : {x1: 0, y1: 0, x2: A_ScreenWidth, y2: A_ScreenHeight}
         pos := _Overlay.getTextPosition(text, this.font, this.fontSize, this.outlineWidth, this.anchor
               , win.x1, win.y1, win.x2, win.y2, this.offset.x, this.offset.y)
         gAngle := Mod(this.gradientAngle, 360)
@@ -87,7 +86,7 @@ Class Timer
 
         if (Mod(gAngle//90, 2) == 0)
             gx := (-m2*tx + ty/2) / (m1-m2)
-        else 
+        else
             gx := (-m2*tx - ty/2) / (m1-m2)
         gy := m1 * gx
 
@@ -104,7 +103,7 @@ Class Timer
             midX += gLength   /slopeFactor*gPan - halfLength
             midY += gLength*m1/slopeFactor*gPan - halfLength
         }
-        
+
         Gdip_DeleteBrush(this.pBrush)
         this.pBrush := Gdip_CreateLinearGrBrush(midX+gx, midY+gy, midX-gx, midY-gy, this.fontColour1, this.fontColour2)
         options := "x" pos.x1 " y" pos.y1 " w100p h100p c" this.pBrush " ow" this.outlineWidth " oc" this.outlineColour " s" this.fontSize " r4"
@@ -112,7 +111,7 @@ Class Timer
 
         if this.remindShowPacksTick > A_TickCount {
             options := "Centre vCentre w100p h100p c" _Overlay.brush.white " ow" this.outlineWidth " ocFF000000 s" this.fontSize " r4"
-            Gdip_TextToGraphics(this.G, "show packs", options, this.font, A_ScreenWidth, A_ScreenHeight)    
+            Gdip_TextToGraphics(this.G, "show packs", options, this.font, A_ScreenWidth, A_ScreenHeight)
         }
     }
 
@@ -128,10 +127,10 @@ Class Timer
             else if (milliseconds < 10)
                 milliseconds := "00" . milliseconds
             else if (milliseconds < 100)
-                milliseconds := "0" . milliseconds            
+                milliseconds := "0" . milliseconds
             milliseconds := "." SubStr(milliseconds, 1, this.decimalPlaces)
         }
-        
+
         if seconds < 10
             seconds := "0" . seconds
 
@@ -155,7 +154,7 @@ Class Timer
     }
 
     setSettings(anchor, offset, font, fontSize, fontColour1, fontColour2, gradientAngle, animationType 
-                , animationLength, outlineWidth, outlineColour, decimalPlaces, refreshRate, autoSplit) {        
+                , animationLength, outlineWidth, outlineColour, decimalPlaces, refreshRate, autoSplit) {
         this.anchor := anchor
         this.offset := offset
         this.font := font
