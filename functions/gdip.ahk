@@ -114,7 +114,7 @@ Gdip_StringFormatCreate(FormatFlags:=0, LangID:=0) {
     ; - Only entire lines are laid out in the layout rectangle.
     ; NoClip                  = 0x00004000
     ; - Characters overhanging the layout rectangle and text extending outside the layout rectangle are allowed to show.
-    
+
     hStringFormat := 0
     gdipLastError := DllCall("gdiplus\GdipCreateStringFormat", "int", FormatFlags, "int", LangID, "UPtr*", hStringFormat)
     return hStringFormat
@@ -133,7 +133,7 @@ Gdip_CreateLinearGrBrush(x1, y1, x2, y2, ARGB1, ARGB2, WrapMode:=1) {
     pLinearGradientBrush := 0
     gdipLastError := DllCall("gdiplus\GdipCreateLineBrush", "UPtr", &PointF1, "UPtr", &PointF2, "Uint", ARGB1, "Uint", ARGB2, "int", WrapMode, "UPtr*", pLinearGradientBrush)
     return pLinearGradientBrush
-}   
+}
 
 Gdip_GetLinearGrBrushRect(pLinearGradientBrush) {
     VarSetCapacity(RectF, 16, 0)
@@ -220,10 +220,10 @@ Gdip_GraphicsFromHDC(hDC, hDevice:="", SmoothingMode:="") {
        gdipLastError := DllCall("Gdiplus\GdipCreateFromHDC2", "UPtr", hDC, "UPtr", hDevice, "UPtr*", pGraphics)
     Else
        gdipLastError := DllCall("gdiplus\GdipCreateFromHDC", "UPtr", hdc, "UPtr*", pGraphics)
- 
+
     If (gdipLastError=1 && A_LastError=8) ; out of memory
        gdipLastError := 3
- 
+
     If (pGraphics!="" && !gdipLastError)
     {
        If (SmoothingMode!="")
@@ -283,7 +283,7 @@ Gdip_MeasureString(pGraphics, sString, hFont, hStringFormat, ByRef RectF) {
     ; The function returns a string in the following format:
     ; "x|y|width|height|chars|lines"
     ; The first four elements represent the boundaries of the text
-    
+
     VarSetCapacity(RC, 16, 0)
     Chars := 0, Lines := 0
     gdipLastError := DllCall("gdiplus\GdipMeasureString"
@@ -324,7 +324,7 @@ UpdateLayeredWindow(hwnd, hdcSrc, x:="", y:="", w:="", h:="", Alpha:=255) {
 GetWindowRect(hwnd, ByRef W, ByRef H) {
     If !hwnd
        Return
- 
+
     size := VarSetCapacity(rect, 16, 0)
     er := DllCall("dwmapi\DwmGetWindowAttribute"
        , "UPtr", hWnd  ; HWND  hwnd
@@ -332,10 +332,10 @@ GetWindowRect(hwnd, ByRef W, ByRef H) {
        , "UPtr", &rect ; PVOID pvAttribute
        , "UInt", size  ; DWORD cbAttribute
        , "UInt")       ; HRESULT
- 
+
     If er
        DllCall("GetWindowRect", "UPtr", hwnd, "UPtr", &rect, "UInt")
- 
+
     r := []
     r.x1 := NumGet(rect, 0, "Int"), r.y1 := NumGet(rect, 4, "Int")
     r.x2 := NumGet(rect, 8, "Int"), r.y2 := NumGet(rect, 12, "Int")
@@ -382,234 +382,234 @@ Gdip_Shutdown(pToken) {
 }
 
 Gdip_TextToGraphics(pGraphics, Text, Options, Font="Arial", Width="", Height="", Measure=0){
-	IWidth := Width, IHeight:= Height
-	
-	RegExMatch(Options, "i)X([\-\d\.]+)(p*)", xpos)
-	RegExMatch(Options, "i)Y([\-\d\.]+)(p*)", ypos)
-	RegExMatch(Options, "i)W([\-\d\.]+)(p*)", Width)
-	RegExMatch(Options, "i)H([\-\d\.]+)(p*)", Height)
-	RegExMatch(Options, "i)OC([a-f\d]+)", OutlineColour)
-	RegExMatch(Options, "i)OW([\d\.]+)", OutlineWidth)
-	RegExMatch(Options, "i)OF(0|1)", OutlineUseFill)
-	RegExMatch(Options, "i)C(?!(entre|enter))([a-f\d]+)", Colour)
-	RegExMatch(Options, "i)Top|Up|Bottom|Down|vCentre|vCenter", vPos)
-	RegExMatch(Options, "i)NoWrap", NoWrap)
-	RegExMatch(Options, "i)R(\d)", Rendering)
-	RegExMatch(Options, "i)S(\d+)(p*)", Size)
+    IWidth := Width, IHeight:= Height
 
-	if !Gdip_DeleteBrush(Gdip_CloneBrush(Colour2))
-		PassBrush := 1, pBrush := Colour2
-	
-	if !(IWidth && IHeight) && (xpos2 || ypos2 || Width2 || Height2 || Size2)
-		return -1
+    RegExMatch(Options, "i)X([\-\d\.]+)(p*)", xpos)
+    RegExMatch(Options, "i)Y([\-\d\.]+)(p*)", ypos)
+    RegExMatch(Options, "i)W([\-\d\.]+)(p*)", Width)
+    RegExMatch(Options, "i)H([\-\d\.]+)(p*)", Height)
+    RegExMatch(Options, "i)OC([a-f\d]+)", OutlineColour)
+    RegExMatch(Options, "i)OW([\d\.]+)", OutlineWidth)
+    RegExMatch(Options, "i)OF(0|1)", OutlineUseFill)
+    RegExMatch(Options, "i)C(?!(entre|enter))([a-f\d]+)", Colour)
+    RegExMatch(Options, "i)Top|Up|Bottom|Down|vCentre|vCenter", vPos)
+    RegExMatch(Options, "i)NoWrap", NoWrap)
+    RegExMatch(Options, "i)R(\d)", Rendering)
+    RegExMatch(Options, "i)S(\d+)(p*)", Size)
 
-	Style := 0, Styles := "Regular|Bold|Italic|BoldItalic|Underline|Strikeout"
-	Loop, Parse, Styles, |
-	{
-		if RegExMatch(Options, "\b" A_loopField)
-		Style |= (A_LoopField != "StrikeOut") ? (A_Index-1) : 8
-	}
-  
-	Align := 0, Alignments := "Near|Left|Centre|Center|Far|Right"
-	Loop, Parse, Alignments, |
-	{
-		if RegExMatch(Options, "\b" A_loopField)
-			Align |= A_Index//2.1      ; 0|0|1|1|2|2
-	}
+    if !Gdip_DeleteBrush(Gdip_CloneBrush(Colour2))
+        PassBrush := 1, pBrush := Colour2
+    
+    if !(IWidth && IHeight) && (xpos2 || ypos2 || Width2 || Height2 || Size2)
+        return -1
 
-	xpos := (xpos1 != "") ? xpos2 ? IWidth*(xpos1/100) : xpos1 : 0
-	ypos := (ypos1 != "") ? ypos2 ? IHeight*(ypos1/100) : ypos1 : 0
-	Width := Width1 ? Width2 ? IWidth*(Width1/100) : Width1 : IWidth
-	Height := Height1 ? Height2 ? IHeight*(Height1/100) : Height1 : IHeight
-	if !PassBrush
-		Colour := "0x" (Colour2 ? Colour2 : "ff000000")
-	Rendering := ((Rendering1 >= 0) && (Rendering1 <= 5)) ? Rendering1 : 4
-	Size := (Size1 > 0) ? Size2 ? IHeight*(Size1/100) : Size1 : 12
+    Style := 0, Styles := "Regular|Bold|Italic|BoldItalic|Underline|Strikeout"
+    Loop, Parse, Styles, |
+    {
+        if RegExMatch(Options, "\b" A_loopField)
+        Style |= (A_LoopField != "StrikeOut") ? (A_Index-1) : 8
+    }
 
-	hFamily := Gdip_FontFamilyCreate(Font)
-	hFont := Gdip_FontCreate(hFamily, Size, Style)
-	FormatStyle := NoWrap ? 0x4000 | 0x1000 : 0x4000
-	hFormat := Gdip_StringFormatCreate(FormatStyle)
-	pBrush := PassBrush ? pBrush : Gdip_BrushCreateSolid(Colour)
-	if !(hFamily && hFont && hFormat && pBrush && pGraphics)
-		return !pGraphics ? -2 : !hFamily ? -3 : !hFont ? -4 : !hFormat ? -5 : !pBrush ? -6 : 0
-   
-	CreateRectF(RC, xpos, ypos, Width, Height)
-	Gdip_SetStringFormatAlign(hFormat, Align)
-	Gdip_SetTextRenderingHint(pGraphics, Rendering)
-	ReturnRC := Gdip_MeasureString(pGraphics, Text, hFont, hFormat, RC)
+    Align := 0, Alignments := "Near|Left|Centre|Center|Far|Right"
+    Loop, Parse, Alignments, |
+    {
+        if RegExMatch(Options, "\b" A_loopField)
+            Align |= A_Index//2.1      ; 0|0|1|1|2|2
+    }
 
-	if vPos
-	{
-		StringSplit, ReturnRC, ReturnRC, |
-		
-		if (vPos = "vCentre") || (vPos = "vCenter")
-			ypos += (Height-ReturnRC4)//2
-		else if (vPos = "Top") || (vPos = "Up")
-			ypos := 0
-		else if (vPos = "Bottom") || (vPos = "Down")
-			ypos := Height-ReturnRC4
-		
-		CreateRectF(RC, xpos, ypos, Width, ReturnRC4)
-		ReturnRC := Gdip_MeasureString(pGraphics, Text, hFont, hFormat, RC)
-	}
+    xpos := (xpos1 != "") ? xpos2 ? IWidth*(xpos1/100) : xpos1 : 0
+    ypos := (ypos1 != "") ? ypos2 ? IHeight*(ypos1/100) : ypos1 : 0
+    Width := Width1 ? Width2 ? IWidth*(Width1/100) : Width1 : IWidth
+    Height := Height1 ? Height2 ? IHeight*(Height1/100) : Height1 : IHeight
+    if !PassBrush
+        Colour := "0x" (Colour2 ? Colour2 : "ff000000")
+    Rendering := ((Rendering1 >= 0) && (Rendering1 <= 5)) ? Rendering1 : 4
+    Size := (Size1 > 0) ? Size2 ? IHeight*(Size1/100) : Size1 : 12
 
-	if(!Measure){
-		if(OutlineWidth1){
-			; With antialiasing turned on the path and the text do not line up perfectly, shifting the path slightly up and left will improve it slightly
-			; The offset is caused by the differences in the way text and paths rendered/antialiased, so the OF option will draw the text using FillPath instead of DrawText
-			; Because the outline and the fill are both drawn using the path the outline will match the text better
-			if(!OutlineUseFill1){
-				RC_x := NumGet(RC, 0, "float")
-				RC_y := NumGet(RC, 4, "float")
-				NumPut(RC_x - 1, RC, 0, "float")
-				NumPut(RC_y - 0.5, RC, 4, "float")
-			}
-			
-			; Create a path to draw the outline with
-			OutlineColour := "0x" (OutlineColour1 ? OutlineColour1 : "ff000000")
-			pOutlinePath := Gdip_CreatePath(1)
-			pOutlinePen := Gdip_CreatePen(OutlineColour, OutlineWidth1)
-			Gdip_AddPathString(pOutlinePath, Text, hFamily, Style, Size, RC, hFormat)
-			Gdip_DrawPath(pGraphics, pOutlinePen, pOutlinePath)
-			
-			if(!OutlineUseFill1){
-				NumPut(RC_x, RC, 0, "float") ; Reset RC x and y
-				NumPut(RC_y, RC, 4, "float")
-				E := Gdip_DrawString(pGraphics, Text, hFont, hFormat, pBrush, RC)
-			}
-			else{
-				E := Gdip_FillPath(pGraphics, pBrush, pOutlinePath)
-			}
-			
-			Gdip_DeletePath(pOutlinePath)
-			Gdip_DeletePen(pOutlinePen)
-		}
-		else
-			E := Gdip_DrawString(pGraphics, Text, hFont, hFormat, pBrush, RC)
-	}
+    hFamily := Gdip_FontFamilyCreate(Font)
+    hFont := Gdip_FontCreate(hFamily, Size, Style)
+    FormatStyle := NoWrap ? 0x4000 | 0x1000 : 0x4000
+    hFormat := Gdip_StringFormatCreate(FormatStyle)
+    pBrush := PassBrush ? pBrush : Gdip_BrushCreateSolid(Colour)
+    if !(hFamily && hFont && hFormat && pBrush && pGraphics)
+        return !pGraphics ? -2 : !hFamily ? -3 : !hFont ? -4 : !hFormat ? -5 : !pBrush ? -6 : 0
 
-	if !PassBrush
-		Gdip_DeleteBrush(pBrush)
-	Gdip_DeleteStringFormat(hFormat)   
-	Gdip_DeleteFont(hFont)
-	Gdip_DeleteFontFamily(hFamily)
-	return E ? E : ReturnRC
+    CreateRectF(RC, xpos, ypos, Width, Height)
+    Gdip_SetStringFormatAlign(hFormat, Align)
+    Gdip_SetTextRenderingHint(pGraphics, Rendering)
+    ReturnRC := Gdip_MeasureString(pGraphics, Text, hFont, hFormat, RC)
+
+    if vPos
+    {
+        StringSplit, ReturnRC, ReturnRC, |
+
+        if (vPos = "vCentre") || (vPos = "vCenter")
+            ypos += (Height-ReturnRC4)//2
+        else if (vPos = "Top") || (vPos = "Up")
+            ypos := 0
+        else if (vPos = "Bottom") || (vPos = "Down")
+            ypos := Height-ReturnRC4
+
+        CreateRectF(RC, xpos, ypos, Width, ReturnRC4)
+        ReturnRC := Gdip_MeasureString(pGraphics, Text, hFont, hFormat, RC)
+    }
+
+    if (!Measure){
+        if (OutlineWidth1){
+            ; With antialiasing turned on the path and the text do not line up perfectly, shifting the path slightly up and left will improve it slightly
+            ; The offset is caused by the differences in the way text and paths rendered/antialiased, so the OF option will draw the text using FillPath instead of DrawText
+            ; Because the outline and the fill are both drawn using the path the outline will match the text better
+            if (!OutlineUseFill1){
+                RC_x := NumGet(RC, 0, "float")
+                RC_y := NumGet(RC, 4, "float")
+                NumPut(RC_x - 1, RC, 0, "float")
+                NumPut(RC_y - 0.5, RC, 4, "float")
+            }
+
+            ; Create a path to draw the outline with
+            OutlineColour := "0x" (OutlineColour1 ? OutlineColour1 : "ff000000")
+            pOutlinePath := Gdip_CreatePath(1)
+            pOutlinePen := Gdip_CreatePen(OutlineColour, OutlineWidth1)
+            Gdip_AddPathString(pOutlinePath, Text, hFamily, Style, Size, RC, hFormat)
+            Gdip_DrawPath(pGraphics, pOutlinePen, pOutlinePath)
+            
+            if (!OutlineUseFill1){
+                NumPut(RC_x, RC, 0, "float") ; Reset RC x and y
+                NumPut(RC_y, RC, 4, "float")
+                E := Gdip_DrawString(pGraphics, Text, hFont, hFormat, pBrush, RC)
+            }
+            else {
+                E := Gdip_FillPath(pGraphics, pBrush, pOutlinePath)
+            }
+            
+            Gdip_DeletePath(pOutlinePath)
+            Gdip_DeletePen(pOutlinePen)
+        }
+        else
+            E := Gdip_DrawString(pGraphics, Text, hFont, hFormat, pBrush, RC)
+    }
+
+    if !PassBrush
+        Gdip_DeleteBrush(pBrush)
+    Gdip_DeleteStringFormat(hFormat)
+    Gdip_DeleteFont(hFont)
+    Gdip_DeleteFontFamily(hFamily)
+    return E ? E : ReturnRC
 }
 
 Gdip_AddPathString(Path, sString, FontFamily, Style, Size, ByRef RectF, Format){
-	Ptr := A_PtrSize ? "UPtr" : "UInt"
-	
-	if (!A_IsUnicode)
-	{
-		nSize := DllCall("MultiByteToWideChar", "uint", 0, "uint", 0, Ptr, &sString, "int", -1, Ptr, 0, "int", 0)
-		VarSetCapacity(wString, nSize*2)
-		DllCall("MultiByteToWideChar", "uint", 0, "uint", 0, Ptr, &sString, "int", -1, Ptr, &wString, "int", nSize)
-	}
-	
-	return DllCall("gdiplus\GdipAddPathString"
-					, Ptr, Path
-					, Ptr, A_IsUnicode ? &sString : &wString
-					, "int", -1
-					, Ptr, FontFamily
-					, "int", Style
-					, "float", Size
-					, Ptr, &RectF
-					, Ptr, Format)
+    Ptr := A_PtrSize ? "UPtr" : "UInt"
+
+    if (!A_IsUnicode)
+    {
+        nSize := DllCall("MultiByteToWideChar", "uint", 0, "uint", 0, Ptr, &sString, "int", -1, Ptr, 0, "int", 0)
+        VarSetCapacity(wString, nSize*2)
+        DllCall("MultiByteToWideChar", "uint", 0, "uint", 0, Ptr, &sString, "int", -1, Ptr, &wString, "int", nSize)
+    }
+
+    return DllCall("gdiplus\GdipAddPathString"
+                    , Ptr, Path
+                    , Ptr, A_IsUnicode ? &sString : &wString
+                    , "int", -1
+                    , Ptr, FontFamily
+                    , "int", Style
+                    , "float", Size
+                    , Ptr, &RectF
+                    , Ptr, Format)
 }
 
 Gdip_GetPathWorldBounds(Path){
-	Ptr := A_PtrSize ? "UPtr" : "UInt"
-	VarSetCapacity(RectF, 16)
-	DllCall("gdiplus\GdipGetPathWorldBounds", Ptr, Path, Ptr, &RectF)
-	
-	return &RectF ? NumGet(RectF, 0, "float") "|" NumGet(RectF, 4, "float") "|" NumGet(RectF, 8, "float") "|" NumGet(RectF, 12, "float") : 0
+    Ptr := A_PtrSize ? "UPtr" : "UInt"
+    VarSetCapacity(RectF, 16)
+    DllCall("gdiplus\GdipGetPathWorldBounds", Ptr, Path, Ptr, &RectF)
+
+    return &RectF ? NumGet(RectF, 0, "float") "|" NumGet(RectF, 4, "float") "|" NumGet(RectF, 8, "float") "|" NumGet(RectF, 12, "float") : 0
 }
 
 Gdip_GetPathPoints(Path){
-	Ptr := A_PtrSize ? "UPtr" : "UInt"
-	PointCount := Gdip_GetPointCount(Path)
-	if(PointCount = 0)
-		return "Count: " 0
-	VarSetCapacity(Points, PointCount * 8)
-	DllCall("gdiplus\GdipGetPathPoints", Ptr, Path, Ptr, &Points, "Int", PointCount)
-	Offset = 0
-	Loop %PointCount%{
-		if(A_Index > 5)
-			break
-		Offset += 8
-	}
-	;~ return PointCount
-	return "Count: " . PointCount
+    Ptr := A_PtrSize ? "UPtr" : "UInt"
+    PointCount := Gdip_GetPointCount(Path)
+    if(PointCount = 0)
+        return "Count: " 0
+    VarSetCapacity(Points, PointCount * 8)
+    DllCall("gdiplus\GdipGetPathPoints", Ptr, Path, Ptr, &Points, "Int", PointCount)
+    Offset = 0
+    Loop %PointCount%{
+        if(A_Index > 5)
+            break
+        Offset += 8
+    }
+    ;~ return PointCount
+    return "Count: " . PointCount
 }
 
 Gdip_GetPointCount(Path){
-	VarSetCapacity(PointCount, 8)
-	DllCall("gdiplus\GdipGetPointCount", A_PtrSize ? "UPtr" : "UInt", Path, "Int*", PointCount)
-	return PointCount
+    VarSetCapacity(PointCount, 8)
+    DllCall("gdiplus\GdipGetPointCount", A_PtrSize ? "UPtr" : "UInt", Path, "Int*", PointCount)
+    return PointCount
 }
 
 Gdip_DrawPath(pGraphics, pPen, pPath){
-	Ptr := A_PtrSize ? "UPtr" : "UInt"
-	return DllCall("gdiplus\GdipDrawPath", Ptr, pGraphics, Ptr, pPen, Ptr, pPath)
+    Ptr := A_PtrSize ? "UPtr" : "UInt"
+    return DllCall("gdiplus\GdipDrawPath", Ptr, pGraphics, Ptr, pPen, Ptr, pPath)
 }
 
 Gdip_AddPathBeziers(pPath, Points) {
-	StringSplit, Points, Points, |
-	VarSetCapacity(PointF, 8*Points0)   
-	Loop, %Points0%
-	{
-		StringSplit, Coord, Points%A_Index%, `,
-		NumPut(Coord1, PointF, 8*(A_Index-1), "float"), NumPut(Coord2, PointF, (8*(A_Index-1))+4, "float")
-	}
-	return DllCall("gdiplus\GdipAddPathBeziers", "uint", pPath, "uint", &PointF, "int", Points0)
+    StringSplit, Points, Points, |
+    VarSetCapacity(PointF, 8*Points0)
+    Loop, %Points0%
+    {
+        StringSplit, Coord, Points%A_Index%, `,
+        NumPut(Coord1, PointF, 8*(A_Index-1), "float"), NumPut(Coord2, PointF, (8*(A_Index-1))+4, "float")
+    }
+    return DllCall("gdiplus\GdipAddPathBeziers", "uint", pPath, "uint", &PointF, "int", Points0)
 }
 
 Gdip_AddPathBezier(pPath, x1, y1, x2, y2, x3, y3, x4, y4) {	; Adds a B�zier spline to the current figure of this path
-	return DllCall("gdiplus\GdipAddPathBezier", "uint", pPath
-	, "float", x1, "float", y1, "float", x2, "float", y2
-	, "float", x3, "float", y3, "float", x4, "float", y4)
+    return DllCall("gdiplus\GdipAddPathBezier", "uint", pPath
+    , "float", x1, "float", y1, "float", x2, "float", y2
+    , "float", x3, "float", y3, "float", x4, "float", y4)
 }
 
 Gdip_AddPathLines(pPath, Points) {
-	StringSplit, Points, Points, |
-	VarSetCapacity(PointF, 8*Points0)   
-	Loop, %Points0%
-	{
-		StringSplit, Coord, Points%A_Index%, `,
-		NumPut(Coord1, PointF, 8*(A_Index-1), "float"), NumPut(Coord2, PointF, (8*(A_Index-1))+4, "float")
-	}
-	return DllCall("gdiplus\GdipAddPathLine2", "uint", pPath, "uint", &PointF, "int", Points0)
+    StringSplit, Points, Points, |
+    VarSetCapacity(PointF, 8*Points0)
+    Loop, %Points0%
+    {
+        StringSplit, Coord, Points%A_Index%, `,
+        NumPut(Coord1, PointF, 8*(A_Index-1), "float"), NumPut(Coord2, PointF, (8*(A_Index-1))+4, "float")
+    }
+    return DllCall("gdiplus\GdipAddPathLine2", "uint", pPath, "uint", &PointF, "int", Points0)
 }
 
 Gdip_AddPathLine(pPath, x1, y1, x2, y2) {
-	return DllCall("gdiplus\GdipAddPathLine", "uint", pPath
-	, "float", x1, "float", y1, "float", x2, "float", y2)
+    return DllCall("gdiplus\GdipAddPathLine", "uint", pPath
+    , "float", x1, "float", y1, "float", x2, "float", y2)
 }
 
 Gdip_AddPathArc(pPath, x, y, w, h, StartAngle, SweepAngle) {
-	return DllCall("gdiplus\GdipAddPathArc", "uint", pPath, "float", x, "float", y, "float", w, "float", h, "float", StartAngle, "float", SweepAngle)
+    return DllCall("gdiplus\GdipAddPathArc", "uint", pPath, "float", x, "float", y, "float", w, "float", h, "float", StartAngle, "float", SweepAngle)
 }
 
 Gdip_AddPathPie(pPath, x, y, w, h, StartAngle, SweepAngle) {
-	return DllCall("gdiplus\GdipAddPathPie", "uint", pPath, "float", x, "float", y, "float", w, "float", h, "float", StartAngle, "float", SweepAngle)
+    return DllCall("gdiplus\GdipAddPathPie", "uint", pPath, "float", x, "float", y, "float", w, "float", h, "float", StartAngle, "float", SweepAngle)
 }
 
 Gdip_StartPathFigure(pPath) {	; Starts a new figure without closing the current figure. Subsequent points added to this path are added to the new figure.
-	return DllCall("gdiplus\GdipStartPathFigure", "uint", pPath)
+    return DllCall("gdiplus\GdipStartPathFigure", "uint", pPath)
 }
 
 Gdip_ClosePathFigure(pPath) {	; Closes the current figure of this path.
-	return DllCall("gdiplus\GdipClosePathFigure", "uint", pPath)
+    return DllCall("gdiplus\GdipClosePathFigure", "uint", pPath)
 }
 
 Gdip_WidenPath(pPath, pPen, Matrix=0, Flatness=1) {	; Replaces this path with curves that enclose the area that is filled when this path is drawn by a specified pen. This method also flattens the path.
-	return DllCall("gdiplus\GdipWidenPath", "uint", pPath, "uint", pPen, "uint", Matrix, "float", Flatness)
+    return DllCall("gdiplus\GdipWidenPath", "uint", pPath, "uint", pPen, "uint", Matrix, "float", Flatness)
 }
 
 Gdip_ClonePath(pPath) {
-	DllCall("gdiplus\GdipClonePath", "uint", pPath, "uint*", pPathClone)
-	return pPathClone
+    DllCall("gdiplus\GdipClonePath", "uint", pPath, "uint*", pPathClone)
+    return pPathClone
 }
 
 Gdip_CloneBrush(pBrush) {
@@ -634,7 +634,6 @@ Gdip_SetStringFormatAlign(hStringFormat, Align, LineAlign:="") {
     return DllCall("gdiplus\GdipSetStringFormatAlign", "UPtr", hStringFormat, "int", Align)
 }
 
-
 Gdip_SetStringFormatLineAlign(hStringFormat, StringAlign) {
     ; The line alignment setting specifies how to align the string vertically in the layout rectangle.
     ; The layout rectangle is used to position the displayed string
@@ -642,7 +641,7 @@ Gdip_SetStringFormatLineAlign(hStringFormat, StringAlign) {
     ; 0 - Top
     ; 1 - Center
     ; 2 - Bottom
-    
+
     Return DllCall("gdiplus\GdipSetStringFormatLineAlign", "UPtr", hStringFormat, "int", StringAlign)
 }
 
@@ -656,11 +655,11 @@ Gdip_CreatePath(fillMode:=0, Points:=0, PointTypes:=0) {
           ;   0x10 - DashMode; undocumented and probably not implemented;
           ;   0x20 - Marker;
           ;   0x80 - Close subpath.
-    
+
     ; FillModes:
     ; Alternate = 0
     ; Winding = 1
-    
+
     pPath := 0
     If !Points
     {
@@ -691,7 +690,7 @@ AllocateBinArray(ByRef BinArray, inArray, dtype:="float", ds:=4) {
       ; , "Double" : 8, "UPtr"  : A_PtrSize
       ;  , "UPtr"  : A_PtrSize
     ; function inspired by MCL's CreateBinArray()
- 
+
     If IsObject(inArray)
     {
        totals := inArray.Length()
@@ -739,7 +738,6 @@ Gdip_CreatePen(ARGB, w, Unit:=2) {
     return pPen
 }
 
- 
 Gdip_FillPath(pGraphics, pBrush, pPath) {
     If (!pGraphics || !pBrush || !pPath)
        Return 2
