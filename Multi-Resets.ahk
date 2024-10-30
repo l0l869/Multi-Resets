@@ -15,7 +15,7 @@ LogF("INF", "Initialising (" A_AhkVersion " " A_PtrSize*8 "-bit)")
 #Include, %A_ScriptDir%
 #Include, functions/configurations.ahk
 
-global SCRIPT_VERSION := 20241002.23
+global SCRIPT_VERSION := 20241030.22
 global iniFile := A_ScriptDir "\configs\configs.ini"
 global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang"
 
@@ -31,10 +31,9 @@ global lastRestart
 global timer1
 global MCInstances := [], replacementInstances := [], queuedInstances := []
 global resetDll := DllCall("LoadLibrary", "Str", "functions/reset.dll", "Ptr")
-if FileExist("functions/game.ahk")
-    global gameScript := LoadFile("functions/game.ahk")
 if !resetDll
     LogF("WAR", "Failed to load reset.dll; setupless will not work")
+FileExist("functions/game.ahk") ? global gameScript := LoadFile("functions/game.ahk") : Setting["map"]["isBored"] := {}
 
 Menu, Tray, Icon, assets/_Icon.ico
 Menu, Tray, Add, MC Directory, OpenMinecraftDir
@@ -99,7 +98,7 @@ InitGui() {
 Gui_UpdateProgress(show, percent := 0, text := "", buttonFunc := "") {
     static background_blur
         , progress_container
-        , progress_slider    
+        , progress_slider
         , progress_text
         , progress_button
 
@@ -145,7 +144,7 @@ Gui_EditHotkeys() {
 
     IniRead, iniKey, %iniFile%, Hotkeys, Reset
     GuiControl, hotkeysWin:, hotkeyboxReset, %iniKey%
-        
+
     IniRead, iniKey, %iniFile%, Hotkeys, StopReset
     GuiControl, hotkeysWin:, hotkeyboxStopReset, %iniKey%
 
@@ -154,7 +153,7 @@ Gui_EditHotkeys() {
 
     IniRead, iniKey, %iniFile%, Hotkeys, StartTimer
     GuiControl, hotkeysWin:, hotkeyboxStartTimer, %iniKey%
-        
+
     IniRead, iniKey, %iniFile%, Hotkeys, StopTimer
     GuiControl, hotkeysWin:, hotkeyboxStopTimer, %iniKey%
 
