@@ -24,7 +24,7 @@ global autoRestart     , new Setting("autoRestart", "Auto Restart", "Macro", 2, 
 global seamlessRestarts, new Setting("seamlessRestarts", "Seamless", "Macro", 2, "checkbox", false, "Opens instances in the background before restarting", [Func("AutoRestartHandler")])
 global resetThreshold  , new Setting("resetThreshold", "Reset Threshold", "Macro", 2, "inputNumber", 120, "Number of resets accumulated between instances to initiate an automatic restart", [Func("AutoRestartHandler")])
 global numInstances    , new Setting("numInstances", "Number of Instances", "Macro", 3, "inputNumber", 4, "", 0)
-global layoutDimensions, new Setting("layoutDimensions", "Layout", "Macro", 3, "inputCoords", "2,2", "The arrangement of instances (x, y)", 0)
+global layoutDimensions, new Setting("layoutDimensions", "Layout", "Macro", 3, "inputCoords", "2,2", "The arrangement of instances (x, y)", [Func("CheckResetMethodViability")])
 global keyDelay        , new Setting("keyDelay", "Key Delay", "Macro", 4, "inputNumber", 50, "The delay between world creation clicks", 0)
 global switchDelay     , new Setting("switchDelay", "Switch Delay", "Macro", 4, "inputNumber", 0, "The delay resetting in-between instances", 0)
 global clickDuration   , new Setting("clickDuration", "Click Duration", "Macro", 4, "inputNumber", 30, "How long each mouse click is held down for; helps to register clicks", 0)
@@ -53,8 +53,8 @@ global tDecimalPlaces  , new Setting("tDecimalPlaces", "Decimals", "Timer", 4, "
 global tAutoSplit      , new Setting("tAutoSplit", "Auto Split", "Timer", 5, "checkbox", true, "Automatically stops the timer when credits roll", [Func("TimerSettingHandler")])
 global remindShowPacks , new Setting("remindShowPacks", "Remind: Show Packs", "Timer", 5, "checkbox", false, "After a completion, you can be reminded of", [Func("TimerSettingHandler")])
 
-global resetMethod       , new Setting("resetMethod", "Reset Method", "Other", 1, "select", ["setupless", "setup"], "The method the macro uses to figure out where to click", [Func("OptResetMethodHandler")])
-global setupData         , new Setting("setupData", "Setup Data", "Other", 1, "select", LoadClickData(), "", [Func("OptResetMethodHandler")])
+global resetMethod       , new Setting("resetMethod", "Reset Method", "Other", 1, "select", ["setupless", "setup"], "The method the macro uses to figure out where to click", [Func("OptResetMethodHandler"), Func("CheckResetMethodViability")])
+global setupData         , new Setting("setupData", "Setup Data", "Other", 1, "select", LoadClickData(), "", [Func("OptResetMethodHandler"), Func("CheckResetMethodViability")])
 global coopMode          , new Setting("coopMode", "Coop Mode", "Other", 1, "checkbox", false, "Prevents the 0/8 bug", 0)
 global findCoordsTextOnly, new Setting("findCoordsTextOnly", "Read Coordinates Text Only", "Other", 1, "checkbox", false, "Reads the ""Show Coordinates"" text only; does not attempt to read the game memory", 0)
 global awaitWcColour     , new Setting("awaitWcColour", "Wait for World Creation Colours", "Other", 1, "checkbox", false, "Waits for the World Creation clicks' colour; useful for allowing the new World Creation UI to load", 0)
@@ -81,7 +81,7 @@ class Setting {
         this.map[this.id] := this
         this.toInit.push(this.id)
     }
-    
+
     Init() {
         this.CreateSetting()
         this.UpdateSettingValue(this.value)
@@ -93,7 +93,7 @@ class Setting {
         switch this.type {
             case "checkbox":
                 this.attributeType := "checked"
-                
+
                 div := WB.document.createElement("div")
 
                 checkbox := WB.document.createElement("input")
@@ -101,7 +101,7 @@ class Setting {
                 checkbox.id := this.id
                 checkbox.onchange := ObjBindMethod(this, "EventHandler")
                 this.element := checkbox
-                
+
                 h3 := WB.document.createElement("h3")
                 h3.innerText := this.name
                 h3.onclick := Func("RunJS").bind("document.getElementById(""" this.id """).click()")
@@ -109,7 +109,7 @@ class Setting {
                 div.appendChild(checkbox)
                 div.appendChild(h3)
                 this.rootDiv.appendChild(div)
-            
+
             case "select":
                 this.attributeType := "value"
 
@@ -117,7 +117,7 @@ class Setting {
 
                 h3 := WB.document.createElement("h3")
                 h3.innerText := this.name
-                
+
                 select := WB.document.createElement("select")
                 select.id := this.id
                 select.onchange := ObjBindMethod(this, "EventHandler")
@@ -128,7 +128,7 @@ class Setting {
                     select.appendChild(option)
                 }
                 this.element := select
-                
+
                 div.appendChild(h3)
                 div.appendChild(select)
                 this.rootDiv.appendChild(div)
@@ -178,7 +178,7 @@ class Setting {
                 div.appendChild(inputX)
                 div.appendChild(inputY)
                 this.rootDiv.appendChild(div)
-            
+
             case "inputColour":
                 this.attributeType := "value"
 
@@ -208,7 +208,7 @@ class Setting {
                 func1 := Func("RunJS").Bind("var c = document.getElementById('colourDialog').ChooseColorDlg(); document.getElementById('" this.id "').value = decToARGB(c);")
                 func2 := ObjBindMethod(this, "EventHandler")
                 button.onclick := Func("CoupleFunctions").Bind(func1, func2)
-                
+
                 div.appendChild(button)
                 this.rootDiv.appendChild(div)
 
@@ -232,12 +232,12 @@ class Setting {
                 button := WB.document.createElement("button")
                 button.innerText := Chr(9776)
                 button.onclick := Func("RunJS").Bind("fontlist = document.getElementById('" this.id "-font-list'); fontlist.style.display = fontlist.style.display == 'none' ? 'block' : 'none';")
-                
+
                 div.appendChild(h3)
                 div.appendChild(input)
                 div.appendChild(button)
                 this.rootDiv.appendChild(div)
-                
+
                 select := WB.document.createElement("select")
                 select.id := this.id "-font-list"
                 select.style.display := "none"
@@ -354,7 +354,7 @@ class Setting {
 
     InputNumberRetriever() {
         input := this.DefaultInputRetriever()
-        
+
         RegExMatch(input, "-?[\d.]+", filteredInput)
         if (input != filteredInput)
             this.UpdateSettingValue(filteredInput, false)
@@ -397,7 +397,7 @@ class Setting {
     InputFontHandler() {
         this.element["style"]["font-family"] := this.value
     }
-    
+
     InputColourHandler() {
         WB.document.getElementById(this.id "-colour-btn")["style"]["color"] := this.value & 0x00FFFFFF
     }
@@ -479,29 +479,50 @@ OptResetMethodHandler() {
         Setting["map"]["setupData"]["rootDiv"]["style"]["display"] := "flex"
     else
         Setting["map"]["setupData"]["rootDiv"]["style"]["display"] := "none"
+}
 
-    if setupData {
-        if !clickData[setupData]
+CheckResetMethodViability() {
+    if (resetMethod == "setupless") {
+        if !resetDll {
+            Setting["map"]["resetMethod"]["rootDiv"]["style"]["background-color"] := "rgba(255,0,0,0.25)"
+            return LogF("ERR", "Failed to load reset.dll; setupless will not work", A_ThisFunc ":NoResetDll")
+        }
+
+        workArea := GetWorkArea()
+        width := workArea[1] / layoutDimensions.x
+        height := workArea[2] / layoutDimensions.y - SM_CYCAPTION - SM_CYFRAME
+
+        scale := GetMCScale(width, height)
+        content_area_w := width*.6-(8*scale)
+        selector_area_w := width*.4-(3*scale)
+        create_button_y := 22*scale + selector_area_w*92/160 + 10*scale
+
+        if (content_area_w < 223 || height < create_button_y) {
+            LogF("WAR", "Setupless is not supported with the current instance dimensions", A_ThisFunc ":" layoutDimensions.x "," layoutDimensions.y ":UnsupportedDimensions")
+            warningColour := "rgba(255,255,0,0.25)"
+        }
+    }
+    else if setupData {
+        if !clickData.HasKey(setupData)
             return LogF("WAR", "No setup data", A_ThisFunc ":NoSetupData")
 
         screenClicks := clickData[setupData]["screenClicks"]
         worldcreationClicks := clickData[setupData]["worldcreationClicks"]
 
-        if (clickData[setupData]["metadata"]["clickVersion"] < 3)
-            return
+        if (clickData[setupData]["metadata"]["clickVersion"] > 2) {
+            if (clickData[setupData]["metadata"]["dpi"] != A_ScreenDPI) {
+                LogF("WAR", "Screen DPI does not match with setup data", A_ThisFunc ":" setupData ":DifferentScreenDPI")
+                warningColour := "rgba(255,255,0,0.25)"
+            }
 
-        if (clickData[setupData]["metadata"]["dpi"] != A_ScreenDPI) {
-            LogF("WAR", "Screen DPI does not match with setup data", A_ThisFunc ":" setupData ":DifferentScreenDPI")
-            warningColour := "rgba(255,255,0,0.25)"
+            setupWorkArea := clickData[setupData]["metadata"]["workArea"]
+            if (setupWorkArea[1] != workArea[1] || setupWorkArea[2] != workArea[2]) {
+                LogF("WAR", "Working area does not match with setup data", A_ThisFunc ":" setupData ":DifferentWorkArea")
+                warningColour := "rgba(255,255,0,0.25)"
+            }
         }
-
-        setupWorkArea := clickData[setupData]["metadata"]["workArea"]
-        if (setupWorkArea[1] != workArea[1] || setupWorkArea[2] != workArea[2]) {
-            LogF("WAR", "Working area does not match with setup data", A_ThisFunc ":" setupData ":DifferentWorkArea")
-            warningColour := "rgba(255,255,0,0.25)"
-        }
-        Setting["map"]["setupData"]["rootDiv"]["style"]["background-color"] := warningColour
     }
+    Setting["map"]["resetMethod"]["rootDiv"]["style"]["background-color"] := warningColour
 }
 
 InitGuiElements() {
@@ -574,7 +595,7 @@ LoadClickData() {
             clickObj := StrSplit(click, ",")
             if !clickObj.count()
                 continue
-    
+
             if (clickObj[6])
                 clickV["screenClicks"].push({btn:clickObj[1], x:clickObj[2], y:clickObj[3], px:clickObj[4], py:clickObj[5], colour:clickObj[6]})
             else

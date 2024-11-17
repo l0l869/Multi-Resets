@@ -58,7 +58,10 @@ ResizeInstance(instance, index) {
     x := Mod(positionIndex, layoutDimensions.x)
     y := positionIndex // layoutDimensions.x
     WinRestore, % "ahk_id " instance.hwnd
-    WinMove, % "ahk_id " instance.hwnd,, width*x-SM_CXFRAME, height*y, width+SM_CXFRAME*2, height+SM_CYFRAME
+    DllCall("SetWindowPos", "Ptr", instance.hwnd, "UInt", 0
+                          , "Int", width*x-SM_CXFRAME, "Int", height*y
+                          , "Int", width+SM_CXFRAME*2, "Int", height+SM_CYFRAME
+                          , "UInt", 0x0400)
 
     winDimensions := GetWindowDimensions("ahk_id " instance.hwnd)
     instance.x1     := winDimensions.x1
@@ -117,10 +120,10 @@ GetWindowDimensions(Window) {
 
 GetMinecraftProcesses() {
     local tPtr := 0, pPtr := 0, nTTL := 0, processName, processID, list := []
-  
+
     if !DllCall("Wtsapi32\WTSEnumerateProcesses", "Ptr", 0, "Int", 0, "Int", 1, "PtrP", pPtr, "PtrP", nTTL)
-        return "", DllCall("SetLastError", "Int", -1)        
-    
+        return "", DllCall("SetLastError", "Int", -1)
+
     tPtr := pPtr
     loop, % nTTL {
         processName := StrGet(NumGet(tPtr + 8))
@@ -130,8 +133,8 @@ GetMinecraftProcesses() {
 
         tPtr += (A_PtrSize == 4 ? 16 : 24)
     }
-    DllCall("Wtsapi32\WTSFreeMemory","Ptr", pPtr)      
-  
+    DllCall("Wtsapi32\WTSFreeMemory","Ptr", pPtr)
+
     return list, DllCall("SetLastError", "UInt", nTTL)
 }
 
@@ -162,9 +165,9 @@ ConfigureMinecraftPointers() {
     offsetsX := offsetsZ := offsetsAutoSplit := offsetsScreen := ""
 
     switch MCversion := GetMinecraftVersion() {
-        case "1.19.50.2": offsetsX          := [0x048E3910, 0x10, 0x128, 0x0, 0xF8, 0x398, 0x18, 0x0, 0x8] 
+        case "1.19.50.2": offsetsX          := [0x048E3910, 0x10, 0x128, 0x0, 0xF8, 0x398, 0x18, 0x0, 0x8]
                           offsetsZ          := [0x048E3910, 0x10, 0x128, 0x0, 0xF8, 0x398, 0x18, 0x0, 0x10]
-                        ;   offsetsAutoSplit  := [0x04974880, 0x0, 0x28, 0xA0]
+                          ; offsetsAutoSplit  := [0x04974880, 0x0, 0x28, 0xA0]
         case "1.19.0.5" : offsetsX          := [0x0411B880, 0x10, 0x1F0, 0x0, 0x150, 0x0, 0x20, 0xA0, 0x48, 0x0, 0xE8]
                           offsetsZ          := [0x0411B880, 0x10, 0x1F0, 0x0, 0x150, 0x0, 0x20, 0xA0, 0x48, 0x0, 0xEA]
                           offsetsAutoSplit  := [0x041C51B8, 0x0, 0x28, 0x88]
@@ -216,7 +219,7 @@ CheckMinecraftSettings() {
 
     if (gfx_safe_zone_x + gfx_safe_zone_y - 2) ; gfx_safe_zone_x != 1 || gfx_safe_zone_y != 1
         LogF("WAR", "gfx_safe_zone is set; setupless will not work", A_ThisFunc ":gfx_safe_zone")
-    
+
     if optionsToUpdate.count() {
         optionsToUpdateString := ""
         for option, value in optionsToUpdate
@@ -236,13 +239,13 @@ CheckMinecraftSettings() {
     }
 }
 
-GetMCScale(w, h, applyDPI:=false) {
-    if applyDPI {
-        w += SM_CXFRAME*2
-        h += SM_CYFRAME*2 + SM_CYCAPTION
-    }
-    x := 1 + (w-394+0.8) // 375.3333 ; approximate
-    y := 1 + (h-290-1  ) // 250
+GetMCScale(w, h) {
+    minW := 752
+    minH := 500
+    if (w <= minW || h <= minH)
+        return 1
+    x := 2 + (w-minW) // 376 ; approximate
+    y := 2 + (h-minH) // 250
 
     return x < y ? x : y
 }
@@ -312,7 +315,7 @@ WorldBopper(action := "r", targetWorldName := "My World", daysBefore := 512) {
 
         Worlds.push({ folder: A_LoopFileName, lastPlayed: lastPlayed, worldName: worldName })
     }
-    
+
     selectedWorlds := []
     For k, world in Worlds
         if ((world.worldName == targetWorldName || targetWorldName == "") && DateToSeconds(A_NOW)-DateToSeconds(world.lastPlayed) < daysBefore*86400)
@@ -342,7 +345,7 @@ WorldBopper(action := "r", targetWorldName := "My World", daysBefore := 512) {
             Gui_UpdateProgress(true, precentageDone, precentageDone "% (" k "/" total ")", 1)
         }
         Gui_UpdateProgress(false, 0, "0%")
-        
+
         return WorldBopper("r", WB.document.getElementById("bopName").value, WB.document.getElementById("bopDays").value)
     }
     else if (action == "da") {
@@ -351,7 +354,7 @@ WorldBopper(action := "r", targetWorldName := "My World", daysBefore := 512) {
             return
 
         FileRemoveDir, % minecraftDir "\minecraftWorlds", 1
-        
+
         Loop, 15 {
             folder := minecraftDir "\minecraftWorlds\placeholder" A_Index
             FileCreateDir, %folder%
@@ -483,7 +486,7 @@ QPC() {
 GlobalMemoryStatusEx() {
     static MEMORYSTATUSEX, init := VarSetCapacity(MEMORYSTATUSEX, 64, 0) && NumPut(64, MEMORYSTATUSEX, "UInt")
     if !DllCall("kernel32.dll\GlobalMemoryStatusEx", "Ptr", &MEMORYSTATUSEX)
-		return DllCall("kernel32.dll\GetLastError")
+        return DllCall("kernel32.dll\GetLastError")
 
     return { Lenght:        NumGet(MEMORYSTATUSEX,  0, "UInt"  ), MemoryLoad:    NumGet(MEMORYSTATUSEX,  4, "UInt")
            , TotalPhys:     NumGet(MEMORYSTATUSEX,  8, "UInt64"), AvailPhys:     NumGet(MEMORYSTATUSEX, 16, "UInt64")
@@ -493,20 +496,20 @@ GlobalMemoryStatusEx() {
 }
 
 GetFontNames(charset) {
-   hDC := DllCall("GetDC", "UInt", 0, "Ptr")
-   VarSetCapacity(LOGFONT, 92, 0)
-   NumPut(charset, &LOGFONT + 23, "UChar")
-   DllCall("EnumFontFamiliesEx", "Ptr", hDC, "Ptr", 0
-                               , "Ptr", RegisterCallback("EnumFontFamExProc", "F", 4)
-                               , "Ptr", pFonts := Object(Fonts := {}), "UInt", 0)
-   ObjRelease(pFonts), DllCall("ReleaseDC", "Ptr", 0, "Ptr", hDC)
-   return Fonts
+    hDC := DllCall("GetDC", "UInt", 0, "Ptr")
+    VarSetCapacity(LOGFONT, 92, 0)
+    NumPut(charset, &LOGFONT + 23, "UChar")
+    DllCall("EnumFontFamiliesEx", "Ptr", hDC, "Ptr", 0
+                                , "Ptr", RegisterCallback("EnumFontFamExProc", "F", 4)
+                                , "Ptr", pFonts := Object(Fonts := {}), "UInt", 0)
+    ObjRelease(pFonts), DllCall("ReleaseDC", "Ptr", 0, "Ptr", hDC)
+    return Fonts
 }
 
 EnumFontFamExProc(lpelfe, lpntme, FontType, lParam) {
-   font := StrGet(lpelfe + 28)
-   Object(lParam)[font] := 1
-   return true
+    font := StrGet(lpelfe + 28)
+    Object(lParam)[font] := 1
+    return true
 }
 
 GetExcludedFromList(list, excludeList) {

@@ -21,7 +21,7 @@ global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d
 
 EnvGet, threadCount, NUMBER_OF_PROCESSORS
 global threadCount
-global scaleBy := A_ScreenDPI / 96, workArea := GetWorkArea()
+global dpiScale := A_ScreenDPI / 96, workArea := GetWorkArea()
 global SM_CXFRAME := DllCall("GetSystemMetrics", "Int", 32)
 global SM_CYFRAME := DllCall("GetSystemMetrics", "Int", 33)
 global SM_CYCAPTION := DllCall("GetSystemMetrics", "Int", 4)
@@ -31,9 +31,8 @@ global lastRestart
 global timer1
 global MCInstances := [], replacementInstances := [], queuedInstances := []
 global resetDll := DllCall("LoadLibrary", "Str", "functions/reset.dll", "Ptr")
-if !resetDll
-    LogF("WAR", "Failed to load reset.dll; setupless will not work")
-FileExist("functions/game.ahk") ? global gameScript := LoadFile("functions/game.ahk") : Setting["map"]["isBored"] := {}
+global gameScript
+FileExist("functions/game.ahk") ? gameScript := LoadFile("functions/game.ahk") : Setting["map"]["isBored"] := {}
 
 Menu, Tray, Icon, assets/_Icon.ico
 Menu, Tray, Add, MC Directory, OpenMinecraftDir
@@ -43,7 +42,7 @@ Menu, Tray, Add, Close Instances, CloseInstances
 global WB, GuiHwnd
 Gui, Main:Add, ActiveX, vWB x0 y0 w600 h400, shell.explorer
 InitGui()
-Gui, Main:Show, % "w" 600/scaleBy " h" 400/scaleBy, Multi-Resets
+Gui, Main:Show, % "w" 600/dpiScale " h" 400/dpiScale, Multi-Resets
 LogF("INF", "Initialised (" Floor(QPC()-initTick) "ms)")
 
 CheckMinecraftSettings()

@@ -5,6 +5,10 @@
 #include <chrono>
 #include <memory>
 
+const int CYCAPTION = GetSystemMetrics(SM_CYCAPTION);
+const int CXFRAME = GetSystemMetrics(SM_CXFRAME);
+const int CYFRAME = GetSystemMetrics(SM_CYFRAME);
+
 const std::vector<bool> SaveAndQuitPattern = {1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,1,0,0,1};
 const std::vector<bool> CreateNewPattern = {0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,0,1,0,1,0,1,0,0,1,1,1,0,0,1,0,0,0,1,0,0,0,0,0,0};
 const std::vector<bool> CreateNewWorldPattern = {0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,0,1,0,1,0,1,0,0,1,1,1,0,0,1,0,0,0,1,0,0,0,0,0,1};
@@ -16,13 +20,18 @@ struct Vec3 {
     int x, y, z;
 };
 
-int GetMCScale(int w, int h, bool applyDPI = false, int dpiScale = 1) {
-    if (applyDPI) {
-        w += 16 * dpiScale;
-        h += 8 * dpiScale;
+int GetMCScale(int w, int h, bool adjustForDPI) {
+    if (adjustForDPI) {
+        h -= (CYFRAME*2 + CYCAPTION);
+        w -= CXFRAME*2;
     }
-    int x = 1 + (w - 394 + 0.8) / 375.3333; // approximate
-    int y = 1 + (h - 290 - 1) / 250;
+
+    int minW = 752;
+    int minH = 500;
+    if (w <= minW || h <= minH)
+        return 1;
+    int x = 2 + (w-minW) / 376; // approximate
+    int y = 2 + (h-minH) / 250;
 
     return x < y ? x : y;
 }
@@ -98,7 +107,7 @@ std::unique_ptr<Gdiplus::Bitmap> BitmapFromHWND(HWND hwnd) {
     return pBitmap;
 }
 
-extern "C" __declspec(dllexport) int GetCurrentClick(HWND hwnd, int dpiScale, int& code, int& fx, int& fy) {
+extern "C" __declspec(dllexport) int GetCurrentClick(HWND hwnd, int& code, int& fx, int& fy) {
     auto start = std::chrono::high_resolution_clock::now();
 
     Gdiplus::GdiplusStartupInput gdiplusStartupInput;
@@ -108,14 +117,14 @@ extern "C" __declspec(dllexport) int GetCurrentClick(HWND hwnd, int dpiScale, in
     std::unique_ptr<Gdiplus::Bitmap> pBitmap = BitmapFromHWND(hwnd);
     int mcWidth = pBitmap->GetWidth();
     int mcHeight = pBitmap->GetHeight();
-    int mcScale = GetMCScale(mcWidth, mcHeight);
+    int mcScale = GetMCScale(mcWidth, mcHeight, true);
     Gdiplus::BitmapData bitmapData;
     Gdiplus::Rect rect(0, 0, mcWidth, mcHeight);
     pBitmap->LockBits(&rect, Gdiplus::ImageLockModeRead, PixelFormat32bppARGB, &bitmapData);
 
     std::vector<int> foundAtIndices;
     std::vector<std::vector<bool>> foundPixels(0, std::vector<bool>(mcWidth, 0));
-    for (int y = 30 * dpiScale; y < mcHeight; y += mcScale) {
+    for (int y = CYCAPTION+CYFRAME; y < mcHeight; y += mcScale) {
         Gdiplus::ARGB* pixels = reinterpret_cast<Gdiplus::ARGB*>(bitmapData.Scan0) + y * bitmapData.Stride / sizeof(Gdiplus::ARGB);
         std::vector<bool> row(mcWidth / mcScale, false);
         bool hasFounded = false;
@@ -162,7 +171,7 @@ extern "C" __declspec(dllexport) int GetCurrentClick(HWND hwnd, int dpiScale, in
 
     code = pIndex;
     fx = result.first * mcScale;
-    fy = foundAtIndices[result.second] - 30 * dpiScale;
+    fy = foundAtIndices[result.second] - (CYCAPTION+CYFRAME);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
@@ -179,7 +188,7 @@ extern "C" __declspec(dllexport) int GetShownCoordinates(HWND hwnd, Vec3* coordi
     std::unique_ptr<Gdiplus::Bitmap> pBitmap = BitmapFromHWND(hwnd);
     int mcWidth = pBitmap->GetWidth();
     int mcHeight = pBitmap->GetHeight();
-    int searchWidth = mcWidth/3;
+    int searchWidth = std::max(mcWidth/3, std::min(125, mcWidth));
     int searchHeight = mcHeight/3;
     Gdiplus::BitmapData bitmapData;
     Gdiplus::Rect rect(0, 0, searchWidth, searchHeight);

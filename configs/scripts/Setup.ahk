@@ -38,7 +38,9 @@ dim := StrSplit(layoutDimensions, ",")
 width := workAreaWidth / dim[1]
 height := workAreaHeight / dim[2]
 WinRestore, % "ahk_id " hwnd
-WinMove, % "ahk_id " hwnd,, (workAreaWidth-width-SM_CXFRAME)/2, (workAreaHeight-height)/2, width+SM_CXFRAME*2, height+SM_CYFRAME
+DllCall("SetWindowPos", "Ptr", hwnd, "UInt", 0
+        , "Int", (workAreaWidth-width-SM_CXFRAME)/2, "Int", (workAreaHeight-height)/2
+        , "Int", width+SM_CXFRAME*2, "Int", height+SM_CYFRAME, "UInt", 0x0400)
 
 mcVersion := GetMinecraftVersion()
 
@@ -50,7 +52,7 @@ GetMinecraftVersion() {
     if (ErrorLevel || !hProcess)
         msgbox % "Failed to open process."
 
-    VarSetCapacity(lpFilename, 2048 * (A_IsUnicode ? 2 : 1)) 
+    VarSetCapacity(lpFilename, 2048 * (A_IsUnicode ? 2 : 1))
     DllCall("psapi\GetModuleFileNameEx"
             , "Ptr", hProcess
             , "Ptr", hModule
@@ -79,7 +81,7 @@ SetTimer, getWindowPosition, 1000
 
 
 getWindowPosition:
-    win := getWindowDimensions("Minecraft")
+    win := GetWindowDimensions("Minecraft")
 return
 
 updateSetupWindow:
@@ -129,7 +131,7 @@ GetWindowDimensions(Window) {
     WinGet, style, Style, %Window%
     if (isFullscreen := !(style & 0x20800000))
         return {}
-    
+
     WinGetPos, winX, winY, winWidth, winHeight, %Window%
     if (isMaximised := style & 0x1000000)
         winY := 0, winHeight -= SM_CYFRAME
@@ -171,7 +173,7 @@ FinishSetup() {
     }
 
     metaData := "#" CLICK_DATA_VERSION "," layoutDimensions "," mcVersion "," workAreaWidth "," workAreaHeight "," A_ScreenDPI "`n"
-    
+
     FileRead, fileClickData, clicks.txt
     for k, click in clickData
         clickDataString .= click "`n"

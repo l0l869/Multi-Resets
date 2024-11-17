@@ -76,7 +76,7 @@ return
 ResetInstances() {
     CoordMode, Mouse, Screen
     CoordMode, Pixel, Screen
-    
+
     seamlessRestart := autoRestart && seamlessRestarts
     if (autoRestart && !seamlessRestarts)
         ShouldRestart(UpdateResetAttempts(0))
@@ -84,8 +84,10 @@ ResetInstances() {
     if isBored
         gameScript.Show()
 
-    while (IsResettingInstances())
-    {
+    for k, instance in MCInstances
+        ResizeInstance(instance, k)
+
+    while (IsResettingInstances()) {
         if (seamlessRestart) {
             currentResetAttempts := UpdateResetAttempts(0)
             if (!lastRestart)
@@ -220,14 +222,15 @@ IterateReset(instance) {
             instance.lastClick := A_TickCount
 
             if (resetMethod == "setupless") {
-                scale := GetMCScale(instance.width, instance.height, true)
+                scale := GetMCScale(instance.width, instance.height)
                 selector_area := [instance.width*.4-(3*scale), instance.height-26*scale]
                 content_area := [instance.width*.6-(8*scale), instance.height-26*scale]
                 create_button := [selector_area[1]/4+(2*scale), 22*scale + selector_area[1]*92/160 + 10*scale]
                 xContent := instance.width - content_area[1] + 10*scale
 
-                difficulty := 155*scale
-                wcClicks := [{x: xContent, y: difficulty}, {x: xContent, y: difficulty+5*scale}]
+                difficulty := 143*scale
+                easy := (offset := instance.height - (difficulty + 60*scale)) > 0 ? difficulty+12*scale : difficulty+12*scale+offset ; difficulty menu is snapped up if it doesnt fit under
+                wcClicks := [{x: xContent, y: difficulty}, {x: xContent, y: easy}]
                 if (content_area[2] < 407*scale) {
                     scrollbar := [instance.width - 5*scale, instance.height-((28+2)*scale)]
                     scrollersize := content_area[2]/(870*scale)*scrollbar[2]
@@ -241,9 +244,10 @@ IterateReset(instance) {
                     coordinates := {x: xContent, y: instance.height-5*scale}
                 } else {
                     seed := {x: xContent, y: 340*scale, isSeedClick: resetSeed}
-                    simulation := {x: xContent, y: 380*scale}
+                    simulation := {x: xContent, y: 375*scale}
                     coordinates := {x: xContent, y: 433*scale}
                 }
+                ; when: content_area[1] < 223, text starts getting wrapped
                 create_button := {x: create_button[1], y: create_button[2]}
                 wcClicks.push(seed, simulation, coordinates, create_button)
             } else {
@@ -270,7 +274,7 @@ IterateReset(instance) {
                 if isBored
                     gameScript.AllowClick({x:instance.x1+click.x,y:instance.y1+click.y})
                 MouseClick,, instance.x1 + click.x, instance.y1 + click.y,,0
-                
+
                 if click.isSeedClick {
                     Sleep, %keyDelay%
                     Send, %resetSeed%
@@ -447,7 +451,7 @@ GetCurrentClick(instance, method) {
     clickY := -1
     if (method == "setupless") {
         returnedCode := -1
-        DllCall("reset\GetCurrentClick", "UPtr", instance.hwnd, "Int", scaleBy, "Int*", returnedCode, "Int*", clickX, "Int*", clickY)
+        DllCall("reset\GetCurrentClick", "UPtr", instance.hwnd, "Int*", returnedCode, "Int*", clickX, "Int*", clickY)
 
         switch returnedCode {
             case -1: return
