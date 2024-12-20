@@ -118,22 +118,24 @@ Class Timer
 
     formatTime(ms) {
         ms := Floor(ms)
-        seconds := Mod(ms // 1000,60)
-        minutes := ms // 60000
+        seconds := Mod(ms // 1000, 60)
+        minutes := Mod(ms // 60000, 60)
+        hours := ms // 3600000
 
         if this.decimalPlaces {
-            milliseconds := Mod(ms,1000)
-            if (milliseconds == 0)
-                milliseconds := "000"
-            else if (milliseconds < 10)
-                milliseconds := "00" . milliseconds
+            milliseconds := Mod(ms, 1000)
+            if (milliseconds < 10)
+                milliseconds := "00" milliseconds
             else if (milliseconds < 100)
-                milliseconds := "0" . milliseconds
+                milliseconds := "0" milliseconds
             milliseconds := "." SubStr(milliseconds, 1, this.decimalPlaces)
         }
 
         if seconds < 10
-            seconds := "0" . seconds
+            seconds := "0" seconds
+
+        if hours
+            minutes := minutes < 10 ? hours ":0" minutes : hours ":" minutes
 
         return minutes ":" seconds . milliseconds
     }
