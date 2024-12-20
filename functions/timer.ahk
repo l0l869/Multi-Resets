@@ -65,8 +65,9 @@ Class Timer
             return
 
         text := this.formatTime(this.elapsedTick)
-        win := this.currentInstance > 0 ? GetWindowDimensions("ahk_id " MCInstances[this.currentInstance].hwnd)
-                                        : WinActive("Minecraft") ? GetWindowDimensions("Minecraft") : {x1: 0, y1: 0, x2: A_ScreenWidth, y2: A_ScreenHeight}
+        win := isObject(this.mcInstance) ? GetWindowDimensions("ahk_id " this.mcInstance.hwnd)
+                : WinActive("Minecraft") ? GetWindowDimensions("Minecraft")
+                : {x1: 0, y1: 0, x2: A_ScreenWidth, y2: A_ScreenHeight}
         pos := _Overlay.getTextPosition(text, this.font, this.fontSize, this.outlineWidth, this.anchor
               , win.x1, win.y1, win.x2, win.y2, this.offset.x, this.offset.y)
         gAngle := Mod(this.gradientAngle, 360)
@@ -81,8 +82,8 @@ Class Timer
         midY := (pos.y2-this.padding.bottom + pos.y1+this.padding.top )/2
         tx := pos.width/2 - this.padding.left
         ty := pos.height  - (this.padding.top + this.padding.bottom)
-        m1 := Tan(gAngle              * 0.01745329252)
-        m2 := Tan(Mod(gAngle+90, 360) * 0.01745329252)
+        m1 := Tan(gAngle*0.01745329252)
+        m2 := m1 ? -1/m1 : -1048576
 
         if (Mod(gAngle//90, 2) == 0)
             gx := (-m2*tx + ty/2) / (m1-m2)
@@ -141,8 +142,7 @@ Class Timer
         if !offsetsAutoSplit
             return
 
-        proc := MCInstances[this.currentInstance].proc
-        value := ReadMemoryValue(proc, "Char", offsetsAutoSplit*)
+        value := ReadMemoryValue(this.mcInstance.proc, "Char", offsetsAutoSplit*)
         if (value == 2 || value == 3) {
             this.stop()
             if remindShowPacks {
@@ -153,7 +153,7 @@ Class Timer
         }
     }
 
-    setSettings(anchor, offset, font, fontSize, fontColour1, fontColour2, gradientAngle, animationType 
+    setSettings(anchor, offset, font, fontSize, fontColour1, fontColour2, gradientAngle, animationType
                 , animationLength, outlineWidth, outlineColour, decimalPlaces, refreshRate, autoSplit) {
         this.anchor := anchor
         this.offset := offset
@@ -191,7 +191,7 @@ WaitForMovement(instance) {
 
     xCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
 
-    while (timer1.currentInstance && instance.isResetting == -1) {
+    while (timer1.mcInstance && instance.isResetting == -1) {
         newCoord := ReadMemoryValue(instance.proc, "Float", offsetsX*)
         hasInputted := (GetKeyState("W") || GetKeyState("A") || GetKeyState("S") || GetKeyState("D") || GetKeyState("Space")) && WinActive("Minecraft")
         if ((xCoord != newCoord && newCoord) || hasInputted) {

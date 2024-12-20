@@ -9,11 +9,14 @@ Reset:
         ResetInstances()
     } else if (resetMode == "cumulative" && queuedInstances.count()) {
         Critical, on
-        nextInstance := queuedInstances.MaxIndex()
-        ResumeProcess(queuedInstances[nextInstance].pid)
-        MCInstances.push(queuedInstances[nextInstance])
-        queuedInstances.RemoveAt(nextInstance, 1)
-        RunInstance(MCInstances[MCInstances.MaxIndex()])
+        while IsObject(nextInstance := queuedInstances[queuedInstances.MaxIndex()]) {
+            queuedInstances.RemoveAt(queuedInstances.MaxIndex(), 1)
+            ResumeProcess(nextInstance.pid)
+            if RunInstance(nextInstance) {
+                MCInstances.push(nextInstance)
+                break
+            }
+        }
         Critical, off
     } else {
         for k, instance in MCInstances
@@ -61,7 +64,7 @@ Restart:
 return
 
 StartTimer:
-    timer1.currentInstance := -1
+    timer1.mcInstance := -1
     timer1.start()
 return
 
@@ -361,17 +364,16 @@ ExitIfRunning() {
 
 RunInstance(instance) {
     if (instance.isResetting == -1)
-        return
+        return true
+
+    if !WinExist("ahk_id " instance.hwnd)
+        return false
+
     gameScript.Hide()
     SetAffinity(instance.pid, 2**threadCount - 1)
     instance.isResetting := -1
-    For k, v in MCInstances {
-        if (v.hwnd == instance.hwnd) {
-            timer1.reset()
-            timer1.currentInstance := k
-            break
-        }
-    }
+    timer1.reset()
+    timer1.mcInstance := instance
 
     if coopMode {
         while (isResettingInstances()) {
@@ -386,14 +388,16 @@ RunInstance(instance) {
             }
         }
         WinActivate, ahk_class Shell_TrayWnd
-        while !WinActive("ahk_id " instance.hwnd) {
+        timeoutTick := A_TickCount + 3000
+        while (!WinActive("ahk_id " instance.hwnd) && A_TickCount < timeoutTick) {
             WinMaximize, % "ahk_id " instance.hwnd
             WinActivate, % "ahk_id " instance.hwnd
             Sleep, 100
         }
     } else {
         WinActivate, ahk_class Shell_TrayWnd
-        while !WinActive("ahk_id " instance.hwnd) {
+        timeoutTick := A_TickCount + 3000
+        while (!WinActive("ahk_id " instance.hwnd) && A_TickCount < timeoutTick) {
             WinMaximize, % "ahk_id " instance.hwnd
             WinActivate, % "ahk_id " instance.hwnd
             Sleep, 100
@@ -406,10 +410,11 @@ RunInstance(instance) {
             }
         }
     }
+    return true
 }
 
 ExitInstance() {
-    timer1.currentInstance := 0
+    timer1.mcInstance := ""
     timer1.reset()
     if (resetMode == "cumulative" && MCInstances[MCInstances.MaxIndex()].isResetting == -1) {
         for k, instance in MCInstances

@@ -4,11 +4,11 @@ Class _Overlay {
         if init
             return
         classPath := StrSplit(this.base.__Class, ".")
-		className := classPath.removeAt(1)
-		if (classPath.length() > 0)
-			%className%[classPath*] := this
-		else
-			%className% := this
+        className := classPath.removeAt(1)
+        if (classPath.length() > 0)
+            %className%[classPath*] := this
+        else
+            %className% := this
 
         Gui, Overlay:+AlwaysOnTop -Border -Caption +LastFound +ToolWindow +E0x80000
         this.show()
@@ -69,7 +69,7 @@ Class _Overlay {
             case "TopLeft":
                 anchorX := x1 + offsetX + oWidth/2 - padding.left
                 anchorY := y1 + offsetY + oWidth/2 - padding.top
-            case "TopRight": 
+            case "TopRight":
                 anchorX := x2 - offsetX - oWidth/2 + padding.right  - textSize.width
                 anchorY := y1 + offsetY + oWidth/2 - padding.top
             case "BottomLeft":
@@ -96,6 +96,9 @@ Class _Overlay {
     static cache := {hFamily: {}, hFont: {}}
 
     fetchFont(font, size) {
+        if (this.cache["hFont"].count() > 100)
+            this.flushCache()
+
         if this.cache["hFamily"].HasKey(font)
             hFamily := this.cache["hFamily"][font]
         else if (!hFamily := Gdip_FontFamilyCreate(font)) {
@@ -115,9 +118,6 @@ Class _Overlay {
             this.cache["hFont"][key] := hFont
         }
 
-        if (this.cache["hFont"].count() > 100)
-            this.flushCache()
-
         return {hFamily: hFamily, hFont: hFont, fallback: fallback}
     }
 
@@ -136,7 +136,7 @@ UpdateOverlay() {
     Gdip_GraphicsClear(_Overlay.G)
 
     visibility := IsOverlayVisible()
-    
+
     if (visibility[timerVisibility])
         TimerOverlay.draw()
 
@@ -152,16 +152,16 @@ UpdateOverlay() {
 IsOverlayVisible(mode:="") {
     switch mode {
         case "none": return false
-        case "running": return timer1.currentInstance && WinActive("Minecraft")
+        case "running": return timer1.mcInstance && WinActive("Minecraft")
         case "minecraft": return WinActive("Minecraft")
         case "resetting": return IsResettingInstances()
         case "always", "preview": return true
     }
 
-    winActive := WinActive("Minecraft")    
+    winActive := WinActive("Minecraft")
     isResetting := IsResettingInstances()
 
-    running := timer1.currentInstance && winActive
+    running := timer1.mcInstance && winActive
     minecraft := winActive
     resetting := isResetting
 
@@ -175,7 +175,7 @@ Class TimerOverlay {
         if !timer1.isShown
             timer1.show()
 
-        if (timer1.currentInstance == -1)
+        if (timer1.mcInstance == -1)
             return this.lastUpdateTick := A_TickCount
 
         if (timerVisibility == "preview") {
@@ -186,11 +186,11 @@ Class TimerOverlay {
             return this.lastUpdateTick := A_TickCount
         }
 
-        instance := MCInstances[timer1.currentInstance]
+        instance := timer1.mcInstance
         if !WinExist("ahk_id " instance.hwnd)
-            timer1.currentInstance := 0
+            timer1.mcInstance := ""
 
-        if (!timer1.currentInstance && timer1.elapsedTick)
+        if (!instance && timer1.elapsedTick)
             timer1.reset()
         else if (instance.isResetting == -1 && !timer1.startTick && !IsResettingInstances()) {
             WaitForMovement := Func("WaitForMovement").Bind(instance)
