@@ -1,29 +1,27 @@
 Reset:
-    hasExited := ExitIfRunning()
+    hasExited := ExitInstances()
 
-    if (resetMode == "manualWall") {
-        if !hasExited
-            for k, instance in MCInstances
-                if (instance.isResetting <= 0)
-                    instance.isResetting := 1
-        ResetInstances()
-    } else if (resetMode == "cumulative" && queuedInstances.count()) {
+    if (resetMode == "cumulative") {
         Critical, on
-        while IsObject(nextInstance := queuedInstances[queuedInstances.MaxIndex()]) {
-            queuedInstances.RemoveAt(queuedInstances.MaxIndex(), 1)
+        while (nextInstance := queuedInstances.pop()) {
             ResumeProcess(nextInstance.pid)
             if RunInstance(nextInstance) {
                 MCInstances.push(nextInstance)
-                break
+                return
             }
         }
-        Critical, off
-    } else {
-        for k, instance in MCInstances
-            if (instance.isResetting == 0)
-                instance.isResetting := 1
-        ResetInstances()
+        Critical, Off
     }
+
+    ResumeResettingState()
+
+    if (resetMode == "manualWall" && !hasExited) {
+        for k, instance in MCInstances
+            if (instance.isResetting == -2)
+                instance.isResetting := 1
+    }
+
+    ResetInstances()
 return
 
 StopReset:
@@ -354,12 +352,38 @@ IsResettingInstances() {
     return false
 }
 
-ExitIfRunning() {
-    for k, instance in MCInstances
-        if (instance.isResetting == -1)
-            return ExitInstance()
+PauseResettingState() {
+    for k, instance in MCInstances {
+        if (instance.isResetting > 0 || instance.isResetting == -2) {
+            instance.isResetting -= 100
+            SuspendProcess(instance.pid)
+        }
+    }
+}
 
-    return false
+PauseResettingStateUntilWorldCreation() {
+    while (isResettingInstances()) {
+        for k, inst in MCInstances {
+            if (inst.isResetting == 5) {
+                inst.isResetting -= 100
+                SuspendProcess(inst.pid)
+            } else if (inst.isResetting == 6)
+                inst.isResetting := 1
+            else if (inst.isResetting > 0)
+                IterateReset(inst)
+        }
+    }
+}
+
+ResumeResettingState() {
+    for k, instance in MCInstances {
+        if (instance.isResetting == 0) {
+            instance.isResetting := 1
+        } else if (instance.isResetting < -10) {
+            ResumeProcess(instance.pid)
+            instance.isResetting += 100
+        }
+    }
 }
 
 RunInstance(instance) {
@@ -369,77 +393,53 @@ RunInstance(instance) {
     if !WinExist("ahk_id " instance.hwnd)
         return false
 
-    gameScript.Hide()
-    SetAffinity(instance.pid, 2**threadCount - 1)
     instance.isResetting := -1
+    SetAffinity(instance.pid, 2**threadCount - 1)
+    gameScript.Hide()
     timer1.reset()
     timer1.mcInstance := instance
 
     if coopMode {
-        while (isResettingInstances()) {
-            for k, inst in MCInstances {
-                if (inst.isResetting == 5) {
-                    inst.isResetting -= 100
-                    SuspendProcess(inst.pid)
-                } else if (inst.isResetting == 6)
-                    inst.isResetting := 1
-                else if (inst.isResetting > 0)
-                    IterateReset(inst)
-            }
-        }
-        WinActivate, ahk_class Shell_TrayWnd
-        timeoutTick := A_TickCount + 3000
-        while (!WinActive("ahk_id " instance.hwnd) && A_TickCount < timeoutTick) {
-            WinMaximize, % "ahk_id " instance.hwnd
-            WinActivate, % "ahk_id " instance.hwnd
-            Sleep, 100
-        }
+        PauseResettingStateUntilWorldCreation()
     } else {
-        WinActivate, ahk_class Shell_TrayWnd
-        timeoutTick := A_TickCount + 3000
-        while (!WinActive("ahk_id " instance.hwnd) && A_TickCount < timeoutTick) {
-            WinMaximize, % "ahk_id " instance.hwnd
-            WinActivate, % "ahk_id " instance.hwnd
-            Sleep, 100
-        }
-
-        for k, inst in MCInstances {
-            if (inst.isResetting >= 0 || inst.isResetting == -2) {
-                inst.isResetting -= 100
-                SuspendProcess(inst.pid)
-            }
-        }
+        PauseResettingState()
     }
+
+    WinActivate, ahk_class Shell_TrayWnd
+    timeoutTick := A_TickCount + 3000
+    while (!WinActive("ahk_id " instance.hwnd) && A_TickCount < timeoutTick) { ; might not be necessary idk
+        WinMaximize, % "ahk_id " instance.hwnd
+        WinActivate, % "ahk_id " instance.hwnd
+        Sleep, 100
+    }
+
     return true
 }
 
-ExitInstance() {
+ExitInstances() {
+    wasRunning := false
+
     timer1.mcInstance := ""
     timer1.reset()
-    if (resetMode == "cumulative" && MCInstances[MCInstances.MaxIndex()].isResetting == -1) {
-        for k, instance in MCInstances
-            if (instance.isResetting == -1)
-                WinClose, % "ahk_id " instance.hwnd
-        MCInstances.pop()
 
-        if (queuedInstances.count())
-            return true
-    }
     for k, instance in MCInstances {
         if (instance.isResetting == -1) {
-            WinRestore, % "ahk_id " instance.hwnd
-            Sleep, 100
-            instance.isResetting := 1
-            threadsMask := (2 ** Ceil(threadCount * threadsUsage)) - 1
-            SetAffinity(instance.pid, threadsMask)
-        }
-        else if (instance.isResetting < -10) {
-            ResumeProcess(instance.pid)
-            instance.isResetting += 100
+            wasRunning := true
+            if (resetMode != "cumulative" || MCInstances.count() <= numInstances) {
+                WinRestore, % "ahk_id " instance.hwnd
+                Sleep, 100
+                instance.isResetting := 1
+                threadsMask := (2 ** Ceil(threadCount * threadsUsage)) - 1
+                SetAffinity(instance.pid, threadsMask)
+            } else {
+                WinClose, % "ahk_id " instance.hwnd
+                MCInstances.RemoveAt(k, 1)
+            }
         }
     }
-    Sleep, 100
-    return true
+
+    Sleep, 50
+    return wasRunning
 }
 
 EnterHoveredInstance() {
