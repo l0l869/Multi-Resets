@@ -188,6 +188,7 @@ Class Timer
 }
 
 WaitForMovement(instance) {
+    timer1.waitingForMovement := true
     timer1.reset()
     timer1.show()
 
@@ -201,4 +202,6 @@ WaitForMovement(instance) {
             break
         }
     }
+
+    timer1.waitingForMovement := false
 }

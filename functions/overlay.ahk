@@ -190,9 +190,9 @@ Class TimerOverlay {
         if !WinExist("ahk_id " instance.hwnd)
             timer1.mcInstance := ""
 
-        if (!instance && timer1.elapsedTick)
+        if (!instance && timer1.elapsedTick) {
             timer1.reset()
-        else if (instance.isResetting == -1 && !timer1.startTick && !IsResettingInstances()) {
+        } else if (instance.isResetting == -1 && !timer1.startTick && !timer1.waitingForMovement && !IsResettingInstances()) {
             WaitForMovement := Func("WaitForMovement").Bind(instance)
             SetTimer, %WaitForMovement%, -0
         }
@@ -228,11 +228,11 @@ Class CumulativeOverlay {
             this.text .= physicalMemoryOut "`n" committedMemoryOut
         }
 
-        this.lastUpdateTick := A_TickCount+500
+        this.lastUpdateTick := A_TickCount
     }
 
     draw() {
-        if (this.lastUpdateTick < A_TickCount)
+        if (this.lastUpdateTick+500 < A_TickCount)
             this.updateText()
 
         _Overlay.drawText(this.text
@@ -250,11 +250,11 @@ Class AttemptsOverlay {
         totalAttemptsOut := "Total: " currentAttempts
         this.text := sessionAttemptsOut "`n" totalAttemptsOut
 
-        this.lastUpdateTick := A_TickCount+1000
+        this.lastUpdateTick := A_TickCount
     }
 
     draw() {
-        if (this.lastUpdateTick < A_TickCount)
+        if (this.lastUpdateTick+1000 < A_TickCount)
             this.updateText()
 
         _Overlay.drawText(this.text
