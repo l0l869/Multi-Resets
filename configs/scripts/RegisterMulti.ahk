@@ -13,20 +13,10 @@ if A_Args[1] {
         enableMultiInstance := false
 }
 
-packageName := "Microsoft.MinecraftUWP"
-getPackageCommand := "powershell.exe (Get-AppxPackage -Name " packageName ").'PackageFullName'"
-
-DetectHiddenWindows, On
-Run, %ComSpec%,, Hide, cPID
-WinWait, ahk_pid %cPID%
-DllCall("AttachConsole", "UInt", cPID)
-shell := ComObjCreate("WScript.Shell")
-exec := shell.Exec(ComSpec " /C " getPackageCommand)
-fullPackageName := Trim(exec.StdOut.ReadAll(), "`r`n")
-
+fullPackageName := GetAppxPackagesByFamilyName("Microsoft.MinecraftUWP_8wekyb3d8bbwe")[1]
 if !fullPackageName {
     if !silent
-        MsgBox, % "Couldn't get package name."
+        MsgBox, % "Failed to get package name."
     ExitApp, -1
 }
 
@@ -34,11 +24,41 @@ packagePropertiesRegPath := "SOFTWARE\Classes\Extensions\ContractId\Windows.Laun
 RegWrite, REG_DWORD, HKCU, %packagePropertiesRegPath%, SupportsMultipleInstances, %enableMultiInstance%
 RegRead, confirmValue, HKCU, %packagePropertiesRegPath%, SupportsMultipleInstances
 
-if !silent {
-    if (confirmValue != enableMultiInstance)
+if (confirmValue != enableMultiInstance) {
+    if !silent
         MsgBox, % "Failed to register value."
-    MsgBox, % "Multi Instance is now " (confirmValue ? "enabled." : "disabled.")
+    ExitApp, -1
 }
 
-DllCall("FreeConsole")
-Process, Close, %cPID%
+if !silent
+    MsgBox, % "Multi Instance is now " (confirmValue ? "enabled." : "disabled.")
+
+ExitApp, 0
+
+
+GetAppxPackagesByFamilyName(familyName) {
+    static ERROR_INSUFFICIENT_BUFFER := 0x7A
+
+    packageCount := 0
+    bufferLength := 0
+    err := DllCall("GetPackagesByPackageFamily", "WStr", familyName, "UInt*", packageCount, "Ptr", 0, "UInt*", bufferLength, "UInt")
+    if (err != ERROR_INSUFFICIENT_BUFFER)
+        return ""
+
+    VarSetCapacity(packageFullNames, bufferLength * 2)
+    if err := DllCall("GetPackagesByPackageFamily", "WStr", familyName, "UInt*", packageCount, "Ptr*", packageFullNames, "UInt*", bufferLength, "UInt")
+        return ""
+
+    if (packageCount == 1)
+        return [StrGet(packageFullNames, "UTF-16")]
+
+    packageFullNamesArr := []
+    offset := 2
+    Loop, % packageCount {
+        packageFullName := StrGet(&packageFullNames + offset, "UTF-16")
+        packageFullNamesArr.Push(packageFullName)
+        offset += (StrLen(packageFullName) + 1) * 2
+    }
+
+    return packageFullNamesArr
+}

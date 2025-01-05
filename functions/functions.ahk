@@ -147,17 +147,9 @@ GetMinecraftHwnds() {
 }
 
 GetMinecraftVersion() {
-    if WinExist("Minecraft")
-        exeDir := new _ClassMemory("ahk_exe Minecraft.Windows.exe", "PROCESS_VM_READ").GetModuleFileNameEx()
-    else {
-        cmd := "(Get-AppxPackage -Name Microsoft.MinecraftUWP).InstallLocation > '" A_ScriptDir "\configs\installdir.txt'"
-        RunWait, PowerShell.exe -Command &{%cmd%},, Hide
-        FileRead, exeDir, configs\installdir.txt
-        FileDelete, configs\installdir.txt
-        exeDir := Trim(exeDir, "`r`n") . "\Minecraft.Windows.exe"
-    }
-
-    FileGetVersion, MCversion, %exeDir%
+    packageFullNames := GetAppxPackagesByFamilyName("Microsoft.MinecraftUWP_8wekyb3d8bbwe")
+    installationDir := GetPackagePathByFullName(packageFullNames[1])
+    FileGetVersion, MCversion, % installationDir "\Minecraft.Windows.exe"
     return MCversion, LogF("INF", "Current Minecraft Version: " MCversion)
 }
 
@@ -383,27 +375,8 @@ DateToSeconds(date) {
 }
 
 IsMultiRegistered() {
-    foundPackageName := ""
-    Loop, Reg, % "HKCU\SOFTWARE\Classes\Extensions\ContractId\Windows.Launch\PackageId\", K
-    {
-        if (SubStr(A_LoopRegName, 1, 23) == "Microsoft.MinecraftUWP_") {
-            if foundPackageName
-                break
-            foundPackageName := A_LoopRegName
-        } else if foundPackageName { ; since it iterates alphabetically, we can assume we found the only and correct package name
-            RegRead, multiState, HKCU, % "SOFTWARE\Classes\Extensions\ContractId\Windows.Launch\PackageId\" foundPackageName "\ActivatableClassId\App\CustomProperties", SupportsMultipleInstances
-            return multiState
-        }
-    }
-
-    ; backup method; slower (~500ms)
-    cmd := "(Get-AppxPackage -Name Microsoft.MinecraftUWP).'PackageFullName' > '" A_ScriptDir "\configs\mc-package-name.txt'"
-    RunWait, PowerShell.exe -Command &{%cmd%},, Hide
-    FileRead, packageName, configs\mc-package-name.txt
-    FileDelete, configs\mc-package-name.txt
-    packageName := Trim(packageName, "`r`n")
-
-    RegRead, multiState, HKCU, % "SOFTWARE\Classes\Extensions\ContractId\Windows.Launch\PackageId\" packageName "\ActivatableClassId\App\CustomProperties", SupportsMultipleInstances
+    packageFullName := GetAppxPackagesByFamilyName("Microsoft.MinecraftUWP_8wekyb3d8bbwe")[1]
+    RegRead, multiState, HKCU, % "SOFTWARE\Classes\Extensions\ContractId\Windows.Launch\PackageId\" packageFullName "\ActivatableClassId\App\CustomProperties", SupportsMultipleInstances
     return multiState
 }
 
@@ -481,6 +454,42 @@ QPC() {
     static freq, init := DllCall("QueryPerformanceFrequency", "Int64P", freq)
     DllCall("QueryPerformanceCounter", "Int64*", count)
     return (count/freq)*1000
+}
+
+GetAppxPackagesByFamilyName(familyName) {
+    static ERROR_INSUFFICIENT_BUFFER := 0x7A
+
+    packageCount := 0
+    bufferLength := 0
+    err := DllCall("GetPackagesByPackageFamily", "WStr", familyName, "UInt*", packageCount, "Ptr", 0, "UInt*", bufferLength, "UInt")
+    if (err != ERROR_INSUFFICIENT_BUFFER)
+        return ""
+
+    VarSetCapacity(packageFullNames, bufferLength * 2)
+    if err := DllCall("GetPackagesByPackageFamily", "WStr", familyName, "UInt*", packageCount, "Ptr*", packageFullNames, "UInt*", bufferLength, "UInt")
+        return ""
+
+    if (packageCount == 1)
+        return [StrGet(packageFullNames, "UTF-16")]
+
+    packageFullNamesArr := []
+    offset := 2
+    Loop, % packageCount {
+        packageFullName := StrGet(&packageFullNames + offset, "UTF-16")
+        packageFullNamesArr.Push(packageFullName)
+        offset += (StrLen(packageFullName) + 1) * 2
+    }
+
+    return packageFullNamesArr
+}
+
+GetPackagePathByFullName(packageFullName) {
+    pathLength := 1024
+    VarSetCapacity(installationPath, pathLength)
+    if err := DllCall("GetPackagePathByFullName", "WStr", packageFullName, "UInt*", pathLength, "WStr", installationPath)
+        return ""
+
+    return installationPath
 }
 
 GlobalMemoryStatusEx() {
