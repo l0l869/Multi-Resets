@@ -66,6 +66,9 @@ Class _Overlay {
 
         switch (anchor)
         {
+            case "Centre":
+                anchorX := x1 + offsetX + (x2 - x1 - textSize.width)/2
+                anchorY := y1 + offsetY + (y2 - y1 - textSize.height)/2
             case "TopLeft":
                 anchorX := x1 + offsetX + oWidth/2 - padding.left
                 anchorY := y1 + offsetY + oWidth/2 - padding.top
@@ -145,6 +148,8 @@ UpdateOverlay() {
 
     if (visibility[cumulativeVisibility] && resetMode == "cumulative")
         CumulativeOverlay.draw()
+
+    MiscOverlay.draw()
 
     UpdateLayeredWindow(_Overlay.hwnd, _Overlay.hdc, 0, 0, A_ScreenWidth, A_ScreenHeight)
 }
@@ -250,7 +255,7 @@ Class CumulativeOverlay {
 }
 
 Class AttemptsOverlay {
-    static lastUpdateTick, startedAttempts := UpdateResetAttempts(0)
+    static lastUpdateTick := 0, startedAttempts := UpdateResetAttempts(0)
 
     updateText() {
         currentAttempts := UpdateResetAttempts(0)
@@ -268,5 +273,16 @@ Class AttemptsOverlay {
         _Overlay.drawText(this.text
                         , attemptsAnchor, attemptsOffset.x, attemptsOffset.y, _Overlay.brush.white, 5*overlayScale, "FF000000", timer1.font, 30*overlayScale
                         , "")
+    }
+}
+
+Class MiscOverlay {
+    draw() {
+        if (timer1.mcInstance.suspended) {
+            _Overlay.drawText("Hit ""Stop Reset"" hotkey to resume instance"
+                            , "Centre", 0, 0, _Overlay.brush.white, 5*overlayScale, "FF000000", "Arial", 30*overlayScale
+                            , "")
+        }
+
     }
 }

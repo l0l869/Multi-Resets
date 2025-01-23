@@ -26,6 +26,12 @@ return
 
 StopReset:
     Critical, On
+    if (timer1.mcInstance.suspended) {
+        ResumeProcess(timer1.mcInstance.pid)
+        timer1.mcInstance.suspended := false
+        return
+    }
+
     isResetting := IsResettingInstances()
 
     if (resetMode == "manualWall" && !isResetting) {
@@ -34,15 +40,14 @@ StopReset:
     }
 
     if isResetting {
+        if (resetMode == "cumulative" && queuedInstances.count()) {
+            Critical, Off
+            StopCumulativeResets(false)
+            return
+        }
+
         for k, instance in MCInstances
             instance.isResetting := 0
-
-        if (resetMode == "cumulative" && queuedInstances.count()) {
-            for k, instance in MCInstances
-                WinMinimize, % "ahk_id " instance.hwnd
-            Critical, Off
-            Goto, Reset
-        }
     }
     Critical, Off
 return
@@ -183,9 +188,9 @@ IterateReset(instance) {
                     SaveInstance(instance)
 
                     memory := GlobalMemoryStatusEx()
-                    usedMemory := (memory.TotalPageFile-memory.AvailPageFile)/1000000000
+                    usedMemory := (memory.TotalPageFile - memory.AvailPageFile) / 1000000000
                     if (queuedInstances.count() >= queueLimit || memoryLimit < usedMemory)
-                        Gosub, StopReset
+                        StopCumulativeResets(true)
                     return
                 case "setSeed":
                     if (setSeedMouseMove.x || setSeedMouseMove.y) {
@@ -389,6 +394,16 @@ ResumeResettingState() {
     }
 }
 
+StopCumulativeResets(automaticStop := false) {
+    PauseResettingState()
+    Gosub, Reset
+    if automaticStop {
+        instance := timer1.mcInstance
+        SuspendProcess(instance.pid)
+        instance.suspended := true
+    }
+}
+
 RunInstance(instance) {
     if (instance.isResetting == -1)
         return true
@@ -428,20 +443,20 @@ ExitInstances() {
     for k, instance in MCInstances {
         if (instance.isResetting == -1) {
             wasRunning := true
-            if (resetMode != "cumulative" || MCInstances.count() <= numInstances) {
-                WinRestore, % "ahk_id " instance.hwnd
-                Sleep, 100
-                instance.isResetting := 1
-                threadsMask := (2 ** Ceil(threadCount * threadsUsage)) - 1
-                SetAffinity(instance.pid, threadsMask)
-            } else {
+            excessInstances := MCInstances.count() > numInstances
+            if excessInstances {
                 WinClose, % "ahk_id " instance.hwnd
                 MCInstances.RemoveAt(k, 1)
+            } else {
+                WinRestore, % "ahk_id " instance.hwnd
+                Sleep, 100
+                instance.isResetting := 0
+                threadsMask := (2 ** Ceil(threadCount * threadsUsage)) - 1
+                SetAffinity(instance.pid, threadsMask)
             }
         }
     }
 
-    Sleep, 50
     return wasRunning
 }
 
