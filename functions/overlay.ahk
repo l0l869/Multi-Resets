@@ -149,6 +149,14 @@ UpdateOverlay() {
     UpdateLayeredWindow(_Overlay.hwnd, _Overlay.hdc, 0, 0, A_ScreenWidth, A_ScreenHeight)
 }
 
+UpdateOverlayInterval(interval) {
+    static lastUpdateTick := 0
+    if (lastUpdateTick+interval > A_TickCount)
+        return
+    UpdateOverlay()
+    lastUpdateTick := A_TickCount
+}
+
 IsOverlayVisible(mode:="") {
     switch mode {
         case "none": return false

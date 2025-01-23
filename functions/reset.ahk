@@ -40,9 +40,11 @@ StopReset:
         if (resetMode == "cumulative" && queuedInstances.count()) {
             for k, instance in MCInstances
                 WinMinimize, % "ahk_id " instance.hwnd
-            Gosub, Reset
+            Critical, Off
+            Goto, Reset
         }
     }
+    Critical, Off
 return
 
 Restart:
@@ -88,6 +90,7 @@ ResetInstances() {
     for k, instance in MCInstances
         ResizeInstance(instance, k)
 
+    Thread, Priority, 1
     while (IsResettingInstances()) {
         if (seamlessRestart) {
             currentResetAttempts := UpdateResetAttempts(0)
@@ -124,13 +127,13 @@ ResetInstances() {
                 LogF("WAR", "Instance #" k " not found, relaunching...")
             }
 
+            Critical, On
             if (instance.isResetting <= 0)
                 continue
-
-            Critical, on
             IterateReset(instance)
-            Critical, off
+            Critical, Off
             Sleep, -1
+            UpdateOverlayInterval(500)
         }
     }
     gameScript.Hide()

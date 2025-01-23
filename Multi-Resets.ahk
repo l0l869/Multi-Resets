@@ -53,7 +53,7 @@ SetTimer, %FuncUpdateOverlay%, 0
 
 Hotkey, IfWinActive, Minecraft
 Hotkey, %resetKey%, Reset
-Hotkey, %stopresetKey%, StopReset
+Hotkey, %stopresetKey%, StopReset, P2
 if starttimerKey
     Hotkey, %starttimerKey%, StartTimer
 if stoptimerKey
