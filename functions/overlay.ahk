@@ -255,10 +255,13 @@ Class CumulativeOverlay {
 }
 
 Class AttemptsOverlay {
-    static lastUpdateTick := 0, startedAttempts := UpdateResetAttempts(0)
+    static lastUpdateTick := 0, startedAttempts := 0
 
     updateText() {
         currentAttempts := UpdateResetAttempts(0)
+        if !this.startedAttempts
+            this.startedAttempts := currentAttempts
+
         sessionAttemptsOut := "Session: " currentAttempts - this.startedAttempts
         totalAttemptsOut := "Total: " currentAttempts
         this.text := sessionAttemptsOut "`n" totalAttemptsOut
