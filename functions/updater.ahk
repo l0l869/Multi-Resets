@@ -54,6 +54,7 @@ DownloadLatest(latestVersions) {
     timer1.__Delete()
     timer1 := ""
     _Overlay.__Delete()
+    gameScript := ""
     DllCall("FreeLibrary", "UPtr", resetDll)
 
     Gui_UpdateProgress(true, 25, "Downloading")
@@ -81,5 +82,5 @@ DownloadLatest(latestVersions) {
 
     Gui_UpdateProgress(true, 100, "Done")
     Run, %scriptMainDir%\%newVersionFolderName%\Multi-Resets.ahk
-    ExitApp
+    ExitApp, 0
 }
