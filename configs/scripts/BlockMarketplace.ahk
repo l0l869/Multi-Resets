@@ -14,7 +14,6 @@ if !A_IsAdmin {
 }
 
 ruleName := "Minecraft Marketplace"
-marketplaceAddress := "20.112.54.230-20.120.129.75"
 
 if A_Args[1] {
     silent := true
@@ -28,9 +27,9 @@ if A_Args[1] {
         . "No: Block Marketplace`n"
         . "Cancel: Restore Connections`n`n"
         . "Note:`n"
-        . "- Currently, blocking only the marketplace does not work; you'll need to block all connections instead."
-        . " However, this will prevent you from being able to log in, etc.`n"
-        . "- If the Minecraft installation path changes, you will need to rerun this script."
+        . "- By blocking all connections, you will lose the ability to log in, etc.`n"
+        . "- If the Minecraft installation path changes, you will need to rerun this script.`n"
+        . "- The marketplace IP address may change; rerun the script to re-block it."
     IfMsgBox, Yes
         blockMarketplace := 2
     IfMsgBox, No
@@ -39,8 +38,18 @@ if A_Args[1] {
         blockMarketplace := 0
 }
 
+DetectHiddenWindows, On
+Run, %ComSpec%,, Hide, cPid
+WinWait, ahk_pid %cPid%,, 5
+if ErrorLevel {
+    if !silent
+        Msgbox, % "Failed to initialise shell"
+    ExitApp, -1
+}
+DllCall("AttachConsole", "UInt", cPid)
+
 applicationName := ""
-remoteAddress := marketplaceAddress
+remoteAddress := ""
 if (blockMarketplace > 0) {
     packages := GetAppxPackagesByFamilyName("Microsoft.MinecraftUWP_8wekyb3d8bbwe")
     applicationName := GetPackagePathByFullName(packages[1]) "\Minecraft.Windows.exe"
@@ -51,6 +60,19 @@ if (blockMarketplace > 0) {
     }
     if (blockMarketplace == 2) {
         remoteAddress := "0.0.0.0-255.255.255.255"
+    } else if (blockMarketplace == 1) {
+        sh := ComObjCreate("WScript.Shell")
+        exec := sh.Exec("nslookup https://b980a380.minecraft.playfabapi.com")
+        RegExMatch(exec.StdOut.ReadAll(), "\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b", remoteAddress)
+        if !remoteAddress {
+            if !silent
+                Msgbox, % "Failed to get resolved IP"
+            ExitApp, -1
+        }
+
+        exec := sh.Exec(ComSpec " /c powershell -NoProfile -Command ""Get-DnsClientCache -Type A -Name '*playfab*' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Data""")
+        if ((cachedIp := Trim(exec.StdOut.ReadAll(), "`r`n")) && cachedIp != remoteAddress)
+            remoteAddress .= "," cachedIp
     }
 }
 
@@ -61,6 +83,9 @@ if err1 := SetFirewallRuleViaCom(ruleName, applicationName, remoteAddress, block
         ExitApp, -1
     }
 }
+
+DllCall("FreeConsole")
+Process, Close, %cPid%
 
 if !silent {
     switch (blockMarketplace) {
@@ -88,6 +113,7 @@ SetFirewallRuleViaCom(ruleName, applicationName, remoteAddress, enable) {
         rule := fwRules.Item(ruleName)
         rule.ApplicationName := applicationName
         rule.remoteAddresses := remoteAddress
+        rule.Direction := NET_FW_RULE_DIR_OUT
         rule.Enabled := enable
         return 0
     }
@@ -129,19 +155,9 @@ SetFirewallRuleViaPowershell(ruleName, applicationName, remoteAddress, enable) {
     cmd := StrReplace(cmd, "\`n", "")
     cmd := StrReplace(cmd, "`n", "; ")
 
-    DetectHiddenWindows, On
-    Run, %ComSpec%,, Hide, cPID
-    WinWait, ahk_pid %cPID%,, 10
-    if ErrorLevel
-        return -1
-    DllCall("AttachConsole", "UInt", cPID)
-
     shell := ComObjCreate("WScript.Shell")
-    exec := shell.Exec(ComSpec " /C powershell.exe " cmd)
+    exec := shell.Exec(ComSpec " /C powershell " cmd)
     output := exec.StdErr.ReadAll()
-
-    DllCall("FreeConsole")
-    Process, Close, %cPID%
 
     if RegexMatch(output, "FullyQualifiedErrorId\s+:\s+(.+)", errorId)
         return errorId1
