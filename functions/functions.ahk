@@ -2,7 +2,18 @@ LaunchInstance(index) {
     existingPIDs := GetMinecraftProcesses()
     existingHWNDs := GetMinecraftHwnds()
 
-    Run, shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App
+    path := "shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App"
+    if useGdkInstallation {
+        path := gdkInstallationPath "\Minecraft.Windows.exe"
+        if !FileExist(path) {
+            errMsg := "The set GDK installation path (""" gdkInstallationPath """) does not contain ""Minecraft.Windows.exe"""
+                    . "; unable to launch an instance"
+            LogF("ERR", errMsg)
+            throw, % errMsg
+        }
+    }
+
+    Run, % path
     timeoutTick := A_TickCount + 5000
     while !GetExcludedFromList(GetMinecraftHwnds(), existingHWNDs).count() {
         if (timeoutTick < A_TickCount) {

@@ -53,7 +53,7 @@ StopReset:
 return
 
 Restart:
-    if (numInstances > 1 && !IsMultiRegistered()) {
+    if (numInstances > 1 && !IsMultiRegistered() && !useGdkInstallation) {
         MsgBox, 4,, % "Warning: Multi-instance is not registered.`n`nDo you want to register multi?"
         IfMsgBox, Yes
             RunWait, % "configs\scripts\RegisterMulti.ahk 1"

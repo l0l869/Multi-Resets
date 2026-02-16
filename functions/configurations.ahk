@@ -53,15 +53,17 @@ global tDecimalPlaces  , new Setting("tDecimalPlaces", "Decimals", "Timer", 4, "
 global tAutoSplit      , new Setting("tAutoSplit", "Auto Split", "Timer", 5, "checkbox", true, "Automatically stops the timer when credits roll", [Func("TimerSettingHandler")])
 global remindShowPacks , new Setting("remindShowPacks", "Remind: Show Packs", "Timer", 5, "checkbox", false, "After a completion, you can be reminded of", [Func("TimerSettingHandler")])
 
-global resetMethod       , new Setting("resetMethod", "Reset Method", "Other", 1, "select", ["setupless", "setup"], "The method the macro uses to figure out where to click", [Func("OptResetMethodHandler"), Func("CheckResetMethodViability")])
-global setupData         , new Setting("setupData", "Setup Data", "Other", 1, "select", LoadClickData(), "", [Func("OptResetMethodHandler"), Func("CheckResetMethodViability")])
-global coopMode          , new Setting("coopMode", "Coop Mode", "Other", 1, "checkbox", false, "Prevents the 0/8 bug", 0)
-global findCoordsTextOnly, new Setting("findCoordsTextOnly", "Read Coordinates Text Only", "Other", 1, "checkbox", false, "Reads the ""Show Coordinates"" text only; does not attempt to read the game memory", 0)
-global awaitWcColour     , new Setting("awaitWcColour", "Wait for World Creation Colours", "Other", 1, "checkbox", false, "Waits for the World Creation clicks' colour; useful for allowing the new World Creation UI to load", 0)
-global readScreenMemory  , new Setting("readScreenMemory", "Read Screen Memory", "Other", 1, "checkbox", false, "Reads the game memory to get the current screen, relies on setup click data for the clicks [Not Recommended]", 0)
-global threadsUsage      , new Setting("threadsUsage", "Threads Utilisation", "Other", 2, "inputNumber", 0.75, "The percentage of CPU threads the instances will utilise during resets", 0)
-global hideOnMinimise    , new Setting("hideOnMinimise", "Minimise to Tray", "Other", 3, "checkbox", false, "When the GUI is minimised, the taskbar icon will disappear to the tray", 0)
-global isBored           , new Setting("isBored", "are u bored?", "Other", 5, "checkbox", false, "fun lil game to play while resetting", 0)
+global resetMethod        , new Setting("resetMethod", "Reset Method", "Other", 1, "select", ["setupless", "setup"], "The method the macro uses to figure out where to click", [Func("OptResetMethodHandler"), Func("CheckResetMethodViability")])
+global setupData          , new Setting("setupData", "Setup Data", "Other", 1, "select", LoadClickData(), "", [Func("OptResetMethodHandler"), Func("CheckResetMethodViability")])
+global coopMode           , new Setting("coopMode", "Coop Mode", "Other", 1, "checkbox", false, "Prevents the 0/8 bug", 0)
+global findCoordsTextOnly , new Setting("findCoordsTextOnly", "Read Coordinates Text Only", "Other", 1, "checkbox", false, "Reads the ""Show Coordinates"" text only; does not attempt to read the game memory", 0)
+global awaitWcColour      , new Setting("awaitWcColour", "Wait for World Creation Colours", "Other", 1, "checkbox", false, "Waits for the World Creation clicks' colour; useful for allowing the new World Creation UI to load", 0)
+global readScreenMemory   , new Setting("readScreenMemory", "Read Screen Memory", "Other", 1, "checkbox", false, "Reads the game memory to get the current screen, relies on setup click data for the clicks [Not Recommended]", 0)
+global threadsUsage       , new Setting("threadsUsage", "Threads Utilisation", "Other", 2, "inputNumber", 0.75, "The percentage of CPU threads the instances will utilise during resets", 0)
+global hideOnMinimise     , new Setting("hideOnMinimise", "Minimise to Tray", "Other", 3, "checkbox", false, "When the GUI is minimised, the taskbar icon will disappear to the tray", 0)
+global useGdkInstallation , new Setting("useGdkInstallation", "Use GDK Installation", "Other", 4, "checkbox", false, "Only use for GDK versions", [Func("CheckGdkPathValidity")])
+global gdkInstallationPath, new Setting("gdkInstallationPath", "GDK Installation Path", "Other", 4, "inputPath", "C:\", "", [Func("CheckGdkPathValidity")])
+global isBored            , new Setting("isBored", "are u bored?", "Other", 6, "checkbox", false, "fun lil game to play while resetting", 0)
 
 class Setting {
     static map := {}
@@ -256,6 +258,31 @@ class Setting {
                     select.appendChild(newOption)
                 }
                 this.rootDiv.appendChild(select)
+
+            case "InputPath":
+                this.attributeType := "innerHTML"
+
+                div := WB.document.createElement("div")
+
+                h3 := WB.document.createElement("h3")
+                h3.innerText := this.name
+
+                ; this codebase is cooked anyway
+                button := WB.document.createElement("button")
+                button["style"]["width"] := "230px"
+                button["style"]["height"] := "25px"
+                button["style"]["font-size"] := "16px"
+                button["style"]["text-align"] := "left"
+                button["style"]["padding"] := "0px"
+                button["style"]["margin-left"] := "4px"
+                button.onclick := ObjBindMethod(this, "InputPathHandler")
+
+                this.element := button
+
+                div.appendChild(h3)
+                div.appendChild(button)
+                this.rootDiv.appendChild(div)
+
         }
         if (!this.InputRetriever)
             this.InputRetriever := ObjBindMethod(this, "DefaultInputRetriever")
@@ -401,6 +428,14 @@ class Setting {
     InputColourHandler() {
         WB.document.getElementById(this.id "-colour-btn")["style"]["color"] := this.value & 0x00FFFFFF
     }
+
+    InputPathHandler() {
+        FileSelectFolder, path,,, % "Select a GDK Installation"
+        if !path
+            path := "C:\"
+        this.element[this.attributeType] := path
+        this.EventHandler()
+    }
 }
 
 FormatOptionName(name) {
@@ -523,6 +558,21 @@ CheckResetMethodViability() {
         }
     }
     Setting["map"]["resetMethod"]["rootDiv"]["style"]["background-color"] := warningColour
+}
+
+CheckGdkPathValidity() {
+    if !gdkInstallationPath ; for when invoked by useGdkInstallation first
+        return
+    isValid := true
+    path := gdkInstallationPath "\Minecraft.Windows.exe"
+    if !FileExist(path) {
+        errMsg := "The set GDK installation path (""" gdkInstallationPath """) does not contain ""Minecraft.Windows.exe"""
+        LogF("ERR", errMsg)
+        isValid := false
+    }
+    statusColour := isValid || !useGdkInstallation ? "" : "rgba(255,0,0,0.25)"
+    Setting["map"]["gdkInstallationPath"]["rootDiv"]["style"]["background-color"] := statusColour
+    return isValid
 }
 
 InitGuiElements() {
