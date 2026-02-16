@@ -328,13 +328,17 @@
 
             if (version == 119) {
                 distance = document.getElementById("originDistance").value
-                chance = AHK("GetSpawnChance119", distance)
+                chance119 = AHK("GetSpawnChance119", distance)
+                chance121 = AHK("GetSpawnChance12160", distance)
+                text = "Chance of Spawn (1.18.30+): " + (chance119*100).toFixed(2) + "%\n"
+                     + "Chance of Spawn (1.21.60+): " + (chance121*100).toFixed(2) + "%"
+                document.getElementById("spawn-chance").innerText = text
             } else {
                 min = document.getElementById("minCoords").value
                 max = document.getElementById("maxCoords").value
                 chance = AHK("GetSpawnChance", min, max)
+                document.getElementById("spawn-chance").innerText = "Chance of Spawn: " + (chance*100).toFixed(2) + "%"
             }
-            document.getElementById("spawn-chance").innerText = "Chance of Spawn: " + (chance*100).toFixed(2) + "%"
 
             spawnHint = document.getElementById("spawn-hint")
             spawnHint.style.opacity = 1

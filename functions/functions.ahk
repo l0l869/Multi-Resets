@@ -429,6 +429,24 @@ GetSpawnChance119(distance) {
     return data[distance]
 }
 
+GetSpawnChance12160(distance) {
+    static data := {}
+    if !data.HasKey(1) {
+        FileRead, fileData, assets/spawn_data_12160.txt
+        dataArray := StrSplit(fileData, "`r`n")
+        count := 500000
+        total := 0
+        for k, v in dataArray {
+            total += v
+            data[k] := (count-total)/count
+        }
+    }
+    if (distance <= 0)
+        return 1
+
+    return data[distance]
+}
+
 LogF(level, msg, id:=0) {
     static cleared, logText, loggedIDs := {}, guiLogQueue := []
     if !cleared {

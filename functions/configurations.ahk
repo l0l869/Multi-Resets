@@ -15,7 +15,7 @@ global clickData := {}, screenClicks := [], worldcreationClicks := []
 global resetMode       , new Setting("resetMode", "Reset Mode", "Macro", 1, "select", ["auto", "cumulative", "setSeed", "manual", "manualWall"], "The type of resetting", [Func("OptResetModeHandler")])
 global minCoords       , new Setting("minCoords", "Min Coordinate", "Macro", 1, "inputNumber", 700, "The minimum x-coordinate the macro auto-resets for", [Func("OptResetModeHandler"), "getSpawnChance();"])
 global maxCoords       , new Setting("maxCoords", "Max Coordinate", "Macro", 1, "inputNumber", 1800, "The maximum x-coordinate the macro auto-resets for", [Func("OptResetModeHandler"), "getSpawnChance();"])
-global originDistance  , new Setting("originDistance", "Distance from 0,0 (1.19.50)", "Macro", 1, "inputNumber", 300, "The minimum number of blocks from world origin", [Func("OptResetModeHandler"), "getSpawnChance(119);"])
+global originDistance  , new Setting("originDistance", "Distance from 0,0 (1.18.30+)", "Macro", 1, "inputNumber", 300, "The minimum number of blocks from world origin", [Func("OptResetModeHandler"), "getSpawnChance(119);"])
 global queueLimit      , new Setting("queueLimit", "Queue Limit", "Macro", 1, "inputNumber", 50, "Limits the number of queued instances", [Func("OptResetModeHandler")])
 global memoryLimit     , new Setting("memoryLimit", "Committed Memory Limit", "Macro", 1, "inputNumber", 35, "Will stop resetting if the total committed memory (GB) exceeds the limit", [Func("OptResetModeHandler")])
 global resetSeed       , new Setting("resetSeed", "Seed", "Macro", 1, "select", GetSeedsFromFile(), "", [Func("OptResetModeHandler")])
