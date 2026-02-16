@@ -1,3 +1,6 @@
+#Include, functions/gdip.ahk
+#Include, functions/timer.ahk
+
 Class _Overlay {
     __New() {
         static init := new _Overlay()
@@ -89,11 +92,11 @@ Class _Overlay {
     drawText(text, anchor, offsetX, offsetY, brush, oWidth, oColour, font, size, moreOptions:="") {
         if this.fetchFont(font,size).fallback
             font := this.fallbackFont
-        pos := this.getTextPosition(text, font, size, oWidth, anchor, 0, 0, A_ScreenWidth, workArea[2], offsetX, offsetY)
+        pos := this.getTextPosition(text, font, size, oWidth, anchor, 0, 0, g_workArea.w, g_workArea.h, offsetX, offsetY)
 
         alignment := (anchor == "BottomRight" || anchor == "TopRight") ? "Right" : "Left"
         options := "x" pos.x1 " y" pos.y1 " w" Ceil(pos.width) " h100p c" brush " ow" oWidth " oc" oColour " s" size " r4 " alignment " " moreOptions
-        Gdip_TextToGraphics(this.G, text, options, font, A_ScreenWidth, workArea[2])
+        Gdip_TextToGraphics(this.G, text, options, font, g_workArea.w, g_workArea.h)
     }
 
     static cache := {hFamily: {}, hFont: {}}

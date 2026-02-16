@@ -21,7 +21,7 @@ global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d
 
 EnvGet, threadCount, NUMBER_OF_PROCESSORS
 global threadCount
-global dpiScale := A_ScreenDPI / 96, workArea := GetWorkArea()
+global dpiScale := A_ScreenDPI / 96, g_workArea := GetWorkArea()
 global SM_CXFRAME := DllCall("GetSystemMetrics", "Int", 32)
 global SM_CYFRAME := DllCall("GetSystemMetrics", "Int", 33)
 global SM_CYCAPTION := DllCall("GetSystemMetrics", "Int", 4)
@@ -40,9 +40,10 @@ Menu, Tray, Add, Launch Instances, Restart
 Menu, Tray, Add, Close Instances, CloseInstances
 
 global WB, GuiHwnd
+Gui, Main:+HwndGuiHwnd -DPIScale
 Gui, Main:Add, ActiveX, vWB x0 y0 w600 h400, shell.explorer
 InitGui()
-Gui, Main:Show, % "w" 600/dpiScale " h" 400/dpiScale, Multi-Resets
+Gui, Main:Show, w600 h400, Multi-Resets
 LogF("INF", "Initialised (" Floor(QPC()-initTick) "ms)")
 
 CheckMinecraftSettings()

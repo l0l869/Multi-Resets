@@ -523,9 +523,9 @@ CheckResetMethodViability() {
             return LogF("ERR", "Failed to load reset.dll; setupless will not work", A_ThisFunc ":NoResetDll")
         }
 
-        workArea := GetWorkArea()
-        width := workArea[1] / layoutDimensions.x
-        height := workArea[2] / layoutDimensions.y - SM_CYCAPTION - SM_CYFRAME
+        g_workArea := GetWorkArea()
+        width := g_workArea.w / layoutDimensions.x
+        height := g_workArea.h / layoutDimensions.y - SM_CYCAPTION - SM_CYFRAME
 
         scale := GetMCScale(width, height)
         content_area_w := width*.6-(8*scale)
@@ -551,7 +551,7 @@ CheckResetMethodViability() {
             }
 
             setupWorkArea := clickData[setupData]["metadata"]["workArea"]
-            if (setupWorkArea[1] != workArea[1] || setupWorkArea[2] != workArea[2]) {
+            if (setupWorkArea.w != workArea.w || setupWorkArea.h != workArea.h) {
                 LogF("WAR", "Working area does not match with setup data", A_ThisFunc ":" setupData ":DifferentWorkArea")
                 warningColour := "rgba(255,255,0,0.25)"
             }
@@ -630,7 +630,7 @@ LoadClickData() {
             clickData[currentV]["metadata"] := {clickVersion: clickVersion
                                               , layoutDimensions: [metadata[2], metadata[3]]
                                               , mcVersion: metadata[4]
-                                              , workArea: [metadata[5], metadata[6]]
+                                              , workArea: {w:metadata[5], h:metadata[6]}
                                               , dpi: metadata[7]}
             continue
         }

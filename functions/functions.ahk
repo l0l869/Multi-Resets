@@ -61,18 +61,18 @@ LaunchInstance(index) {
 }
 
 ResizeInstance(instance, index) {
-    workArea := GetWorkArea()
-    width := workArea[1] / layoutDimensions.x
-    height := workArea[2] / layoutDimensions.y
+    g_workArea := GetWorkArea()
+    width := g_workArea.w / layoutDimensions.x
+    height := g_workArea.h / layoutDimensions.y
 
     positionIndex := Mod(index-1, layoutDimensions.x * layoutDimensions.y)
     x := Mod(positionIndex, layoutDimensions.x)
     y := positionIndex // layoutDimensions.x
     WinRestore, % "ahk_id " instance.hwnd
     DllCall("SetWindowPos", "Ptr", instance.hwnd, "UInt", 0
-                          , "Int", width*x-SM_CXFRAME, "Int", height*y
-                          , "Int", width+SM_CXFRAME*2, "Int", height+SM_CYFRAME
-                          , "UInt", 0x0400)
+                          , "Int", width*x-SM_CXFRAME+g_workArea.x1, "Int", height*y+g_workArea.y1
+                          , "Int", width+SM_CXFRAME*2              , "Int", height+SM_CYFRAME
+                          , "UInt", SWP_NOSENDCHANGING:=0x0400)
 
     winDimensions := GetWindowDimensions("ahk_id " instance.hwnd)
     instance.x1     := winDimensions.x1
@@ -106,10 +106,12 @@ SuspendInstances(instances) {
 GetWorkArea() {
     VarSetCapacity(workArea, 16, 0)
     DllCall("SystemParametersInfo", "UInt", 0x0030, "UInt", 0, "UPtr", &workArea, "UInt", 0)
-    workAreaWidth := NumGet(&workArea, 8, "Int")
-    workAreaHeight := NumGet(&workArea, 12, "Int")
-    LogF("INF", "Working Area: " workAreaWidth "x" workAreaHeight ", Screen DPI: " A_ScreenDPI, A_ThisFunc ":WorkArea")
-    return [workAreaWidth, workAreaHeight]
+    x1 := NumGet(&workArea, 0, "Int")
+    y1 := NumGet(&workArea, 4, "Int")
+    x2 := NumGet(&workArea, 8, "Int")
+    y2 := NumGet(&workArea, 12, "Int")
+    LogF("INF", "Working Area: " x1 "-" y1 "-" x2 "-" y2 ", Screen DPI: " A_ScreenDPI, A_ThisFunc ":WorkArea")
+    return {x1: x1, y1: y1, x2: x2, y2: y2, w: x2-x1, h: y2-y1}
 }
 
 GetWindowDimensions(Window) {

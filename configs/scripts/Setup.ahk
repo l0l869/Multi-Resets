@@ -12,7 +12,7 @@ global IDENTIFIERS := ["Play","Heart","SaveAndQuit","CreateNew","CreateNewWorld"
 global clickData := []
 global screenClicks := []
 global worldcreationClicks := []
-global layoutDimensions, hwnd, workAreaWidth, workAreaHeight, win, mouseX, mouseY, atMouseColour, btnName
+global layoutDimensions, hwnd, g_workArea, win, mouseX, mouseY, atMouseColour, btnName
 global mcVersion
 global SM_CXFRAME := DllCall("GetSystemMetrics", "Int", 32)
 global SM_CYFRAME := DllCall("GetSystemMetrics", "Int", 33)
@@ -30,17 +30,14 @@ WinWait, Minecraft
 hwnd := WinExist("Minecraft")
 
 IniRead, layoutDimensions, configs.ini, Macro, layoutDimensions
-VarSetCapacity(workArea, 16, 0)
-DllCall("SystemParametersInfo", "UInt", 0x0030, "UInt", 0, "UPtr", &rect, "UInt", 0)
-workAreaWidth := NumGet(&rect, 8, "Int")
-workAreaHeight := NumGet(&rect, 12, "Int")
+g_workArea := GetWorkArea()
 dim := StrSplit(layoutDimensions, ",")
-width := workAreaWidth / dim[1]
-height := workAreaHeight / dim[2]
+width := g_workArea.w / dim[1]
+height := g_workArea.h / dim[2]
 WinRestore, % "ahk_id " hwnd
 DllCall("SetWindowPos", "Ptr", hwnd, "UInt", 0
-        , "Int", (workAreaWidth-width-SM_CXFRAME)/2, "Int", (workAreaHeight-height)/2
-        , "Int", width+SM_CXFRAME*2, "Int", height+SM_CYFRAME, "UInt", 0x0400)
+        , "Int", (g_workArea.w-width-SM_CXFRAME)/2 + g_workArea.x1, "Int", (g_workArea.h-height)/2 + g_workArea.y1
+        , "Int", width+SM_CXFRAME*2, "Int", height+SM_CYFRAME, "UInt", SWP_NOSENDCHANGING:=0x0400)
 
 mcVersion := GetMinecraftVersion()
 
@@ -127,6 +124,16 @@ updateTextMouseTip:
 return
 
 
+GetWorkArea() {
+    VarSetCapacity(workArea, 16, 0)
+    DllCall("SystemParametersInfo", "UInt", 0x0030, "UInt", 0, "UPtr", &workArea, "UInt", 0)
+    x1 := NumGet(&workArea, 0, "Int")
+    y1 := NumGet(&workArea, 4, "Int")
+    x2 := NumGet(&workArea, 8, "Int")
+    y2 := NumGet(&workArea, 12, "Int")
+    return {x1: x1, y1: y1, x2: x2, y2: y2, w: x2-x1, h: y2-y1}
+}
+
 GetWindowDimensions(Window) {
     WinGet, style, Style, %Window%
     if (isFullscreen := !(style & 0x20800000))
@@ -172,7 +179,7 @@ FinishSetup() {
         ExitApp
     }
 
-    metaData := "#" CLICK_DATA_VERSION "," layoutDimensions "," mcVersion "," workAreaWidth "," workAreaHeight "," A_ScreenDPI "`n"
+    metaData := "#" CLICK_DATA_VERSION "," layoutDimensions "," mcVersion "," g_workArea.w "," g_workArea.h "," A_ScreenDPI "`n"
 
     FileRead, fileClickData, clicks.txt
     for k, click in clickData
