@@ -1,5 +1,3 @@
-#Include, functions/gdip.ahk
-
 Class Timer
 {
     __New(Settings*) {

@@ -15,7 +15,7 @@ LogF("INF", "Initialising (" A_AhkVersion " " A_PtrSize*8 "-bit)")
 #Include, %A_ScriptDir%
 #Include, functions/configurations.ahk
 
-global SCRIPT_VERSION := 20250219.22
+global SCRIPT_VERSION := 20260216.05
 global iniFile := A_ScriptDir "\configs\configs.ini"
 global minecraftDir := A_LocalAppData "\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang"
 
@@ -72,7 +72,6 @@ return
 #Include, functions/functions.ahk
 #Include, functions/updater.ahk
 #Include, functions/overlay.ahk
-#Include, functions/timer.ahk
 
 InitGui() {
     WB.Silent := true
@@ -80,7 +79,6 @@ InitGui() {
     FileRead, html, assets/gui.html
     WB.Document.write(html)
     WB.Document.parentWindow.AHK := Func("JS_AHK")
-    Gui, Main:+HwndGuiHwnd
 
     ; dark mode title bar
     DllCall("dwmapi\DwmSetWindowAttribute", "Ptr", GuiHwnd, "Int", 20, "Int*", true, "Int", 4)
