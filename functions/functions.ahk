@@ -2,17 +2,7 @@ LaunchInstance(index) {
     existingPIDs := GetMinecraftProcesses()
     existingHWNDs := GetMinecraftHwnds()
 
-    path := "shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App"
-    if useGdkInstallation {
-        path := gdkInstallationPath "\Minecraft.Windows.exe"
-        if !FileExist(path) {
-            errMsg := "The set GDK installation path (""" gdkInstallationPath """) does not contain ""Minecraft.Windows.exe"""
-                    . "; unable to launch an instance"
-            LogF("ERR", errMsg)
-            throw, % errMsg
-        }
-    }
-
+    path := useGdkInstallation ? GetMinecraftGdkExePath() : "shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App"
     Run, % path
     timeoutTick := A_TickCount + 5000
     while !GetExcludedFromList(GetMinecraftHwnds(), existingHWNDs).count() {
@@ -160,9 +150,15 @@ GetMinecraftHwnds() {
 }
 
 GetMinecraftVersion() {
-    packageFullNames := GetAppxPackagesByFamilyName("Microsoft.MinecraftUWP_8wekyb3d8bbwe")
-    installationDir := GetPackagePathByFullName(packageFullNames[1])
-    FileGetVersion, MCversion, % installationDir "\Minecraft.Windows.exe"
+    exePath := ""
+    if useGdkInstallation {
+        exePath := GetMinecraftGdkExePath()
+    } else {
+        packageFullNames := GetAppxPackagesByFamilyName("Microsoft.MinecraftUWP_8wekyb3d8bbwe")
+        installationDir := GetPackagePathByFullName(packageFullNames[1])
+        exePath := installationDir "\Minecraft.Windows.exe"
+    }
+    FileGetVersion, MCversion, % exePath
     return MCversion, LogF("INF", "Current Minecraft Version: " MCversion)
 }
 
@@ -521,6 +517,16 @@ GetPackagePathByFullName(packageFullName) {
         return ""
 
     return installationPath
+}
+
+GetMinecraftGdkExePath() {
+    path := gdkInstallationPath "\Minecraft.Windows.exe"
+    if !FileExist(path) {
+        errMsg := "The set GDK installation path (""" gdkInstallationPath """) does not contain ""Minecraft.Windows.exe"""
+        LogF("ERR", errMsg, A_ThisFunc ":" gdkInstallationPath)
+        throw, % errMsg
+    }
+    return path
 }
 
 GlobalMemoryStatusEx() {

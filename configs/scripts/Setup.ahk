@@ -13,18 +13,23 @@ global clickData := []
 global screenClicks := []
 global worldcreationClicks := []
 global layoutDimensions, hwnd, g_workArea, win, mouseX, mouseY, atMouseColour, btnName
-global mcVersion
+global g_mcVersion
 global SM_CXFRAME := DllCall("GetSystemMetrics", "Int", 32)
 global SM_CYFRAME := DllCall("GetSystemMetrics", "Int", 33)
 global SM_CYCAPTION := DllCall("GetSystemMetrics", "Int", 4)
 
-MsgBox % "Tab: Assign`n" "Shift + Esc: Finish Setup"
+IniRead, useGdkInstallation, configs.ini, Other, useGdkInstallation
+mcRunPath := useGdkInstallation ? GetMinecraftGdkExePath() : "shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App"
+
+gdkHeadsUp := useGdkInstallation ? "`n`n(Using GDK installation)" : "(Using UWP installation)"
+
+MsgBox % "Tab: Assign`n" "Shift + Esc: Finish Setup" gdkHeadsUp
 
 SetTitleMatchMode, 3
 while WinExist("Minecraft")
     WinClose
 
-Run, shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App
+Run, % mcRunPath
 SetTitleMatchMode, 1
 WinWait, Minecraft
 hwnd := WinExist("Minecraft")
@@ -39,7 +44,7 @@ DllCall("SetWindowPos", "Ptr", hwnd, "UInt", 0
         , "Int", (g_workArea.w-width-SM_CXFRAME)/2 + g_workArea.x1, "Int", (g_workArea.h-height)/2 + g_workArea.y1
         , "Int", width+SM_CXFRAME*2, "Int", height+SM_CYFRAME, "UInt", SWP_NOSENDCHANGING:=0x0400)
 
-mcVersion := GetMinecraftVersion()
+g_mcVersion := GetMinecraftVersion()
 
 GetMinecraftVersion() {
     Process, Exist, Minecraft.Windows.exe
@@ -151,6 +156,16 @@ GetWindowDimensions(Window) {
            , height: winHeight - SM_CYFRAME*2 - SM_CYCAPTION}
 }
 
+GetMinecraftGdkExePath() {
+    IniRead, gdkInstallationPath, configs.ini, Other, gdkInstallationPath
+    path := gdkInstallationPath "\Minecraft.Windows.exe"
+    if !FileExist(path) {
+        errMsg := "The set GDK installation path (""" gdkInstallationPath """) does not contain ""Minecraft.Windows.exe"""
+        throw, % errMsg
+    }
+    return path
+}
+
 AssignButton() {
     if (IDENTIFIERS[currentID] == "Heart" || IDENTIFIERS[currentID] == "WorldCreation") {
         clickData[currentID] := IDENTIFIERS[currentID] ",,," Floor(mouseX-win.x1) "," Floor(mouseY-win.y1) "," atMouseColour
@@ -179,7 +194,7 @@ FinishSetup() {
         ExitApp
     }
 
-    metaData := "#" CLICK_DATA_VERSION "," layoutDimensions "," mcVersion "," g_workArea.w "," g_workArea.h "," A_ScreenDPI "`n"
+    metaData := "#" CLICK_DATA_VERSION "," layoutDimensions "," g_mcVersion "," g_workArea.w "," g_workArea.h "," A_ScreenDPI "`n"
 
     FileRead, fileClickData, clicks.txt
     for k, click in clickData
@@ -223,7 +238,7 @@ FinishSetup() {
     txt.write(allClickDataString)
     txt.close()
 
-    setupDataValue := StrReplace(layoutDimensions, ",", "x") ", " mcVersion
+    setupDataValue := StrReplace(layoutDimensions, ",", "x") ", " g_mcVersion
     IniWrite, %setupDataValue%, configs.ini, Other, setupData
 
     if WinExist("Multi-Resets")
