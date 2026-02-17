@@ -282,7 +282,9 @@ IterateReset(instance) {
                 Sleep, %keyDelay%
                 if isBored
                     gameScript.AllowClick({x:instance.x1+click.x,y:instance.y1+click.y})
-                MouseClick,, instance.x1 + click.x, instance.y1 + click.y,,0
+                MouseClick,, instance.x1 + click.x, instance.y1 + click.y,,, D
+                Sleep, %clickDuration%
+                MouseClick,, instance.x1 + click.x, instance.y1 + click.y,,, U
 
                 if click.isSeedClick {
                     Sleep, %keyDelay%
